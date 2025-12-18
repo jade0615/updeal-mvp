@@ -59,6 +59,14 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
             setSuccessData(result);
             if (onClaimSuccess) onClaimSuccess(result);
 
+            // Track GA4 conversion
+            if (typeof window !== 'undefined' && (window as any).gtag) {
+                (window as any).gtag('event', 'claim_coupon', {
+                    merchant_id: merchantId,
+                    coupon_code: result.coupon.code
+                });
+            }
+
         } catch (err: any) {
             setError(err.message);
         } finally {
