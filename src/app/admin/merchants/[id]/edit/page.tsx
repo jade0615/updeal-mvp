@@ -22,6 +22,7 @@ export default function EditMerchantPage() {
         template_type: 'nail',
         logo_url: '',
         ga4_measurement_id: '',
+        meta_pixel_id: '',
         redeem_pin: '',
         is_active: true,
         content: {
@@ -347,6 +348,16 @@ export default function EditMerchantPage() {
                                     type="text"
                                     value={formData.ga4_measurement_id || ''}
                                     onChange={(e) => setFormData({ ...formData, ga4_measurement_id: e.target.value })}
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Meta Pixel ID</label>
+                                <input
+                                    type="text"
+                                    value={formData.meta_pixel_id || ''}
+                                    onChange={(e) => setFormData({ ...formData, meta_pixel_id: e.target.value })}
+                                    placeholder="e.g. 1234567890"
                                     className="w-full border rounded px-3 py-2"
                                 />
                             </div>

@@ -10,6 +10,7 @@ export const merchantSchema = z.object({
   template_type: z.enum(['nail', 'sushi', 'chinese', 'bbq', 'massage', 'boba']),
   logo_url: z.string().optional().or(z.literal('')), // Top level column
   ga4_measurement_id: z.string().optional().or(z.literal('')),
+  meta_pixel_id: z.string().optional().or(z.literal('')),
   redeem_pin: z.string().optional().or(z.literal('')),
   is_active: z.boolean().default(true),
   content: z.object({

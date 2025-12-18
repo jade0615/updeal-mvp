@@ -71,6 +71,7 @@ export interface Merchant {
     template_type: string;
     content: MerchantContent;
     ga4_measurement_id?: string;
+    meta_pixel_id?: string;
     redeem_pin?: string;
     created_at: string;
     updated_at: string;

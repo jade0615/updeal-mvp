@@ -60,11 +60,25 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
             if (onClaimSuccess) onClaimSuccess(result);
 
             // Track GA4 conversion
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-                (window as any).gtag('event', 'claim_coupon', {
-                    merchant_id: merchantId,
-                    coupon_code: result.coupon.code
-                });
+            if (typeof window !== 'undefined') {
+                if ((window as any).gtag) {
+                    (window as any).gtag('event', 'claim_coupon', {
+                        merchant_id: merchantId,
+                        coupon_code: result.coupon.code
+                    });
+                }
+                // Meta Pixel Lead Event
+                import('react-facebook-pixel')
+                    .then((x) => x.default)
+                    .then((ReactPixel) => {
+                        ReactPixel.track('Lead', {
+                            content_name: 'Coupon Claim',
+                            content_category: 'Lead',
+                            content_ids: [result.coupon.code],
+                            currency: 'USD',
+                            value: 10.00 // Arbitrary value for lead
+                        });
+                    });
             }
 
         } catch (err: any) {

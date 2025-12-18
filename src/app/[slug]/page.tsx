@@ -4,6 +4,7 @@ import LandingPageTemplate from '@/components/templates/LandingPageTemplate'
 import { trackPageView } from '@/actions/analytics'
 import type { Metadata } from 'next'
 import type { Merchant } from '@/types/merchant'
+import MetaPixel from '@/components/analytics/MetaPixel'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -93,6 +94,8 @@ export default async function LandingPage({ params }: Props) {
           />
         </>
       )}
+
+      <MetaPixel pixelId={merchant.meta_pixel_id || process.env.NEXT_PUBLIC_META_PIXEL_ID} />
 
       <LandingPageTemplate
         merchant={merchant as unknown as Merchant}
