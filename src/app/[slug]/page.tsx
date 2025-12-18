@@ -68,15 +68,16 @@ export default async function LandingPage({ params }: Props) {
   await trackPageView(merchant.id)
 
   // 3. Render Template
-  // We use the new LandingPageTemplate for all merchants as per the update request
+  const ga4Id = merchant.ga4_measurement_id || process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID
+
   return (
     <>
       {/* Google Analytics 4 */}
-      {merchant.ga4_measurement_id && (
+      {ga4Id && (
         <>
           <script
             async
-            src={`https://www.googletagmanager.com/gtag/js?id=${merchant.ga4_measurement_id}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}
           />
           <script
             dangerouslySetInnerHTML={{
@@ -84,7 +85,7 @@ export default async function LandingPage({ params }: Props) {
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${merchant.ga4_measurement_id}', {
+                gtag('config', '${ga4Id}', {
                   page_path: window.location.pathname,
                 });
               `,
