@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import DeleteMerchantButton from '@/components/admin/DeleteMerchantButton'
 import { CopyButton, ExportMerchantsButton } from '@/components/admin/MerchantUtilityButtons'
+import ToggleMerchantStatus from '@/components/admin/ToggleMerchantStatus'
 
 export default async function MerchantsPage() {
   const supabase = createAdminClient()
@@ -99,12 +100,12 @@ export default async function MerchantsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${merchant.is_active
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                        }`}>
-                        {merchant.is_active ? '启用' : '禁用'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <ToggleMerchantStatus merchantId={merchant.id} isActive={merchant.is_active} />
+                        <span className={`text-xs font-semibold ${merchant.is_active ? 'text-green-700' : 'text-gray-500'}`}>
+                          {merchant.is_active ? '启用' : '禁用'}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                       <Link

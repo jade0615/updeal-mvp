@@ -150,3 +150,24 @@ export async function getMerchant(id: string) {
 
   return merchant
 }
+
+export async function toggleMerchantStatus(id: string, isActive: boolean) {
+  try {
+    await requireAdmin()
+
+    const supabase = createAdminClient()
+
+    const { error } = await supabase
+      .from('merchants')
+      .update({ is_active: isActive })
+      .eq('id', id)
+
+    if (error) throw error
+
+    revalidatePath('/admin/merchants')
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
