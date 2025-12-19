@@ -11,28 +11,34 @@ export interface CustomerData {
     claimed_at: string
 }
 
-export async function getCustomers(limit = 100, offset = 0) {
+export async function getCustomers(limit = 100, offset = 0, merchantId?: string) {
     const supabase = createAdminClient()
 
     try {
-        // Join coupons -> users, coupons -> merchants
-        // Supabase Select with nested relations
-        const { data, error, count } = await supabase
+        // Build base query
+        let query = supabase
             .from('coupons')
             .select(`
-        id,
-        code,
-        created_at,
-        users (
-          phone,
-          name
-        ),
-        merchants (
-          name
-        )
-      `, { count: 'exact' })
+                id,
+                code,
+                created_at,
+                users (
+                    phone,
+                    name
+                ),
+                merchants (
+                    name
+                )
+            `, { count: 'exact' })
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1)
+
+        // Apply merchant filter if present
+        if (merchantId) {
+            query = query.eq('merchant_id', merchantId)
+        }
+
+        const { data, error, count } = await query
 
         if (error) {
             console.error('Error fetching customers:', error)
