@@ -4,7 +4,7 @@ import CustomerExportButton from '@/components/admin/CustomerExportButton';
 import SearchableMerchantFilter from '@/components/admin/SearchableMerchantFilter';
 import CustomerTable from '@/components/admin/CustomerTable';
 import DebouncedInput from '@/components/admin/DebouncedInput';
-import { useRouter } from 'next/navigation'; // Not used in server component but imported in client components
+// Removed unused useRouter
 
 export const dynamic = 'force-dynamic';
 
