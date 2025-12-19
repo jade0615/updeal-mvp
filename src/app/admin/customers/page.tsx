@@ -1,10 +1,27 @@
 import { getCustomers } from '@/actions/customers';
+import { createAdminClient } from '@/lib/supabase/admin';
 import CustomerExportButton from '@/components/admin/CustomerExportButton';
+import MerchantFilter from '@/components/admin/MerchantFilter';
 
 export const dynamic = 'force-dynamic';
 
-export default async function CustomersPage() {
-    const { customers, success, error } = await getCustomers(1000); // Fetch up to 1000 for now
+interface Props {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export default async function CustomersPage({ searchParams }: Props) {
+    const minParams = await searchParams
+    const merchantId = minParams.merchant_id as string | undefined;
+
+    // Fetch customers with filter
+    const { customers, success, error } = await getCustomers(1000, 0, merchantId);
+
+    // Fetch merchants for filter dropdown
+    const supabase = createAdminClient();
+    const { data: merchants } = await supabase
+        .from('merchants')
+        .select('id, name')
+        .order('name');
 
     if (!success) {
         return <div className="p-8 text-red-600">Error: {error}</div>;
@@ -12,18 +29,7 @@ export default async function CustomersPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <nav className="bg-white shadow mb-6">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
-                        <div className="flex items-center space-x-8">
-                            <div className="text-xl font-bold text-gray-900">UpDeal Admin</div>
-                            <a href="/admin" className="text-gray-600 hover:text-gray-900">Dashboard</a>
-                            <a href="/admin/merchants" className="text-gray-600 hover:text-gray-900">Merchants</a>
-                            <a href="/admin/customers" className="text-gray-900 font-medium">Customers</a>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-8 flex items-center justify-between">
@@ -33,7 +39,10 @@ export default async function CustomersPage() {
                             View and export customer information from coupon claims.
                         </p>
                     </div>
-                    <CustomerExportButton data={customers || []} />
+                    <div className="flex gap-4">
+                        <MerchantFilter merchants={merchants || []} />
+                        <CustomerExportButton data={customers || []} />
+                    </div>
                 </div>
 
                 <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow">

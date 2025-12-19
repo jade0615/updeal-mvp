@@ -12,31 +12,7 @@ export default async function MerchantsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow mb-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center space-x-8">
-              <Link href="/admin" className="text-xl font-bold text-gray-900">
-                UpDeal
-              </Link>
-              <Link
-                href="/admin/merchants"
-                className="text-blue-600 font-medium"
-              >
-                商家管理
-              </Link>
-              <Link
-                href="/admin/analytics"
-                className="text-gray-700 hover:text-gray-900"
-              >
-                数据分析
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900">商家管理</h1>
           <Link
