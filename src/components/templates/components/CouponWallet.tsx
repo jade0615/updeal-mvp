@@ -25,8 +25,9 @@ export default function CouponWallet({
 
     // Calculate time remaining (mock simple display for now)
     const diff = expiryDate.getTime() - redeemDate.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    // const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)); // Minutes less relevant for 2 weeks
 
     return (
         <div className="w-full max-w-sm mx-auto bg-white rounded-3xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.12)] font-sans pb-6">
@@ -61,7 +62,7 @@ export default function CouponWallet({
                         Expires in
                     </p>
                     <p className="text-xl font-black text-green-700 font-mono tracking-tight">
-                        {hours}H {minutes}M 00S
+                        {days} DAYS {hours}H
                     </p>
                 </div>
                 {/* Redeemed On */}
