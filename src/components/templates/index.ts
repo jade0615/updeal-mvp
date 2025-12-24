@@ -40,4 +40,5 @@ export interface TemplateProps {
     content: BaseTemplateContent
     ga4_measurement_id?: string
   }
+  claimedCount: number
 }

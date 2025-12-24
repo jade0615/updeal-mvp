@@ -12,7 +12,7 @@
   --color-theme-accentSoft: #F0FDFA;
 
   /* Fonts */
-  --font-sans: var(--font-jakarta);
+  --font-sans: var(--font-poppins), var(--font-jakarta);
   --font-serif: var(--font-playfair);
 
   /* Shadows */
@@ -32,7 +32,20 @@
       transform: translateX(100%);
     }
   }
+
+  /* Custom Utilities */
+  --perspective-2000: 2000px;
 }
+
+.perspective-2000 {
+  perspective: var(--perspective-2000);
+}
+
+::selection {
+  background: rgba(255, 87, 34, 0.4);
+  color: white;
+}
+
 
 /* Custom Utilities */
 .glass-clean {
@@ -61,12 +74,109 @@
 }
 
 :root {
-  --background: #FAFAF9;
+  --background: #F5F6F8;
   --foreground: #1C1917;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), sans-serif;
+  font-family: var(--font-inter), var(--font-jakarta), sans-serif;
+}
+
+/* Custom Jelly & Glassmorphism Styles */
+.header-bg {
+  background: linear-gradient(160deg, #1A4D40 0%, #0D3B30 50%, #0A2E25 100%);
+  border-radius: 0 0 40px 40px;
+}
+
+.jelly-card {
+  background: linear-gradient(145deg,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.12) 100%);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(255, 255, 255, 0.1) inset,
+    0 -2px 8px rgba(0, 0, 0, 0.05) inset;
+}
+
+.btn-jelly {
+  background: linear-gradient(180deg, #FF7A55 0%, #FF5533 100%);
+  box-shadow:
+    0 6px 20px rgba(255, 85, 51, 0.4),
+    0 2px 4px rgba(255, 255, 255, 0.3) inset,
+    0 -2px 4px rgba(0, 0, 0, 0.1) inset;
+}
+
+.jelly-input {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(255, 255, 255, 0.5) inset;
+}
+
+/* Linear/Zinc Styled Shadows */
+.shadow-3xl {
+  box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.6);
+}
+
+/* Noise Texture Overlay */
+.noise-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.15;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* 3D Tilt Container */
+.tilt-card {
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Verified Seal Animation */
+@keyframes seal-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.verified-seal-outer {
+  animation: seal-rotate 12s linear infinite;
+}
+
+.verified-glow {
+  filter: drop-shadow(0 0 8px rgba(255, 154, 68, 0.4));
+}
+
+/* Animations */
+@keyframes float-slow {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 5s ease-in-out infinite;
+}
+
+/* Scroll Snap/Smooth */
+html {
+  scroll-behavior: smooth;
 }

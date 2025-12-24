@@ -1,15 +1,20 @@
-import Link from 'next/link';
-import { Home } from 'lucide-react';
+import { ArrowLeft, Heart, Share2 } from 'lucide-react';
 
 export default function LandingHeader() {
     return (
-        <header className="absolute top-0 left-0 right-0 z-10 p-4">
+        <header className="absolute top-0 left-0 right-0 z-50 p-4">
             <nav className="mx-auto max-w-7xl flex items-center justify-between">
-                <Link href="/" className="flex items-center justify-center rounded-full bg-white/80 p-2 backdrop-blur-sm shadow-sm hover:bg-white transition-colors">
-                    <Home className="h-5 w-5 text-gray-700" />
-                    <span className="sr-only">Home</span>
-                </Link>
-                {/* Can add more nav items or Merchant Login link here */}
+                <button className="h-11 w-11 flex items-center justify-center rounded-full bg-white/10 border border-white/15 backdrop-blur-md text-white transition-all hover:bg-white/20 hover:scale-105 active:scale-95">
+                    <ArrowLeft className="h-5 w-5" />
+                </button>
+                <div className="flex gap-3">
+                    <button className="h-11 w-11 flex items-center justify-center rounded-full bg-white/10 border border-white/15 backdrop-blur-md text-white transition-all hover:bg-white/20 hover:scale-105 active:scale-95">
+                        <Heart className="h-5 w-5" />
+                    </button>
+                    <button className="h-11 w-11 flex items-center justify-center rounded-full bg-white/10 border border-white/15 backdrop-blur-md text-white transition-all hover:bg-white/20 hover:scale-105 active:scale-95">
+                        <Share2 className="h-5 w-5" />
+                    </button>
+                </div>
             </nav>
         </header>
     );

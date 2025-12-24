@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import LandingPageTemplate from '@/components/templates/LandingPageTemplate'
+import ModernTemplate from '@/components/templates/ModernTemplate'
 import { trackPageView } from '@/actions/analytics'
 import type { Metadata } from 'next'
 import type { Merchant } from '@/types/merchant'
@@ -52,15 +53,14 @@ export default async function LandingPage({ params }: Props) {
     .from('merchants')
     .select('*')
     .eq('slug', slug)
-    // .eq('is_active', true) // Include if is_active is strictly required, but usually good to check
     .single()
 
   if (error || !merchant) {
     notFound()
   }
 
-  // 2. Fetch Claimed Count
-  const { count: claimedCount } = await supabase
+  // 2. Fetch Claimed Count (Real Data)
+  const { count: realClaimedCount } = await supabase
     .from('coupons')
     .select('*', { count: 'exact', head: true })
     .eq('merchant_id', merchant.id)
@@ -68,8 +68,15 @@ export default async function LandingPage({ params }: Props) {
   // Track page view
   await trackPageView(merchant.id)
 
-  // 3. Render Template
+  // 3. Social Proof Logic: Display count = Real + Virtual Base
+  // Default to 200 base if not set, for that "busy" look
+  const displayCount = (realClaimedCount || 0) + (merchant.virtual_base_count || 200)
+
+  // 4. Render Template
   const ga4Id = merchant.ga4_measurement_id || process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID
+
+  // Decide which template to use.
+  const TemplateComponent = LandingPageTemplate;
 
   return (
     <>
@@ -97,9 +104,9 @@ export default async function LandingPage({ params }: Props) {
 
       <MetaPixel pixelId={merchant.meta_pixel_id || process.env.NEXT_PUBLIC_META_PIXEL_ID} />
 
-      <LandingPageTemplate
-        merchant={merchant as unknown as Merchant}
-        claimedCount={claimedCount || 0}
+      <TemplateComponent
+        merchant={merchant as unknown as any}
+        claimedCount={displayCount}
       />
     </>
   )

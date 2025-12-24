@@ -36,8 +36,9 @@ export async function GET(
         success: true,
         merchant: merchant,
         stats: {
-            claimedCount: claimedCount || 0,
-            viewCount: 0 // Placeholder, real view count comes from analytics table if needed
+            claimedCount: (claimedCount || 0) + (merchant.virtual_base_count || 0),
+            realClaimedCount: claimedCount || 0,
+            viewCount: 0
         }
     });
 }

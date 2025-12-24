@@ -25,7 +25,7 @@ function generateRandomNames(count: number) {
     return names
 }
 
-export default function ModernTemplate({ merchant }: TemplateProps) {
+export default function ModernTemplate({ merchant, claimedCount }: TemplateProps) {
     const { content } = merchant
     const [phone, setPhone] = useState('')
     const [email, setEmail] = useState('')
@@ -220,7 +220,7 @@ export default function ModernTemplate({ merchant }: TemplateProps) {
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center gap-1.5">
                                                 <span className="material-symbols-outlined text-theme-accent text-[18px]">local_fire_department</span>
-                                                <span className="text-xs font-semibold text-theme-secondary">328 Claimed</span>
+                                                <span className="text-xs font-semibold text-theme-secondary">{claimedCount > 100 ? `🔥 已有 ${claimedCount} 人疯抢` : (claimedCount > 0 ? `${claimedCount} Claimed` : '🔥 今日热门优惠')}</span>
                                             </div>
 
                                             {/* Avatars - Generated */}
@@ -233,9 +233,11 @@ export default function ModernTemplate({ merchant }: TemplateProps) {
                                                         className="inline-block h-6 w-6 rounded-full ring-2 ring-white object-cover"
                                                     />
                                                 ))}
-                                                <div className="h-6 w-6 rounded-full ring-2 ring-white bg-stone-100 flex items-center justify-center text-[9px] font-bold text-theme-secondary">
-                                                    +12
-                                                </div>
+                                                {claimedCount > 3 && (
+                                                    <div className="h-6 w-6 rounded-full ring-2 ring-white bg-stone-100 flex items-center justify-center text-[9px] font-bold text-theme-secondary">
+                                                        +{claimedCount - 3}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">

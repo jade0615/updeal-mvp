@@ -90,7 +90,7 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
 
     if (successData) {
         return (
-            <div className="rounded-xl border border-green-100 bg-green-50 p-6 text-center">
+            <div className="rounded-xl border border-green-100 bg-green-50 p-6 text-center animate-in zoom-in duration-500">
                 <h3 className="mb-2 text-xl font-bold text-green-800">Coupon Claimed!</h3>
                 <p className="mb-4 text-sm text-green-700">Check your phone for the coupon code.</p>
                 <div className="mx-auto mb-2 w-max rounded-lg bg-white px-4 py-2 font-mono text-xl font-bold tracking-widest text-green-600 shadow-sm border border-green-100">
@@ -102,61 +102,73 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
     }
 
     return (
-        <div className="mb-8 rounded-xl bg-white p-6 shadow-lg ring-1 ring-gray-100">
-            <h3 className="mb-4 text-center text-lg font-bold text-gray-900">
-                Get Your Coupon Now
-            </h3>
+        <div className="mt-8 mb-8 bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-white/50 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 to-red-500 opacity-20" />
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div>
-                    <label htmlFor="phone" className="sr-only">Phone Number</label>
-                    <input
-                        id="phone"
-                        type="tel"
-                        placeholder="(555) 123-4567"
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
-                        {...register('phone')}
-                    />
-                    {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone.message}</p>}
+            <div className="text-center mb-6">
+                <h3 className="text-2xl font-black bg-gradient-to-r from-[#1A4D40] to-[#0D3B30] bg-clip-text text-transparent mb-1">
+                    Claim Your Deal 🎁
+                </h3>
+                <p className="text-slate-500 text-sm font-medium">Fill in your info to get this special offer</p>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                {/* Name */}
+                <div className="relative group">
+                    <label className="block text-slate-600 text-[11px] font-bold uppercase tracking-wider mb-1.5 ml-1">Full Name</label>
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="John Doe"
+                            className="jelly-input w-full px-5 py-4 rounded-2xl text-slate-700 placeholder-slate-400 text-[15px] font-medium outline-none transition-all focus:ring-2 focus:ring-orange-500/10 focus:border-orange-500/30"
+                            {...register('name')}
+                        />
+                    </div>
                 </div>
 
-                <div>
-                    <label htmlFor="name" className="sr-only">Name (Optional)</label>
-                    <input
-                        id="name"
-                        type="text"
-                        placeholder="Name (Optional)"
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all text-sm"
-                        {...register('name')}
-                    />
+                {/* Phone */}
+                <div className="relative group">
+                    <label className="block text-slate-600 text-[11px] font-bold uppercase tracking-wider mb-1.5 ml-1">Phone Number</label>
+                    <div className="relative">
+                        <input
+                            type="tel"
+                            placeholder="(555) 000-0000"
+                            className={`jelly-input w-full px-5 py-4 rounded-2xl text-slate-700 placeholder-slate-400 text-[15px] font-medium outline-none transition-all focus:ring-2 focus:ring-orange-500/10 focus:border-orange-500/30 ${errors.phone ? 'border-red-400' : ''}`}
+                            {...register('phone')}
+                        />
+                        {errors.phone && <p className="mt-1.5 text-xs font-bold text-red-500 ml-1">{errors.phone.message}</p>}
+                    </div>
                 </div>
 
                 {error && (
-                    <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
-                        {error}
+                    <div className="rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-600 border border-red-100 italic">
+                        ⚠️ {error}
                     </div>
                 )}
 
+                {/* Submit Button */}
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-70"
+                    className="btn-jelly w-full py-4.5 rounded-2xl text-white font-black text-lg flex items-center justify-center gap-3 mt-4 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-70 disabled:hover:scale-100"
                 >
                     {isSubmitting ? (
                         <>
-                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <Loader2 className="h-6 w-6 animate-spin" />
                             Processing...
                         </>
                     ) : (
                         <>
-                            Claim Offer
-                            <ArrowRight className="h-5 w-5" />
+                            <span>Claim Now</span>
+                            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shadow-inner">
+                                <ArrowRight className="h-4.5 w-4.5" />
+                            </div>
                         </>
                     )}
                 </button>
 
-                <p className="text-center text-xs text-gray-400">
-                    We'll text you the coupon code. No spam, ever.
+                <p className="text-center text-slate-400 text-[11px] font-medium mt-4">
+                    🔒 Your info is safe. We never spam.
                 </p>
             </form>
         </div>

@@ -24,6 +24,7 @@ export default function EditMerchantPage() {
         ga4_measurement_id: '',
         meta_pixel_id: '',
         redeem_pin: '',
+        virtual_base_count: 0,
         is_active: true,
         content: {
             businessName: '',
@@ -379,6 +380,18 @@ export default function EditMerchantPage() {
                                 />
                                 <p className="mt-1 text-xs text-gray-500">
                                     Used by merchant staff to access the redemption terminal.
+                                </p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">营销热度-虚拟基数 (Virtual Base Heat)</label>
+                                <input
+                                    type="number"
+                                    value={formData.virtual_base_count || 0}
+                                    onChange={(e) => setFormData({ ...formData, virtual_base_count: parseInt(e.target.value) || 0 })}
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Display = Real + Virtual. Used for social proof urgency.
                                 </p>
                             </div>
                         </div>

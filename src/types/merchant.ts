@@ -19,6 +19,7 @@ export interface MerchantContent {
         unit: string;                 // "Off", "Free", "Off Your Order"
         description: string;          // "Valid on all main courses..."
         totalLimit: number;           // Total limit, e.g., 500
+        virtual_base_count?: number;  // Marketing logic: Virtual base count for social proof
     };
 
     // === Address ===
@@ -73,6 +74,7 @@ export interface Merchant {
     ga4_measurement_id?: string;
     meta_pixel_id?: string;
     redeem_pin?: string;
+    virtual_base_count: number;
     created_at: string;
     updated_at: string;
 }

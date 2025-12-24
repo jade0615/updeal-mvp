@@ -47,8 +47,14 @@ export async function GET(request: NextRequest) {
             .eq('merchant_id', merchant.id)
             .eq('status', 'redeemed')
 
-        if (todayError || totalError) {
-            console.error('Error fetching stats', todayError, totalError)
+        // 4. Get Total Claims (Real Claims)
+        const { count: claimsCount, error: claimsError } = await supabase
+            .from('coupons')
+            .select('*', { count: 'exact', head: true })
+            .eq('merchant_id', merchant.id)
+
+        if (todayError || totalError || claimsError) {
+            console.error('Error fetching stats', todayError, totalError, claimsError)
             return NextResponse.json({ success: false, error: 'Failed to fetch stats' }, { status: 500 })
         }
 
@@ -56,7 +62,8 @@ export async function GET(request: NextRequest) {
             success: true,
             stats: {
                 todayRedemptions: todayCount || 0,
-                totalRedemptions: totalCount || 0
+                totalRedemptions: totalCount || 0,
+                totalClaims: claimsCount || 0
             }
         })
 

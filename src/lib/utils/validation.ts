@@ -12,6 +12,7 @@ export const merchantSchema = z.object({
   ga4_measurement_id: z.string().optional().or(z.literal('')),
   meta_pixel_id: z.string().optional().or(z.literal('')),
   redeem_pin: z.string().optional().or(z.literal('')),
+  virtual_base_count: z.number().int().min(0).default(200).or(z.string().transform(val => parseInt(val, 10))),
   is_active: z.boolean().default(true),
   content: z.object({
     // === Basic Info ===

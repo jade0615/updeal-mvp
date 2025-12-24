@@ -54,7 +54,11 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
   const [history, setHistory] = useState<RedeemHistoryItem[]>([])
 
   // Stats state
-  const [stats, setStats] = useState<{ todayRedemptions: number, totalRedemptions: number } | null>(null)
+  const [stats, setStats] = useState<{
+    todayRedemptions: number;
+    totalRedemptions: number;
+    totalClaims: number;
+  } | null>(null)
 
   // ... (Keep Auth useEffects same as original) ...
   // Check if already authenticated in this session
@@ -360,14 +364,34 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
 
         {/* Stats Card */}
         {stats && (
-          <div className="bg-white rounded-2xl shadow-xl p-6 grid grid-cols-2 gap-4">
-            <div className="bg-blue-50 rounded-xl p-4 text-center">
-              <p className="text-xs font-bold text-blue-600 uppercase">今日</p>
-              <p className="text-2xl font-bold text-blue-900 mt-1">{stats.todayRedemptions}</p>
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl shadow-xl p-6 grid grid-cols-2 gap-4">
+              <div className="bg-emerald-50 rounded-xl p-4 text-center">
+                <p className="text-xs font-bold text-emerald-600 uppercase">今日核销</p>
+                <p className="text-2xl font-bold text-emerald-900 mt-1">{stats.todayRedemptions}</p>
+              </div>
+              <div className="bg-purple-50 rounded-xl p-4 text-center">
+                <p className="text-xs font-bold text-purple-600 uppercase">累计核销</p>
+                <p className="text-2xl font-bold text-purple-900 mt-1">{stats.totalRedemptions}</p>
+              </div>
             </div>
-            <div className="bg-purple-50 rounded-xl p-4 text-center">
-              <p className="text-xs font-bold text-purple-600 uppercase">累计</p>
-              <p className="text-2xl font-bold text-purple-900 mt-1">{stats.totalRedemptions}</p>
+
+            {/* Real Data Perspective for Merchant */}
+            <div className="bg-blue-600 rounded-2xl shadow-lg p-4 text-white">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium opacity-90">📊 运营数据透视 (真实数据)</span>
+                <div className="flex gap-4 text-sm font-bold">
+                  <span>领取: {stats.totalClaims}</span>
+                  <span>核销: {stats.totalRedemptions}</span>
+                </div>
+              </div>
+              <div className="mt-2 h-1.5 bg-blue-400/30 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-white rounded-full transition-all duration-1000"
+                  style={{ width: `${stats.totalClaims > 0 ? (stats.totalRedemptions / stats.totalClaims) * 100 : 0}%` }}
+                />
+              </div>
+              <p className="text-[10px] mt-1.5 opacity-70 text-right">核销率: {stats.totalClaims > 0 ? ((stats.totalRedemptions / stats.totalClaims) * 100).toFixed(1) : 0}%</p>
             </div>
           </div>
         )}

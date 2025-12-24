@@ -15,7 +15,7 @@ export default async function MerchantsPage() {
   // Ideally we get the base URL from env, but client components will use window.location
   // For server-side rendering links, we can use relative paths or env var if needed.
   // Here we pass data to client components.
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://updeal.ai' // Fallback for copy text if needed, but client component handles it better with window.location
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://updeal.top' // Fallback for copy text if needed, but client component handles it better with window.location
 
   return (
     <div className="min-h-screen bg-gray-50">

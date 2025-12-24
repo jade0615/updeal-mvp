@@ -1,4 +1,10 @@
-export default function LandingFooter() {
+interface LandingFooterProps {
+    hideBranding?: boolean;
+}
+
+export default function LandingFooter({ hideBranding }: LandingFooterProps) {
+    if (hideBranding) return null;
+
     return (
         <footer className="mt-12 py-8 text-center text-xs text-gray-400">
             <p>© {new Date().getFullYear()} UpDeal. All rights reserved.</p>

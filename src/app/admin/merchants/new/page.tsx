@@ -17,6 +17,7 @@ export default function NewMerchantPage() {
     template_type: 'nail',
     logo_url: '',
     ga4_measurement_id: '',
+    virtual_base_count: 200,
     is_active: true,
     content: {
       businessName: '',
@@ -190,6 +191,22 @@ export default function NewMerchantPage() {
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   店员登录核销页面的密码 (自动生成，可修改)
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  营销热度-虚拟基数 (Virtual Base Heat)
+                </label>
+                <input
+                  type="number"
+                  value={formData.virtual_base_count || 200}
+                  onChange={(e) => setFormData({ ...formData, virtual_base_count: parseInt(e.target.value) || 0 })}
+                  className="w-full border rounded px-3 py-2 text-gray-900"
+                  placeholder="200"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  显示销量 = 真实销量 + 虚拟基数。建议设为 100-500 以增加信任感。
                 </p>
               </div>
             </div>
