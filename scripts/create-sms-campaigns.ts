@@ -14,6 +14,7 @@ const smsCampaigns = [
         name: 'Arcadia Holiday & Grand Opening',
         template_type: 'sushi',
         is_active: true,
+        redeem_pin: '1234',
         content: {
             businessName: 'ARCADIA',
             heroTitle: 'Grand Opening & Holiday Special',

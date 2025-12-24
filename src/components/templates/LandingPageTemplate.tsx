@@ -49,7 +49,8 @@ export default function LandingPageTemplate({ merchant, claimedCount }: LandingP
             <div className={`relative z-10 w-full max-w-[1400px] mx-auto px-6 grid grid-cols-1 ${verifiedPhone ? 'lg:grid-cols-1 max-w-3xl min-h-0' : 'lg:grid-cols-2 lg:h-[90vh] min-h-[700px]'} gap-0 items-stretch overflow-hidden`}>
 
                 {/* Left Section: Text Zone (Magazine Layout) */}
-                <div className={`flex flex-col justifies-center ${verifiedPhone ? 'items-center text-center mx-auto py-12' : 'items-start py-24'} ${verifiedPhone ? 'space-y-6' : 'space-y-12'} pr-12 animate-in fade-in slide-in-from-left-20 duration-1000`}>
+                <div className={`flex flex-col justifies-center ${verifiedPhone ? 'items-center text-center mx-auto py-6' : 'items-start py-24'} ${verifiedPhone ? 'space-y-4' : 'space-y-12'} pr-12 animate-in fade-in slide-in-from-left-20 duration-1000`}>
+
                     <div className="space-y-6">
                         <div className={`flex items-center gap-4 ${verifiedPhone ? 'justify-center' : ''}`}>
                             <div className="h-[2px] w-12 bg-orange-600" />
