@@ -62,10 +62,7 @@ export default function LandingPageTemplate({ merchant, claimedCount }: LandingP
                         </h1>                    </div>
 
                     <div className="space-y-8 max-w-xl">
-                        <p className={`text-[20px] sm:text-[24px] font-medium leading-relaxed tracking-tight ${verifiedPhone ? 'text-zinc-600' : 'text-zinc-400'}`}>
-                            Unlock exclusive digital benefits and immediate rewards.
-                            Experience hospitality at its finest with our verified member program.
-                        </p>
+
                         <div className="flex flex-wrap items-center gap-6 pt-4">
                             {!verifiedPhone && (
                                 <a
