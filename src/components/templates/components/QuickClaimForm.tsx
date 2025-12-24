@@ -63,18 +63,18 @@ export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: Qu
     };
 
     return (
-        <div className="mt-8 mb-8 bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-white/50 relative overflow-hidden">
+        <div className="mt-4 mb-4 bg-white rounded-3xl p-4 shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-white/50 relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 to-red-500 opacity-20" />
 
-            <div className="text-center mb-6 space-y-3">
-                <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <ShieldCheck className="w-8 h-8 text-green-600" />
+            <div className="text-center mb-2 space-y-2">
+                <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <ShieldCheck className="w-6 h-6 text-green-600" />
                 </div>
 
-                <h3 className="text-2xl font-black text-slate-900">
+                <h3 className="text-xl font-black text-slate-900">
                     Verified Member
                 </h3>
-                <p className="text-slate-500 text-sm font-medium px-4">
+                <p className="text-slate-500 text-xs font-medium px-4">
                     Your number <span className="font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-700">{phone}</span> is eligible for this exclusive offer.
                 </p>
             </div>
