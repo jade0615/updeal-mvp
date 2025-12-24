@@ -108,9 +108,9 @@ export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: Qu
                     By clicking above, you agree to receive your coupon code via SMS.
                     Standard rates may apply.
                     <br />
-                    <a href="#" className="underline hover:text-slate-600 transition-colors">Privacy Policy</a>
+                    <a href="/privacy-policy" target="_blank" className="underline hover:text-slate-600 transition-colors">Privacy Policy</a>
                     {' • '}
-                    <a href="#" className="underline hover:text-slate-600 transition-colors">Terms of Service</a>
+                    <a href="/terms-of-service" target="_blank" className="underline hover:text-slate-600 transition-colors">Terms of Service</a>
                 </p>
             </div>
         </div>
