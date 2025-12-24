@@ -1,102 +1,67 @@
-const dotenv = require('dotenv')
-const path = require('path')
 
-// Load env vars IMMEDIATELY
-dotenv.config({ path: path.join(process.cwd(), '.env.local') })
+import { config } from 'dotenv'
+import { resolve } from 'path'
+import { createAdminClient } from '../src/lib/supabase/admin'
 
-async function generateDailyReport() {
-    const { createAdminClient } = require('../src/lib/supabase/admin')
-    console.log('🚀 Starting Daily Report Generation...')
-    const supabase = createAdminClient()
+const envPath = resolve(process.cwd(), '.env.local')
+config({ path: envPath })
 
-    // 1. Get all active merchants
-    const { data: merchants, error: merchantsError } = await supabase
+const supabase = createAdminClient()
+
+const MERCHANT_SLUG = 'arcadia-special'
+
+async function generateReport() {
+    console.log(`📊 Generating Report for: ${MERCHANT_SLUG}\n`)
+
+    // Get Merchant ID
+    const { data: merchant } = await supabase
         .from('merchants')
-        .select('id, name, slug')
-        .eq('is_active', true)
+        .select('id, name')
+        .eq('slug', MERCHANT_SLUG)
+        .single()
 
-    if (merchantsError || !merchants) {
-        console.error('Error fetching merchants:', merchantsError)
+    if (!merchant) {
+        console.error('❌ Merchant not found')
         return
     }
 
-    // 2. Calculate time range (Yesterday)
-    const yesterday = new Date()
-    yesterday.setDate(yesterday.getDate() - 1)
-    yesterday.setHours(0, 0, 0, 0)
+    // Get Stats
+    const { count: totalClaims } = await supabase
+        .from('coupons')
+        .select('*', { count: 'exact', head: true })
+        .eq('merchant_id', merchant.id)
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const { count: totalRedemptions } = await supabase
+        .from('coupons')
+        .select('*', { count: 'exact', head: true })
+        .eq('merchant_id', merchant.id)
+        .not('redeemed_at', 'is', null)
 
-    for (const merchant of merchants) {
-        console.log(`Processing: ${merchant.name}...`)
+    console.log(`Merchant: ${merchant.name}`)
+    console.log(`Total Claims:      ${totalClaims}`)
+    console.log(`Total Redemptions: ${totalRedemptions}`)
+    console.log(`Redemption Rate:   ${totalClaims ? ((totalRedemptions || 0) / totalClaims * 100).toFixed(1) : 0}%\n`)
 
-        // Get Claims yesterday
-        const { count: claimsCount } = await supabase
-            .from('coupons')
-            .select('*', { count: 'exact', head: true })
-            .eq('merchant_id', merchant.id)
-            .gte('created_at', yesterday.toISOString())
-            .lt('created_at', today.toISOString())
+    // List recent redemptions
+    const { data: redemptions } = await supabase
+        .from('coupons')
+        .select('coupon_code, customer_phone, redeemed_at, created_at')
+        .eq('merchant_id', merchant.id)
+        .not('redeemed_at', 'is', null)
+        .order('redeemed_at', { ascending: false })
+        .limit(20)
 
-        // Get Redemptions yesterday
-        const { count: redeemedCount } = await supabase
-            .from('coupons')
-            .select('*', { count: 'exact', head: true })
-            .eq('merchant_id', merchant.id)
-            .eq('status', 'redeemed')
-            .gte('redeemed_at', yesterday.toISOString())
-            .lt('redeemed_at', today.toISOString())
-
-        // Estimated revenue logic (e.g. $40 per redemption)
-        const estRevenue = (redeemedCount || 0) * 40
-
-        const reportHtml = `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
-                <h1 style="color: #2563eb; text-align: center;">🚀 [Updeal] 昨日战报</h1>
-                <p style="text-align: center; color: #666;">${yesterday.toLocaleDateString()}</p>
-                
-                <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h2 style="margin-top: 0; font-size: 18px;">${merchant.name}</h2>
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <tr>
-                            <td style="padding: 8px 0; color: #666;">真实领取人数</td>
-                            <td style="padding: 8px 0; text-align: right; font-weight: bold;">${claimsCount || 0} 人</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px 0; color: #666;">核销人数</td>
-                            <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #059669;">${redeemedCount || 0} 人</td>
-                        </tr>
-                        <tr style="border-top: 1px solid #e2e8f0;">
-                            <td style="padding: 15px 0 8px; color: #666;">预计带来营收</td>
-                            <td style="padding: 15px 0 8px; text-align: right; font-weight: bold; font-size: 20px; color: #2563eb;">$${estRevenue}</td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://updeal.top/store-redeem/${merchant.slug}" 
-                       style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                       点击查看实时商户看板
-                    </a>
-                </div>
-                
-                <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 40px;">
-                    Updeal - 助力商户业绩增长的营销引擎
-                </p>
-            </div>
-        `
-
-        console.log(`Report for ${merchant.name}:`)
-        console.log('--- HTML CONTENT START ---')
-        console.log(reportHtml)
-        console.log('--- HTML CONTENT END ---')
-
-        // TODO: Integration with Resend/Nodemailer
-        // await sendEmail(merchant.email, `🚀 [Updeal] 昨日战报 - ${merchant.name}`, reportHtml)
+    if (redemptions && redemptions.length > 0) {
+        console.log('--- Recent Redemptions (Last 20) ---')
+        console.log('Time                 | Phone        | Code')
+        console.log('---------------------|--------------|-----------')
+        redemptions.forEach(r => {
+            const time = new Date(r.redeemed_at).toLocaleString()
+            console.log(`${time.padEnd(20)} | ${r.customer_phone.padEnd(12)} | ${r.coupon_code}`)
+        })
+    } else {
+        console.log('No redemptions yet.')
     }
-
-    console.log('✅ Daily Report processing complete.')
 }
 
-generateDailyReport().catch(console.error)
+generateReport().catch(console.error)

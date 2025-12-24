@@ -19,7 +19,7 @@ if (!accountSid || !authToken || !fromNumber) {
 const client = twilio(accountSid, authToken)
 
 // --- CONFIGURATION ---
-const BASE_URL = 'http://localhost:3000' // Change to your production domain
+const BASE_URL = 'https://updeal.top' // Production domain
 const CAMPAIGN_SLUG = 'king-super-buffet-wpb'
 
 // List of customers to target
