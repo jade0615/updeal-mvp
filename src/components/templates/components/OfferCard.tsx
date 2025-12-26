@@ -5,7 +5,7 @@ import { Flame, Users, ShieldCheck } from 'lucide-react';
 import type { MerchantContent } from '@/types/merchant';
 
 interface OfferCardProps {
-    offer: MerchantContent['offer'];
+    offer: NonNullable<MerchantContent['offer']>;
     claimedCount: number;
     claimedAvatars: string[];
     merchantName: string;

@@ -36,6 +36,9 @@ export const metadata: Metadata = {
   },
 };
 
+import { Suspense } from 'react';
+import MetaPixel from "@/components/analytics/MetaPixel";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -46,6 +49,9 @@ export default function RootLayout({
       <body
         className={`${jakarta.variable} ${poppins.variable} ${playfair.variable} ${inter.variable} antialiased`}
       >
+        <Suspense fallback={null}>
+          <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
+        </Suspense>
         {children}
       </body>
     </html>

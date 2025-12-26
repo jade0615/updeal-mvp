@@ -4,15 +4,19 @@ import { z } from 'zod'
 // 商家创建表单验证
 export const merchantSchema = z.object({
   name: z.string().min(2, '商家名称至少2个字符'),
+  // Validation: Relaxed slug to allow auto-generation/cleaning logic to handle it, 
+  // but strictly it should be URL safe. We'll enforce a cleaner regex but give a helpful message.
   slug: z.string()
     .min(3)
-    .regex(/^[a-z0-9-]+$/, 'Slug只能包含小写字母、数字和横线'),
-  template_type: z.enum(['nail', 'sushi', 'chinese', 'bbq', 'massage', 'boba']),
-  logo_url: z.string().optional().or(z.literal('')), // Top level column
+    .regex(/^[a-z0-9-]+$/, 'Slug 只能包含小写字母、数字和横线 (e.g. dragon-house)'),
+  // Expanded template types to avoid "Invalid enum" errors for new types
+  template_type: z.enum(['nail', 'sushi', 'chinese', 'bbq', 'massage', 'boba', 'buffet', 'ramen', 'pizza', 'cafe', 'entertainment', 'other']).or(z.literal('sushi')),
+  logo_url: z.string().optional().or(z.literal('')),
   ga4_measurement_id: z.string().optional().or(z.literal('')),
   meta_pixel_id: z.string().optional().or(z.literal('')),
   redeem_pin: z.string().optional().or(z.literal('')),
-  virtual_base_count: z.number().int().min(0).default(200).or(z.string().transform(val => parseInt(val, 10))),
+  // Relaxed number parsing
+  virtual_base_count: z.number().int().min(0).default(200).or(z.string().transform(val => parseInt(val, 10) || 200)),
   is_active: z.boolean().default(true),
   content: z.object({
     // === Basic Info ===
@@ -23,6 +27,9 @@ export const merchantSchema = z.object({
 
     // === Logo ===
     logoUrl: z.string().optional().or(z.literal('')),
+
+    // === Website ===
+    website: z.string().optional().or(z.literal('')),
 
     // === Rating ===
     rating: z.number().or(z.string().transform(val => parseFloat(val))).optional(),
@@ -81,6 +88,28 @@ export const merchantSchema = z.object({
     offer_value: z.string().optional(),
     offer_badge_text: z.string().optional(),
     offerDiscount: z.string().optional(),
+
+    // === Data Collection Requirements ===
+    requirements: z.object({
+      collectName: z.boolean().default(true),
+      collectEmail: z.boolean().default(false),
+    }).optional(),
+
+    // === Custom Labels (Frontend Text Control) ===
+    customLabels: z.object({
+      section_title_claim: z.string().optional(),
+      section_subtitle_claim: z.string().optional(),
+      button_text_claim: z.string().optional(),
+      success_title: z.string().optional(),
+      success_subtitle: z.string().optional(),
+      success_code_label: z.string().optional(),
+      vip_welcome_title: z.string().optional(),
+      vip_welcome_subtitle: z.string().optional(),
+      section_title_visit: z.string().optional(),
+      section_title_hours: z.string().optional(),
+      section_title_website: z.string().optional(),
+      section_title_call: z.string().optional(),
+    }).optional(),
   })
 })
 

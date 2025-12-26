@@ -59,6 +59,7 @@ export default function EditMerchantPage() {
             heroImageUrl: '',
             features: [],
             galleryImages: [],
+            customLabels: {}
         }
     })
 
@@ -84,7 +85,8 @@ export default function EditMerchantPage() {
                         },
                         address: { street: '', area: '', fullAddress: '' },
                         openingHours: { isOpen: true, currentStatus: 'Open Now', closingTime: '10 PM' },
-                        reviews: []
+                        reviews: [],
+                        customLabels: {}
                     };
 
                     // Deep merge or overwrite defaults with actual data
@@ -93,6 +95,7 @@ export default function EditMerchantPage() {
                     if (merchant.content?.offer) mergedContent.offer = { ...defaultContent.offer, ...merchant.content.offer };
                     if (merchant.content?.address) mergedContent.address = { ...defaultContent.address, ...merchant.content.address };
                     if (merchant.content?.openingHours) mergedContent.openingHours = { ...defaultContent.openingHours, ...merchant.content.openingHours };
+                    if (merchant.content?.customLabels) mergedContent.customLabels = { ...defaultContent.customLabels, ...merchant.content.customLabels };
 
                     setFormData({
                         ...merchant,
@@ -551,6 +554,128 @@ export default function EditMerchantPage() {
                                     value={formData.content.phone || ''}
                                     onChange={(e) => updateContent('phone', e.target.value)}
                                     className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* === 5. Advanced Text (Custom Labels) === */}
+                    <div>
+                        <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">Advanced Text Customization</h2>
+                        <div className="bg-gray-50 p-6 rounded-lg grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div className="col-span-2">
+                                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Claim Form</h4>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Section Title</label>
+                                <input
+                                    type="text"
+                                    value={formData.content.customLabels?.section_title_claim || ''}
+                                    onChange={(e) => updateContent('customLabels.section_title_claim', e.target.value)}
+                                    placeholder="Get Your Coupon"
+                                    className="w-full border rounded px-3 py-2 text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Button Text</label>
+                                <input
+                                    type="text"
+                                    value={formData.content.customLabels?.button_text_claim || ''}
+                                    onChange={(e) => updateContent('customLabels.button_text_claim', e.target.value)}
+                                    placeholder="Claim Coupon Now"
+                                    className="w-full border rounded px-3 py-2 text-sm"
+                                />
+                            </div>
+
+                            <div className="col-span-2 mt-2">
+                                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Success (Discount Mode)</h4>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                                <input
+                                    type="text"
+                                    value={formData.content.customLabels?.success_title || ''}
+                                    onChange={(e) => updateContent('customLabels.success_title', e.target.value)}
+                                    placeholder="Coupon Claimed!"
+                                    className="w-full border rounded px-3 py-2 text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+                                <input
+                                    type="text"
+                                    value={formData.content.customLabels?.success_subtitle || ''}
+                                    onChange={(e) => updateContent('customLabels.success_subtitle', e.target.value)}
+                                    placeholder="Show this code to the staff."
+                                    className="w-full border rounded px-3 py-2 text-sm"
+                                />
+                            </div>
+
+                            <div className="col-span-2 mt-2">
+                                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">VIP Welcome (VIP Mode)</h4>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                                <input
+                                    type="text"
+                                    value={formData.content.customLabels?.vip_welcome_title || ''}
+                                    onChange={(e) => updateContent('customLabels.vip_welcome_title', e.target.value)}
+                                    placeholder="Welcome to the Club!"
+                                    className="w-full border rounded px-3 py-2 text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+                                <textarea
+                                    value={formData.content.customLabels?.vip_welcome_subtitle || ''}
+                                    onChange={(e) => updateContent('customLabels.vip_welcome_subtitle', e.target.value)}
+                                    placeholder="You are now on our VIP list..."
+                                    className="w-full border rounded px-3 py-2 text-sm"
+                                    rows={2}
+                                />
+                            </div>
+
+                            <div className="col-span-2 mt-2">
+                                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Section Headers (页脚标题)</h4>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Visit Title</label>
+                                <input
+                                    type="text"
+                                    value={formData.content.customLabels?.section_title_visit || ''}
+                                    onChange={(e) => updateContent('customLabels.section_title_visit', e.target.value)}
+                                    placeholder="Visit Us"
+                                    className="w-full border rounded px-3 py-2 text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Hours Title</label>
+                                <input
+                                    type="text"
+                                    value={formData.content.customLabels?.section_title_hours || ''}
+                                    onChange={(e) => updateContent('customLabels.section_title_hours', e.target.value)}
+                                    placeholder="Opening Hours"
+                                    className="w-full border rounded px-3 py-2 text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Website Title</label>
+                                <input
+                                    type="text"
+                                    value={formData.content.customLabels?.section_title_website || ''}
+                                    onChange={(e) => updateContent('customLabels.section_title_website', e.target.value)}
+                                    placeholder="Website"
+                                    className="w-full border rounded px-3 py-2 text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Call Title</label>
+                                <input
+                                    type="text"
+                                    value={formData.content.customLabels?.section_title_call || ''}
+                                    onChange={(e) => updateContent('customLabels.section_title_call', e.target.value)}
+                                    placeholder="Call Us"
+                                    className="w-full border rounded px-3 py-2 text-sm"
                                 />
                             </div>
                         </div>

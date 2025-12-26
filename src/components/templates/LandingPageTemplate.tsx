@@ -26,6 +26,21 @@ export default function LandingPageTemplate({ merchant, claimedCount }: LandingP
     const verifiedPhone = searchParams.get('phone') || searchParams.get('p');
 
     const { content } = merchant;
+
+    // Normalize Offer Data (Handle legacy flat fields vs nested object)
+    const normalizedOffer = content.offer || {
+        value: content.offer_value || content.offerDiscount || 'Special',
+        unit: 'OFF', // Default unit
+        description: content.offerDescription || 'Special Offer',
+        type: content.offer_type || 'discount',
+        totalLimit: 100
+    };
+
+    // Handle case where value might include the unit (e.g. "20% OFF")
+    if (!content.offer && (normalizedOffer.value.includes('OFF') || normalizedOffer.value.includes('Access'))) {
+        normalizedOffer.unit = '';
+    }
+
     const claimedAvatars = generateClaimedAvatars(3);
     const [isClaimed, setIsClaimed] = useState(false);
     const [couponData, setCouponData] = useState<any>(null);
@@ -98,7 +113,7 @@ export default function LandingPageTemplate({ merchant, claimedCount }: LandingP
                             {/* THE GLASS CARD: Absolute Positioned - Bottom Right */}
                             <div className="absolute bottom-12 right-12 z-30 w-full max-w-[340px] animate-float-slow">
                                 <OfferCard
-                                    offer={content.offer}
+                                    offer={normalizedOffer}
                                     claimedCount={claimedCount}
                                     claimedAvatars={claimedAvatars}
                                     merchantName={content.businessName}
@@ -126,7 +141,7 @@ export default function LandingPageTemplate({ merchant, claimedCount }: LandingP
                 <div className="space-y-8">
                     <div className="text-center space-y-2">
                         <h2 className="text-3xl font-bold tracking-tight">Activate Memberships</h2>
-                        <p className="text-zinc-500 text-sm font-medium">Verify your phone to lock in your {content.offer.value}{content.offer.unit} discount.</p>
+                        <p className="text-zinc-500 text-sm font-medium">Verify your phone to lock in your {normalizedOffer.value}{normalizedOffer.unit} discount.</p>
                     </div>
 
                     <div className={`relative transition-all duration-700 ${isClaimed ? 'scale-100 opacity-100' : ''}`}>
@@ -135,7 +150,7 @@ export default function LandingPageTemplate({ merchant, claimedCount }: LandingP
                                 <CouponWallet
                                     couponCode={couponData.coupon?.code || 'CODE123'}
                                     expiresAt={couponData.coupon?.expiresAt || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()}
-                                    offerTitle={content.offer.value + ' ' + content.offer.unit}
+                                    offerTitle={normalizedOffer.value + ' ' + normalizedOffer.unit}
                                 />
                             </div>
                         ) : (

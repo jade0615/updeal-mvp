@@ -1,16 +1,18 @@
 
 import { config } from 'dotenv'
 import { resolve } from 'path'
-import { createAdminClient } from '../src/lib/supabase/admin'
 
+// Load env vars from .env.local parent directory
 const envPath = resolve(process.cwd(), '.env.local')
 config({ path: envPath })
-
-const supabase = createAdminClient()
 
 const MERCHANT_SLUG = 'arcadia-special'
 
 async function generateReport() {
+    // Dynamic import to allow env vars to load first
+    const { createAdminClient } = await import('../src/lib/supabase/admin')
+    const supabase = createAdminClient()
+
     console.log(`📊 Generating Report for: ${MERCHANT_SLUG}\n`)
 
     // Get Merchant ID
@@ -35,7 +37,7 @@ async function generateReport() {
         .from('coupons')
         .select('*', { count: 'exact', head: true })
         .eq('merchant_id', merchant.id)
-        .not('redeemed_at', 'is', null)
+        .eq('status', 'redeemed')
 
     console.log(`Merchant: ${merchant.name}`)
     console.log(`Total Claims:      ${totalClaims}`)
@@ -45,9 +47,16 @@ async function generateReport() {
     // List recent redemptions
     const { data: redemptions } = await supabase
         .from('coupons')
-        .select('coupon_code, customer_phone, redeemed_at, created_at')
+        .select(`
+            code,
+            redeemed_at,
+            created_at,
+            users (
+                phone
+            )
+        `)
         .eq('merchant_id', merchant.id)
-        .not('redeemed_at', 'is', null)
+        .eq('status', 'redeemed')
         .order('redeemed_at', { ascending: false })
         .limit(20)
 
@@ -55,12 +64,40 @@ async function generateReport() {
         console.log('--- Recent Redemptions (Last 20) ---')
         console.log('Time                 | Phone        | Code')
         console.log('---------------------|--------------|-----------')
-        redemptions.forEach(r => {
+        redemptions.forEach((r: any) => {
             const time = new Date(r.redeemed_at).toLocaleString()
-            console.log(`${time.padEnd(20)} | ${r.customer_phone.padEnd(12)} | ${r.coupon_code}`)
+            const phone = r.users?.phone || 'Unknown'
+            console.log(`${time.padEnd(20)} | ${phone.padEnd(12)} | ${r.code}`)
         })
     } else {
         console.log('No redemptions yet.')
+    }
+
+    // List Recent Claims (to debug duplicates)
+    console.log('\n--- Recent Claims (All) ---')
+    const { data: claims } = await supabase
+        .from('coupons')
+        .select(`
+            code,
+            created_at,
+            users (
+                phone,
+                id
+            )
+        `)
+        .eq('merchant_id', merchant.id)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+    if (claims && claims.length > 0) {
+        console.log('Created              | Phone        | User ID                              | Code')
+        console.log('---------------------|--------------|--------------------------------------|-----------')
+        claims.forEach((c: any) => {
+            const time = new Date(c.created_at).toLocaleString()
+            const phone = c.users?.phone || 'Unknown'
+            const userId = c.users?.id || 'Unknown'
+            console.log(`${time.padEnd(20)} | ${phone.padEnd(12)} | ${userId.padEnd(36)} | ${c.code}`)
+        })
     }
 }
 

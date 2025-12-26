@@ -13,7 +13,7 @@ export interface MerchantContent {
     reviewCount: string;            // e.g., "1.2k" or "128"
 
     // === Offer ===
-    offer: {
+    offer?: {
         type: string;                 // "Exclusive", "Limited", "Special", "Holiday"
         value: string;                // "50%", "Buy 1 Get 1", "$10"
         unit: string;                 // "Off", "Free", "Off Your Order"
@@ -28,6 +28,9 @@ export interface MerchantContent {
         area: string;                 // "Food District, New York, NY 10001"
         fullAddress: string;          // Full address for Google Maps
     };
+
+    // === Website ===
+    website?: string;               // Optional website URL
 
     // === Phone ===
     phone: string;                  // "+1 (555) 000-1234"
@@ -45,9 +48,30 @@ export interface MerchantContent {
             wednesday: string;
             thursday: string;
             friday: string;
-            saturday: string;
             sunday: string;
         };
+    };
+
+    // === Data Collection Requirements ===
+    requirements?: {
+        collectName: boolean;
+        collectEmail: boolean;
+    };
+
+    // === Custom Labels (Frontend Text Control) ===
+    customLabels?: {
+        section_title_claim?: string;
+        section_subtitle_claim?: string;
+        button_text_claim?: string;
+        success_title?: string;
+        success_subtitle?: string;
+        success_code_label?: string;
+        vip_welcome_title?: string;
+        vip_welcome_subtitle?: string;
+        section_title_visit?: string;
+        section_title_hours?: string;
+        section_title_website?: string;
+        section_title_call?: string;
     };
 
     // === Reviews ===
@@ -62,7 +86,12 @@ export interface MerchantContent {
     // === Legacy/Compatibility Fields (Optional) ===
     heroTitle?: string;
     heroSubtitle?: string;
+    heroImageUrl?: string;
     offerDiscount?: string;
+    offer_value?: string;
+    offerDescription?: string;
+    offer_type?: string;
+    offer_badge_text?: string;
 }
 
 export interface Merchant {

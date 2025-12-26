@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import LandingPageTemplate from '@/components/templates/LandingPageTemplate'
+import MobilePremiumTemplate from '@/components/templates/MobilePremiumTemplate'
 import ModernTemplate from '@/components/templates/ModernTemplate'
 import { trackPageView } from '@/actions/analytics'
 import type { Metadata } from 'next'
@@ -10,6 +11,8 @@ import MetaPixel from '@/components/analytics/MetaPixel'
 type Props = {
   params: Promise<{ slug: string }>
 }
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
@@ -76,7 +79,25 @@ export default async function LandingPage({ params }: Props) {
   const ga4Id = merchant.ga4_measurement_id || process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID
 
   // Decide which template to use.
-  const TemplateComponent = LandingPageTemplate;
+  // Default to MobilePremiumTemplate as requested, or switch based on type
+  // If user specifically requested "Use this!!!", we default to it.
+  const TemplateComponent = MobilePremiumTemplate;
+
+  // 5. Admin Authorization for Visual Editor
+  const { cookies } = await import('next/headers')
+  const { validateSession } = await import('@/lib/auth/session')
+  const cookieStore = await cookies()
+  const token = cookieStore.get('updeal_admin_session')?.value
+  let canEdit = false
+
+  if (token) {
+    try {
+      const user = await validateSession(token)
+      if (user) canEdit = true
+    } catch (e) {
+      // ignore invalid session
+    }
+  }
 
   return (
     <>
@@ -102,11 +123,14 @@ export default async function LandingPage({ params }: Props) {
         </>
       )}
 
-      <MetaPixel pixelId={merchant.meta_pixel_id || process.env.NEXT_PUBLIC_META_PIXEL_ID} />
+      {merchant.meta_pixel_id && (
+        <MetaPixel pixelId={merchant.meta_pixel_id} />
+      )}
 
       <TemplateComponent
         merchant={merchant as unknown as any}
         claimedCount={displayCount}
+        canEdit={canEdit}
       />
     </>
   )

@@ -2,6 +2,8 @@
 import { config } from 'dotenv'
 import { resolve } from 'path'
 import twilio from 'twilio'
+import { readFileSync } from 'fs'
+import { parse } from 'csv-parse/sync'
 
 // Load env vars from .env.local parent directory
 config({ path: resolve(__dirname, '../.env.local') })
@@ -21,26 +23,94 @@ const client = twilio(accountSid, authToken)
 // --- CONFIGURATION ---
 const BASE_URL = 'https://updeal.top' // Production domain
 const CAMPAIGN_SLUG = 'arcadia-special'
+const CSV_PATH = '../../会员管理-202512221125342220.csv' // Relative to scripts dir (up two levels)
 
-// List of customers to target
-// Format: E.164 phone numbers (e.g., +15551234567)
-const targets = [
-    { name: 'Admin', phone: '+13239529493' },
-]
+// TEST MODE: Set to false to send to everyone. Set to true to send only to ADMIN.
+const TEST_MODE = false
+const ADMIN_PHONE = '+13239529493'
 
 async function sendCampaign() {
     console.log(`🚀 Starting SMS Campaign for: ${CAMPAIGN_SLUG}`)
-    console.log(`   Targets: ${targets.length} recipients\n`)
+    console.log(`   Mode: ${TEST_MODE ? 'TEST (Admin Only)' : 'LIVE (All Targets)'}\n`)
+
+    let targets: { phone: string, name: string }[] = []
+
+    if (TEST_MODE) {
+        targets = [{ phone: ADMIN_PHONE, name: 'Admin' }]
+    } else {
+        // Read targets from CSV
+        try {
+            const fileContent = readFileSync(resolve(__dirname, CSV_PATH), 'utf-8')
+            const records = parse(fileContent, {
+                columns: true,
+                skip_empty_lines: true,
+                relax_column_count: true
+            })
+
+            console.log(`📄 Loaded ${records.length} records from CSV.`)
+
+            records.forEach((row: any) => {
+                const rawPhone = row['手机号码']
+                const name = row['昵称'] || 'Customer'
+
+                if (!rawPhone) return
+
+                const digits = rawPhone.replace(/\D/g, '')
+                let cleanPhone = null
+
+                if (digits.length === 10) {
+                    cleanPhone = `+1${digits}`
+                } else if (digits.length === 11 && digits.startsWith('1')) {
+                    cleanPhone = `+${digits}`
+                }
+
+                if (cleanPhone) {
+                    targets.push({ phone: cleanPhone, name })
+                }
+            })
+
+            console.log(`✅ Identified ${targets.length} valid targets.`)
+
+        } catch (error) {
+            console.error('Error reading CSV:', error)
+            return
+        }
+    }
+
+    if (targets.length === 0) {
+        console.error('No valid targets found.')
+        return
+    }
 
     let successCount = 0
     let failCount = 0
+
+    console.log(`   Preparing to send to ${targets.length} recipients...\n`)
 
     for (const target of targets) {
         // Generate the auto-login link
         const personalLink = `${BASE_URL}/${CAMPAIGN_SLUG}?phone=${encodeURIComponent(target.phone)}`
 
-        // The SMS Body
-        const messageBody = `🎉 ARCADIA Grand Opening Specials are HERE! 🎉\n\nLooking for fun the whole family will love? 🎮✨\nEnjoy limited-time Play Passes — choose from 30-Min, 40-Min (Most Popular), or 60-Min Unlimited Play!\n\n🎁 Share this event & get a small in-store gift\n🍀 Bonus: Labubu collectible or On-site Lucky Draw (leave a review)\n\n📍 2885D N Military Trail, West Palm Beach\n🕚 Open Daily: 11:00 AM – 9:00 PM\n👉 Walk in today and start the fun!\n\nTap to redeem: ${personalLink}`
+        // The SMS Body - MEGA MERGED VERSION
+        const messageBody = `🎄 ARCADIA is OPEN on Christmas! 🎄
+🎉 Grand Opening Specials are HERE! 🎉
+
+Bring the family and have fun today 🎮✨
+
+🎁 5 FREE Tokens + VIP Spin (No Activation Fee)
+🎁 20% Bonus on every Top-Up
+🎁 Buy One Get One 50% OFF
+🎁 FREE Play Area with first purchase!
+
+🕹️ Enjoy limited-time Play Passes — choose from 30-Min, 40-Min (Most Popular), or 60-Min Unlimited Play!
+
+🎁 Share this event & get a small in-store gift
+🍀 Bonus: Labubu collectible or On-site Lucky Draw (leave a review)
+
+📍 2885D N Military Trail, West Palm Beach
+👉 Walk in today and start the fun!
+
+Tap to redeem: ${personalLink}`
 
         try {
             console.log(`   Sending to ${target.phone}...`)
@@ -57,7 +127,9 @@ async function sendCampaign() {
         }
 
         // Small pause to be nice to the rate limiter (optional)
-        await new Promise(r => setTimeout(r, 500))
+        if (!TEST_MODE) {
+            await new Promise(r => setTimeout(r, 200)) // 5 messages per second approx
+        }
     }
 
     console.log('\n🏁 Campaign finished.')

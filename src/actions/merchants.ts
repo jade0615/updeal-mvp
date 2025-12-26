@@ -42,7 +42,12 @@ export async function createMerchant(data: MerchantFormData) {
     revalidatePath('/admin/merchants')
     return { success: true, merchant }
   } catch (error: any) {
-    return { success: false, error: error.message }
+    // Return detailed Zod validation errors if available
+    if (error.issues) {
+      const issues = error.issues.map((i: any) => `${i.path.join('.')}: ${i.message}`).join(', ')
+      return { success: false, error: `Validation Error: ${issues}` }
+    }
+    return { success: false, error: error.message || 'Unknown error occurred' }
   }
 }
 
@@ -66,7 +71,11 @@ export async function updateMerchant(id: string, data: MerchantFormData) {
     revalidatePath(`/${merchant.slug}`)
     return { success: true, merchant }
   } catch (error: any) {
-    return { success: false, error: error.message }
+    if (error.issues) {
+      const issues = error.issues.map((i: any) => `${i.path.join('.')}: ${i.message}`).join(', ')
+      return { success: false, error: `Validation Error: ${issues}` }
+    }
+    return { success: false, error: error.message || 'Update failed' }
   }
 }
 
