@@ -54,7 +54,11 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                 // Nested path support: "offer.value", "address.fullAddress"
                 const [parent, child] = path.split('.');
                 const contentObj = newContent as any;
-                if (parent && child && contentObj[parent]) {
+                if (parent && child) {
+                    // Initialize parent if it doesn't exist (e.g., legacy merchants)
+                    if (!contentObj[parent]) {
+                        contentObj[parent] = {};
+                    }
                     contentObj[parent] = {
                         ...contentObj[parent],
                         [child]: value
@@ -169,7 +173,11 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
     // If offer type implies a free item/gift, or value contains "Free", or "Pass" (case insensitive), default unit should be empty
     if (normalizedOffer.type === 'free_item' || normalizedOffer.type === 'gift' ||
         displayValue.toLowerCase().includes('free') ||
-        displayValue.toLowerCase().includes('pass')) {
+        displayValue.toLowerCase().includes('pass') ||
+        displayValue.includes('$') || // Prices often don't need OFF unless it's "$10 OFF"
+        displayValue.length > 10 ||   // Long texts are usually full descriptions
+        displayValue.toLowerCase().includes('only') ||
+        displayValue.toLowerCase().includes('from')) {
         defaultUnit = '';
     }
 
@@ -178,7 +186,8 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
     // Double check: if value has text "OFF" or "Access" or "Free" or "Pass", clear unit
     if (displayValue.includes('OFF') || displayValue.includes('Access') ||
         displayValue.toLowerCase().includes('free') ||
-        displayValue.toLowerCase().includes('pass')) {
+        displayValue.toLowerCase().includes('pass') ||
+        displayValue.toLowerCase().includes('% off')) {
         displayUnit = '';
     }
 
