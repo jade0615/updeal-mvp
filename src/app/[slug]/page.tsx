@@ -6,7 +6,7 @@ import ModernTemplate from '@/components/templates/ModernTemplate'
 import { trackPageView } from '@/actions/analytics'
 import type { Metadata } from 'next'
 import type { Merchant } from '@/types/merchant'
-import MetaPixel from '@/components/analytics/MetaPixel'
+// MetaPixel 已在 layout.tsx 全局加载，无需重复加载
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -123,9 +123,7 @@ export default async function LandingPage({ params }: Props) {
         </>
       )}
 
-      {merchant.meta_pixel_id && (
-        <MetaPixel pixelId={merchant.meta_pixel_id} />
-      )}
+      {/* MetaPixel 已在 layout.tsx 全局加载，FB 会自动根据广告点击进行归因 */}
 
       <TemplateComponent
         merchant={merchant as unknown as any}
