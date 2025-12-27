@@ -4,8 +4,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 export interface CustomerData {
     id: string
+    user_id: string
     phone: string
     name: string | null
+    internal_id: string | null
     merchant_name: string
     coupon_code: string
     claimed_at: string
@@ -39,9 +41,12 @@ export async function getCustomers(query: CustomerQuery) {
         id,
         code,
         created_at,
+        user_id,
         users!inner (
+          id,
           phone,
-          name
+          name,
+          internal_id
         ),
         merchants!inner (
           name
@@ -145,8 +150,10 @@ export async function getCustomers(query: CustomerQuery) {
         // Flatten data
         const customers: CustomerData[] = data.map((item: any) => ({
             id: item.id,
+            user_id: item.user_id || item.users?.id,
             phone: item.users?.phone || 'Unknown',
             name: item.users?.name || '-',
+            internal_id: item.users?.internal_id || null,
             merchant_name: item.merchants?.name || 'Unknown',
             coupon_code: item.code,
             claimed_at: new Date(item.created_at).toLocaleString('zh-CN'),

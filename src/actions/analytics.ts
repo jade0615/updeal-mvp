@@ -111,6 +111,60 @@ export async function trackPageView(merchantId: string, pageUrl?: string) {
 }
 
 /**
+ * Track coupon claim - called when user successfully claims a coupon
+ */
+export async function trackCouponClaim(merchantId: string, userId?: string, couponCode?: string) {
+  const supabase = createAdminClient()
+
+  // Track the event
+  await trackEvent({
+    eventType: 'coupon_claim',
+    merchantId,
+    userId,
+    metadata: couponCode ? { coupon_code: couponCode } : undefined,
+  })
+
+  // Update landing page stats
+  try {
+    const { data: existingStats } = await supabase
+      .from('landing_page_stats')
+      .select('id, total_coupon_claims, total_page_views')
+      .eq('merchant_id', merchantId)
+      .single()
+
+    if (existingStats) {
+      const newClaims = (existingStats.total_coupon_claims || 0) + 1
+      const pageViews = existingStats.total_page_views || 1
+      const conversionRate = (newClaims / pageViews) * 100
+
+      await supabase
+        .from('landing_page_stats')
+        .update({
+          total_coupon_claims: newClaims,
+          conversion_rate: Number(conversionRate.toFixed(2)),
+          last_calculated_at: new Date().toISOString(),
+        })
+        .eq('merchant_id', merchantId)
+    } else {
+      // Create new record if doesn't exist
+      await supabase
+        .from('landing_page_stats')
+        .insert({
+          merchant_id: merchantId,
+          total_page_views: 0,
+          total_form_submits: 0,
+          total_coupon_claims: 1,
+          conversion_rate: 0,
+        })
+    }
+  } catch (error) {
+    console.error('Error updating coupon claim stats:', error)
+  }
+
+  return { success: true }
+}
+
+/**
  * Track form submission
  */
 export async function trackFormSubmit(merchantId: string, userId?: string) {

@@ -55,8 +55,26 @@ export default function CustomerTable({ data, total, page, limit }: Props) {
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
+                            {/* Internal ID Column - Filterable */}
+                            <th className="px-4 py-3 text-left min-w-[100px]">
+                                <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                                    客户编号
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="编号..."
+                                    className="w-full text-xs border rounded px-2 py-1 font-normal"
+                                    defaultValue={searchParams.get('internalId') || ''}
+                                    onChange={(e) => {
+                                        const val = e.target.value
+                                        const timer = setTimeout(() => updateParam('internalId', val), 500)
+                                        return () => clearTimeout(timer)
+                                    }}
+                                />
+                            </th>
+
                             {/* Phone Column - Sortable + Filterable */}
-                            <th className="px-6 py-3 text-left w-1/5 min-w-[180px]">
+                            <th className="px-6 py-3 text-left w-1/6 min-w-[180px]">
                                 <div
                                     className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
                                     onClick={() => handleSort('phone')}
@@ -149,6 +167,32 @@ export default function CustomerTable({ data, total, page, limit }: Props) {
                         {data.length > 0 ? (
                             data.map((customer) => (
                                 <tr key={customer.id} className="hover:bg-gray-50">
+                                    <td className="px-4 py-4 whitespace-nowrap">
+                                        <input
+                                            type="text"
+                                            defaultValue={(customer as any).internal_id || ''}
+                                            placeholder="—"
+                                            className="w-full text-xs font-mono border border-gray-200 rounded px-2 py-1 bg-gray-50 focus:bg-white focus:border-purple-400 focus:outline-none"
+                                            onBlur={async (e) => {
+                                                const newValue = e.target.value;
+                                                if (newValue !== ((customer as any).internal_id || '')) {
+                                                    // Save to database via API
+                                                    try {
+                                                        await fetch('/api/admin/customers/update-internal-id', {
+                                                            method: 'POST',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({
+                                                                userId: customer.user_id,
+                                                                internalId: newValue
+                                                            })
+                                                        });
+                                                    } catch (err) {
+                                                        console.error('Failed to update internal ID:', err);
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                    </td>
                                     <td className="px-6 py-4 whitespace-nowrap font-mono text-sm font-medium text-gray-900">
                                         {customer.phone}
                                     </td>
@@ -168,7 +212,7 @@ export default function CustomerTable({ data, total, page, limit }: Props) {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">
+                                <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500">
                                     No customers found matching your criteria.
                                 </td>
                             </tr>

@@ -900,6 +900,31 @@ export default function EditMerchantPage() {
                     </div>
 
                     {/* ============================================================ */}
+                    {/* 🏷️ 内部编号 */}
+                    {/* ============================================================ */}
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 -mx-6 px-6 py-4 rounded-lg border border-purple-200">
+                        <h2 className="text-lg font-bold text-purple-800 border-b border-purple-200 pb-2 mb-4 flex items-center gap-2">
+                            <span className="text-xl">🏷️</span> 内部编号 (仅内部使用)
+                        </h2>
+                        <p className="text-sm text-purple-600 mb-4 bg-white/50 p-3 rounded-lg">
+                            这个编号仅供内部运营使用，方便快速识别和查找商家
+                        </p>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                🔢 商家编号 <span className="text-gray-400 font-normal">(internal_id)</span>
+                            </label>
+                            <p className="text-xs text-gray-500 mb-2">例如: M001、SH-2024-001 等，由运营人员填写</p>
+                            <input
+                                type="text"
+                                value={(formData as any).internal_id || ''}
+                                onChange={(e) => setFormData({ ...formData, internal_id: e.target.value } as any)}
+                                placeholder="例如: M001"
+                                className="w-full border rounded px-3 py-2 font-mono text-lg"
+                            />
+                        </div>
+                    </div>
+
+                    {/* ============================================================ */}
                     {/* ⚙️ 系统设置 (折叠) */}
                     {/* ============================================================ */}
                     <details className="bg-gray-50 -mx-6 px-6 py-4 rounded-lg border border-gray-200">

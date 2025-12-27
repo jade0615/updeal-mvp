@@ -174,11 +174,29 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
         if (!formData.phone || formData.phone.length < 10) return;
 
         setLoading(true);
-        // Simulator API call / Success
-        setTimeout(() => {
-            setLoading(false);
+
+        try {
+            // Call the actual API to claim coupon
+            const response = await fetch('/api/public/coupons/claim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    merchantId: merchant.id,
+                    phone: formData.phone,
+                    name: formData.name || undefined,
+                    email: formData.email || undefined,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to claim coupon');
+            }
+
+            // Success - show the coupon
             setSuccessOpen(true);
-            setCouponCode('DEAL-' + Math.random().toString(36).substr(2, 6).toUpperCase());
+            setCouponCode(result.coupon.code);
 
             // Track Lead Event (Client Side)
             import('react-facebook-pixel')
@@ -186,9 +204,18 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                 .then((ReactPixel) => {
                     ReactPixel.track('Lead', {
                         content_name: merchant.name,
-                        content_category: 'Coupon'
+                        content_category: 'Coupon',
+                        content_ids: [result.coupon.code],
                     });
                 });
+
+            // Track GA4 conversion
+            if (typeof window !== 'undefined' && (window as any).gtag) {
+                (window as any).gtag('event', 'claim_coupon', {
+                    merchant_id: merchant.id,
+                    coupon_code: result.coupon.code
+                });
+            }
 
             confetti({
                 particleCount: 150,
@@ -196,7 +223,12 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                 origin: { y: 0.6 },
                 colors: ['#FF5722', '#F39C12', '#FFFFFF']
             });
-        }, 800);
+        } catch (error: any) {
+            console.error('Claim error:', error);
+            alert(error.message || 'Failed to claim coupon. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSaveToPhotos = async () => {

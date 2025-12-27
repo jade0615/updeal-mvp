@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { customAlphabet } from 'nanoid';
+import { trackCouponClaim } from '@/actions/analytics';
 
 // Create a generator for the code suffix (4 chars, uppercase + numbers)
 const generateSuffix = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 4);
@@ -116,6 +117,9 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Track coupon claim for analytics (update stats)
+    await trackCouponClaim(merchantId, userId, code);
 
     return NextResponse.json({
       success: true,
