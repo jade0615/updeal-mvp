@@ -16,6 +16,9 @@ interface Props {
     canEdit?: boolean;
 }
 
+// MASTER TOGGLE: Set to false to completely hide and disable the visual editor for everyone
+const ENABLE_VISUAL_EDITOR = false;
+
 export default function MobilePremiumTemplate({ merchant: initialMerchant, claimedCount, canEdit = false }: Props) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -26,9 +29,9 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
     const [data, setData] = useState(initialMerchant);
     const [isSaving, setIsSaving] = useState(false);
 
-    // Auto-trigger Edit Mode from URL
+    // Auto-trigger Edit Mode from URL (only if enabled and permitted)
     useEffect(() => {
-        if (canEdit && searchParams.get('mode') === 'edit') {
+        if (ENABLE_VISUAL_EDITOR && canEdit && searchParams.get('mode') === 'edit') {
             setIsEditing(true);
         }
     }, [canEdit, searchParams]);
@@ -330,7 +333,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             `}</style>
 
             {/* Edit Mode Banner */}
-            {isEditing && (
+            {ENABLE_VISUAL_EDITOR && isEditing && (
                 <div className="bg-blue-600 text-white text-center py-2 px-4 shadow-md sticky top-0 z-50 animate-in slide-in-from-top">
                     <p className="text-sm font-bold flex items-center justify-center gap-2">
                         <Edit2 className="w-4 h-4" />
@@ -788,7 +791,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             </div>
 
             {/* === EDIT MODE CONTROLS === */}
-            {canEdit && (
+            {ENABLE_VISUAL_EDITOR && canEdit && (
                 <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
                     {isEditing ? (
                         <>
