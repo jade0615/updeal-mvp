@@ -100,7 +100,8 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
         as?: 'input' | 'textarea',
         darkBg?: boolean
     }) => {
-        const displayValue = value || fallback;
+        // 注意：空字符串 "" 是有效值，不应该被 fallback 替代
+        const displayValue = value !== undefined && value !== null ? value : fallback;
 
         if (!isEditing) {
             return <>{displayValue}</>;
@@ -428,8 +429,8 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                             <span className="text-orange-300 text-2xl">
                                 <EditableLabel
                                     path="offer.unit"
-                                    value={normalizedOffer.unit || displayUnit}
-                                    fallback="OFF"
+                                    value={normalizedOffer.unit !== undefined ? normalizedOffer.unit : displayUnit}
+                                    fallback=""
                                     darkBg={true}
                                     className="inline-block w-auto min-w-[40px]"
                                 />

@@ -50,6 +50,14 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       userId = existingUser.id;
 
+      // 更新用户姓名（如果提供了新的姓名）
+      if (name) {
+        await supabase
+          .from('users')
+          .update({ name })
+          .eq('id', userId);
+      }
+
       // Check if user already claimed this coupon (Optional: limit 1 per user)
       const { data: existingCoupon } = await supabase
         .from('coupons')
