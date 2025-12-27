@@ -31,21 +31,39 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
         setData(initialMerchant);
     }, [initialMerchant]);
 
-    // Helper: Update Content
+    // Helper: Update Content - supports all paths including nested objects
     const updateContent = (path: string, value: any) => {
         setData(prev => {
             const newContent = { ...prev.content };
 
-            // Handle customLabels direct path
+            // Handle different path patterns
             if (path.startsWith('customLabels.')) {
                 const key = path.split('.')[1];
                 newContent.customLabels = {
                     ...newContent.customLabels,
                     [key]: value
                 };
+            } else if (path.startsWith('offer.')) {
+                const key = path.split('.')[1];
+                newContent.offer = {
+                    ...newContent.offer,
+                    [key]: value
+                };
+            } else if (path.startsWith('address.')) {
+                const key = path.split('.')[1];
+                newContent.address = {
+                    ...newContent.address,
+                    [key]: value
+                };
+            } else if (path.startsWith('openingHours.')) {
+                const key = path.split('.')[1];
+                newContent.openingHours = {
+                    ...newContent.openingHours,
+                    [key]: value
+                };
             } else {
-                // Generic handler (basic)
-                // For this template we mostly use customLabels
+                // Direct content field like businessName, heroTitle, etc.
+                (newContent as any)[path] = value;
             }
             return { ...prev, content: newContent };
         });
@@ -65,21 +83,23 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
         }
     };
 
-    // Helper Component: Editable Label
+    // Helper Component: Editable Label with improved visibility
     const EditableLabel = ({
         path,
         value,
         params = {},
         fallback = '',
         className = '',
-        as = 'input'
+        as = 'input',
+        darkBg = false  // New prop for dark background styling
     }: {
         path: string,
         value?: string | null,
-        params?: Record<string, string>, // unused currently, generic hook 
+        params?: Record<string, string>,
         fallback?: string,
         className?: string,
-        as?: 'input' | 'textarea'
+        as?: 'input' | 'textarea',
+        darkBg?: boolean
     }) => {
         const displayValue = value || fallback;
 
@@ -91,7 +111,10 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             updateContent(path, e.target.value);
         };
 
-        const commonClasses = `bg-yellow-50 border-b-2 border-yellow-300 outline-none px-1 text-slate-800 w-full active:bg-yellow-100 ${className}`;
+        // Different styles for dark vs light backgrounds
+        const baseClasses = darkBg
+            ? `bg-white/90 border-2 border-orange-400 outline-none px-2 py-1 rounded text-slate-800 w-full focus:bg-white focus:border-orange-500 ${className}`
+            : `bg-orange-50 border-2 border-orange-300 outline-none px-2 py-1 rounded text-slate-800 w-full focus:bg-orange-100 focus:border-orange-400 ${className}`;
 
         if (as === 'textarea') {
             return (
@@ -99,8 +122,8 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                     value={value || ''}
                     onChange={handleChange}
                     placeholder={fallback}
-                    className={commonClasses}
-                    onClick={(e) => e.stopPropagation()} // Prevent click propagation if in container
+                    className={baseClasses}
+                    onClick={(e) => e.stopPropagation()}
                 />
             );
         }
@@ -110,7 +133,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                 value={value || ''}
                 onChange={handleChange}
                 placeholder={fallback}
-                className={commonClasses}
+                className={baseClasses}
                 onClick={(e) => e.stopPropagation()}
             />
         );
@@ -306,17 +329,34 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                 <div className="relative px-6 pt-2 pb-8 flex">
                     {/* Left Text */}
                     <div className="relative z-10 w-[85%]">
-                        {content.heroTitle && (
+                        {/* Hero Title - only show if has value OR in editing mode */}
+                        {(content.heroTitle || isEditing) && (
                             <p className="text-white/80 text-sm font-medium mb-1 tracking-wide uppercase">
-                                {content.heroTitle}
+                                <EditableLabel
+                                    path="heroTitle"
+                                    value={content.heroTitle}
+                                    fallback="例如: GRAND OPENING"
+                                    darkBg={true}
+                                />
                             </p>
                         )}
                         <h1 className="text-white text-[32px] sm:text-[38px] font-bold leading-[1.1] mb-2">
-                            {content.businessName}
+                            <EditableLabel
+                                path="businessName"
+                                value={content.businessName}
+                                fallback="店铺名称"
+                                darkBg={true}
+                            />
                         </h1>
-                        {content.heroSubtitle && (
+                        {/* Hero Subtitle - only show if has value OR in editing mode */}
+                        {(content.heroSubtitle || isEditing) && (
                             <p className="text-white/90 text-sm mb-4 leading-relaxed font-light">
-                                {content.heroSubtitle}
+                                <EditableLabel
+                                    path="heroSubtitle"
+                                    value={content.heroSubtitle}
+                                    fallback="例如: Family Special"
+                                    darkBg={true}
+                                />
                             </p>
                         )}
 
@@ -343,12 +383,35 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                             </p>
                         )}
                         <h2 className="text-white text-[36px] font-bold leading-tight mb-2">
-                            {displayValue} <span className="text-orange-300 text-2xl">{displayUnit}</span>
+                            <EditableLabel
+                                path="offer.value"
+                                value={content.offer?.value || displayValue}
+                                fallback="20%"
+                                darkBg={true}
+                                className="inline-block w-auto min-w-[60px]"
+                            />
+                            {' '}
+                            <span className="text-orange-300 text-2xl">
+                                <EditableLabel
+                                    path="offer.unit"
+                                    value={content.offer?.unit || displayUnit}
+                                    fallback="OFF"
+                                    darkBg={true}
+                                    className="inline-block w-auto min-w-[40px]"
+                                />
+                            </span>
                         </h2>
 
                         {/* Offer Description with Multi-line Support */}
                         <div className="text-white/80 text-sm mb-5 pr-4 whitespace-pre-line leading-relaxed">
-                            {normalizedOffer.description}
+                            <EditableLabel
+                                path="offer.description"
+                                value={content.offer?.description || normalizedOffer.description}
+                                fallback="折扣描述..."
+                                darkBg={true}
+                                as="textarea"
+                                className="min-h-[50px]"
+                            />
                         </div>
 
                         {/* Social Proof (Updated) */}
@@ -558,7 +621,11 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 />
                             </p>
                             <p className="text-slate-500 text-[13px] leading-relaxed">
-                                {content.address?.fullAddress || ((content.address?.street || content.address?.area) ? `${content.address?.street || ''} ${content.address?.area || ''}` : 'Address not available')}
+                                <EditableLabel
+                                    path="address.fullAddress"
+                                    value={content.address?.fullAddress || ((content.address?.street || content.address?.area) ? `${content.address?.street || ''} ${content.address?.area || ''}` : '')}
+                                    fallback="地址..."
+                                />
                             </p>
                         </div>
                         <a
@@ -589,7 +656,11 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 />
                             </p>
                             <p className="text-slate-500 text-[13px]">
-                                {content.openingHours?.specialHours || content.openingHours?.currentStatus || "Mon-Sun 10:00 AM - 9:00 PM"}
+                                <EditableLabel
+                                    path="openingHours.specialHours"
+                                    value={content.openingHours?.specialHours || content.openingHours?.currentStatus}
+                                    fallback="Mon-Sun 10:00 AM - 9:00 PM"
+                                />
                             </p>
                         </div>
                     </div>
@@ -639,7 +710,13 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     fallback="Call Us"
                                 />
                             </p>
-                            <p className="text-slate-500 text-[13px]">{content.phone}</p>
+                            <p className="text-slate-500 text-[13px]">
+                                <EditableLabel
+                                    path="phone"
+                                    value={content.phone}
+                                    fallback="(555) 123-4567"
+                                />
+                            </p>
                         </div>
                         <a
                             href={`tel:${content.phone}`}
