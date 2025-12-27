@@ -3,14 +3,27 @@ import Link from 'next/link'
 import DeleteMerchantButton from '@/components/admin/DeleteMerchantButton'
 import { CopyButton, ExportMerchantsButton } from '@/components/admin/MerchantUtilityButtons'
 import ToggleMerchantStatus from '@/components/admin/ToggleMerchantStatus'
+import MerchantSearch from '@/components/admin/MerchantSearch'
 
-export default async function MerchantsPage() {
+interface Props {
+  searchParams: Promise<{ q?: string }>
+}
+
+export default async function MerchantsPage({ searchParams }: Props) {
   const supabase = createAdminClient()
+  const { q: searchQuery } = await searchParams
 
-  const { data: merchants } = await supabase
+  let query = supabase
     .from('merchants')
     .select('*')
     .order('created_at', { ascending: false })
+
+  // If there's a search query, filter by internal_id, name, or slug
+  if (searchQuery) {
+    query = query.or(`internal_id.ilike.%${searchQuery}%,name.ilike.%${searchQuery}%,slug.ilike.%${searchQuery}%`)
+  }
+
+  const { data: merchants } = await query
 
   // Ideally we get the base URL from env, but client components will use window.location
   // For server-side rendering links, we can use relative paths or env var if needed.
@@ -22,11 +35,12 @@ export default async function MerchantsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900">商家管理</h1>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <MerchantSearch />
             <ExportMerchantsButton merchants={merchants || []} />
             <Link
               href="/admin/merchants/new"
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors flex items-center"
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors flex items-center whitespace-nowrap"
             >
               + 新增商家
             </Link>
@@ -35,19 +49,31 @@ export default async function MerchantsPage() {
 
         {!merchants || merchants.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-500 mb-4">还没有商家，点击上方按钮创建第一个商家</p>
-            <Link
-              href="/admin/merchants/new"
-              className="inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-            >
-              创建商家
-            </Link>
+            {searchQuery ? (
+              <>
+                <p className="text-gray-500 mb-2">没有找到匹配 "{searchQuery}" 的商家</p>
+                <p className="text-sm text-gray-400">尝试使用其他关键词搜索</p>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-500 mb-4">还没有商家，点击上方按钮创建第一个商家</p>
+                <Link
+                  href="/admin/merchants/new"
+                  className="inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+                >
+                  创建商家
+                </Link>
+              </>
+            )}
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                    编号
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     商家名称
                   </th>
@@ -68,6 +94,11 @@ export default async function MerchantsPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {merchants.map((merchant) => (
                   <tr key={merchant.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className="text-sm font-mono font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                        {merchant.internal_id || '—'}
+                      </span>
+                    </td>
                     <td className="px-6 py-4">
                       <div className="text-sm font-bold text-gray-900">
                         {merchant.name}

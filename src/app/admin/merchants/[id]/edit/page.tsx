@@ -13,6 +13,7 @@ export default function EditMerchantPage() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
+    const [saved, setSaved] = useState(false)
     const [origin, setOrigin] = useState('')
 
     // Initialize with default matching the new schema
@@ -133,11 +134,16 @@ export default function EditMerchantPage() {
         e.preventDefault()
         setSaving(true)
         setError('')
+        setSaved(false)
 
         const result = await updateMerchant(params.id as string, formData)
 
         if (result.success) {
-            router.push('/admin/merchants')
+            setSaved(true)
+            setSaving(false)
+            // Auto hide after 5 seconds
+            setTimeout(() => setSaved(false), 5000)
+            router.refresh()
         } else {
             setError(result.error || 'Failed to update merchant')
             setSaving(false)
@@ -219,6 +225,24 @@ export default function EditMerchantPage() {
                         View Landing Page ↗
                     </a>
                 </div>
+
+                {/* Success Message */}
+                {saved && (
+                    <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-6 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <span className="text-lg">✅</span>
+                            <span className="font-medium">已保存成功！</span>
+                        </div>
+                        <a
+                            href={`/${formData.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-green-700 hover:text-green-900 font-medium underline flex items-center gap-1"
+                        >
+                            查看落地页 ↗
+                        </a>
+                    </div>
+                )}
 
                 {error && (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
@@ -430,63 +454,51 @@ export default function EditMerchantPage() {
                             这是显示折扣信息的半透明卡片区域，包含折扣金额、描述和热度
                         </p>
 
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             {/* Offer Value - 折扣数值 */}
                             <div className="col-span-1">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     💰 折扣数值 * <span className="text-gray-400 font-normal">(offer.value)</span>
                                 </label>
-                                <p className="text-xs text-gray-500 mb-2">卡片上最大的数字，如 "20%"、"$10"、"Buy 1 Get 1"</p>
+                                <p className="text-xs text-gray-500 mb-2">卡片上最大的数字，如 "20% OFF"、"$10 Off"、"Buy 1 Get 1"</p>
                                 <input
                                     type="text"
                                     value={formData.content.offer?.value || ''}
                                     onChange={(e) => updateContent('offer.value', e.target.value)}
-                                    placeholder="例如: 20% 或 $10"
+                                    placeholder="例如: 20% OFF 或 $30 Off Your Hair"
                                     className="w-full border rounded px-3 py-2 font-bold text-2xl text-orange-600"
                                     required
                                 />
                             </div>
 
-                            {/* Offer Unit */}
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    📌 单位 <span className="text-gray-400 font-normal">(offer.unit)</span>
-                                </label>
-                                <p className="text-xs text-gray-500 mb-2">跟在数值后面，如 "OFF"</p>
-                                <select
-                                    value={formData.content.offer?.unit || 'Off'}
-                                    onChange={(e) => updateContent('offer.unit', e.target.value)}
-                                    className="w-full border rounded px-3 py-2 bg-white"
-                                >
-                                    <option value="Off">Off (折扣)</option>
-                                    <option value="Free">Free (免费)</option>
-                                    <option value="Off Your Order">Off Your Order</option>
-                                    <option value="">无单位</option>
-                                </select>
-                            </div>
-
-                            {/* Offer Type */}
+                            {/* Offer Type - 可输入+可选择 */}
                             <div className="col-span-1">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     🏆 优惠类型 <span className="text-gray-400 font-normal">(offer.type)</span>
                                 </label>
-                                <p className="text-xs text-gray-500 mb-2">显示在折扣数值上方的小标签</p>
-                                <select
-                                    value={formData.content.offer?.type || 'discount'}
+                                <p className="text-xs text-gray-500 mb-2">显示在折扣数值上方的小标签（可选择或自定义输入）</p>
+                                <input
+                                    type="text"
+                                    list="offer-type-options"
+                                    value={formData.content.offer?.type || ''}
                                     onChange={(e) => updateContent('offer.type', e.target.value)}
+                                    placeholder="选择或输入自定义类型"
                                     className="w-full border rounded px-3 py-2 bg-white"
-                                >
+                                />
+                                <datalist id="offer-type-options">
                                     <option value="discount">不显示标签</option>
                                     <option value="Exclusive">Exclusive (独家)</option>
                                     <option value="Limited">Limited (限时)</option>
                                     <option value="Special">Special (特别)</option>
                                     <option value="Holiday">Holiday (节日)</option>
                                     <option value="VIP">VIP</option>
-                                </select>
+                                    <option value="New Year">New Year (新年)</option>
+                                    <option value="Grand Opening">Grand Opening (开业)</option>
+                                </datalist>
                             </div>
 
                             {/* Offer Description */}
-                            <div className="col-span-3">
+                            <div className="col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     📄 折扣描述 <span className="text-gray-400 font-normal">(offer.description)</span>
                                 </label>
@@ -505,7 +517,7 @@ export default function EditMerchantPage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     🔥 角标文字 <span className="text-gray-400 font-normal">(offer_badge_text)</span>
                                 </label>
-                                <p className="text-xs text-gray-500 mb-2">卡片右下角的小标签，如 "HOT"、"BEST VALUE"</p>
+                                <p className="text-xs text-gray-500 mb-2">卡片右下角的小标签，如 "HOT"</p>
                                 <input
                                     type="text"
                                     value={formData.content.offer_badge_text || ''}
@@ -520,26 +532,12 @@ export default function EditMerchantPage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     👥 虚拟热度基数 <span className="text-gray-400 font-normal">(virtual_base_count)</span>
                                 </label>
-                                <p className="text-xs text-gray-500 mb-2">"XX claimed this week" 的虚拟数字基数</p>
+                                <p className="text-xs text-gray-500 mb-2">"XX claimed this week" 的虚拟数字</p>
                                 <input
                                     type="number"
                                     value={formData.virtual_base_count || 0}
                                     onChange={(e) => setFormData({ ...formData, virtual_base_count: parseInt(e.target.value) || 0 })}
                                     placeholder="例如: 200"
-                                    className="w-full border rounded px-3 py-2"
-                                />
-                            </div>
-
-                            {/* Total Limit */}
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    🎟️ 总限额 <span className="text-gray-400 font-normal">(offer.totalLimit)</span>
-                                </label>
-                                <p className="text-xs text-gray-500 mb-2">最多可以发放多少张优惠券</p>
-                                <input
-                                    type="number"
-                                    value={formData.content.offer?.totalLimit || 500}
-                                    onChange={(e) => updateContent('offer.totalLimit', parseInt(e.target.value))}
                                     className="w-full border rounded px-3 py-2"
                                 />
                             </div>
