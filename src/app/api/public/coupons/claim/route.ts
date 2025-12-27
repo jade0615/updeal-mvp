@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { customAlphabet } from 'nanoid';
 import { trackCouponClaim } from '@/actions/analytics';
+import { sendClaimNotification } from '@/lib/notifications';
+import { backupToGoogleSheets } from '@/lib/backup';
 
 export const dynamic = 'force-dynamic';
 
@@ -122,6 +124,25 @@ export async function POST(request: NextRequest) {
 
     // Track coupon claim for analytics (update stats)
     await trackCouponClaim(merchantId, userId, code);
+
+    // 备份到 Google Sheets (异步，不阻塞响应)
+    backupToGoogleSheets({
+      merchantId,
+      merchantName: merchant.name,
+      phone,
+      name: name || '',
+      couponCode: code,
+      claimedAt: new Date().toISOString(),
+    }).catch(err => console.error('Backup to Google Sheets failed:', err));
+
+    // 发送通知邮件 (异步，不阻塞响应)
+    sendClaimNotification({
+      merchantId,
+      merchantName: merchant.name,
+      phone,
+      name: name || '',
+      couponCode: code,
+    }).catch(err => console.error('Send notification failed:', err));
 
     return NextResponse.json({
       success: true,

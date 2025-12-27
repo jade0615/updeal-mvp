@@ -38,6 +38,7 @@ export const metadata: Metadata = {
 
 import { Suspense } from 'react';
 import MetaPixel from "@/components/analytics/MetaPixel";
+import MicrosoftClarity from "@/components/analytics/MicrosoftClarity";
 
 export default function RootLayout({
   children,
@@ -51,6 +52,7 @@ export default function RootLayout({
       >
         <Suspense fallback={null}>
           <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
+          <MicrosoftClarity />
         </Suspense>
         {children}
       </body>
