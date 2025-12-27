@@ -351,7 +351,7 @@ export default function EditMerchantPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-8">
-                        {/* ============================================================ */}
+                    {/* ============================================================ */}
                     {/* 📍 区域1: 页面顶部 - 深绿色背景区域 */}
                     {/* ============================================================ */}
                     <div className="bg-gradient-to-r from-emerald-50 to-teal-50 -mx-6 px-6 py-6 rounded-lg border border-emerald-200">
@@ -993,24 +993,26 @@ export default function EditMerchantPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Business Type</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.businessType || ''}
-                                    onChange={(e) => updateContent('businessType', e.target.value)}
-                                    placeholder="例如: Italian Cuisine"
-                                    className="w-full border rounded px-3 py-2"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Logo URL</label>
-                                <input
-                                    type="url"
-                                    value={formData.content.logoUrl || ''}
-                                    onChange={(e) => updateContent('logoUrl', e.target.value)}
-                                    placeholder="https://..."
-                                    className="w-full border rounded px-3 py-2"
-                                />
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Type (e.g. Italian Cuisine)</label>
+                                    <input
+                                        type="text"
+                                        value={formData.content.businessType || ''}
+                                        onChange={(e) => updateContent('businessType', e.target.value)}
+                                        placeholder="例如: Italian Cuisine"
+                                        className="w-full border rounded px-3 py-2"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Logo URL</label>
+                                    <input
+                                        type="url"
+                                        value={formData.content.logoUrl || ''}
+                                        onChange={(e) => updateContent('logoUrl', e.target.value)}
+                                        placeholder="https://..."
+                                        className="w-full border rounded px-3 py-2"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </details>
@@ -1027,11 +1029,11 @@ export default function EditMerchantPage() {
                             disabled={saving}
                             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                         >
-                            {saving ? 'Save Changes' : 'Save Changes'}
+                            {saving ? 'Saving...' : 'Save Changes'}
                         </button>
                     </div>
                 </form>
             </div>
         </div>
-    )
+    );
 }

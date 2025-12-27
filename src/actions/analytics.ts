@@ -73,6 +73,21 @@ export async function trackPageView(merchantId: string, pageUrl?: string) {
     utm: parseUtmFromUrl(pageUrl),
   })
 
+  // Insert into new page_views table (User requested Schema)
+  try {
+    const headersList = await headers()
+    const userAgent = headersList.get('user-agent') || undefined
+
+    await supabase.from('page_views').insert({
+      merchant_id: merchantId,
+      ip_address: undefined, // Not easily available in headers without proxy trust
+      user_agent: userAgent,
+      viewed_at: new Date().toISOString()
+    })
+  } catch (e) {
+    console.error('Failed to log page view:', e)
+  }
+
   // Update landing page stats
   try {
     // First check if stats record exists

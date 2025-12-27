@@ -8,6 +8,7 @@ import {
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { Merchant } from '@/types/merchant';
 import { updateMerchant } from '@/actions/merchants';
+import { createClaim } from '@/actions/claims';
 import confetti from 'canvas-confetti';
 
 interface Props {
@@ -26,6 +27,13 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
     const [data, setData] = useState(initialMerchant);
     const [isSaving, setIsSaving] = useState(false);
 
+    // Auto-trigger Edit Mode from URL
+    useEffect(() => {
+        if (canEdit && searchParams.get('mode') === 'edit') {
+            setIsEditing(true);
+        }
+    }, [canEdit, searchParams]);
+
     // Sync if initialMerchant changes (revalidation)
     useEffect(() => {
         setData(initialMerchant);
@@ -43,26 +51,18 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                     ...newContent.customLabels,
                     [key]: value
                 };
-            } else if (path.startsWith('offer.')) {
-                const key = path.split('.')[1];
-                newContent.offer = {
-                    ...newContent.offer,
-                    [key]: value
-                };
-            } else if (path.startsWith('address.')) {
-                const key = path.split('.')[1];
-                newContent.address = {
-                    ...newContent.address,
-                    [key]: value
-                };
-            } else if (path.startsWith('openingHours.')) {
-                const key = path.split('.')[1];
-                newContent.openingHours = {
-                    ...newContent.openingHours,
-                    [key]: value
-                };
+            } else if (path.includes('.')) {
+                // Nested path support: "offer.value", "address.fullAddress"
+                const [parent, child] = path.split('.');
+                const contentObj = newContent as any;
+                if (parent && child && contentObj[parent]) {
+                    contentObj[parent] = {
+                        ...contentObj[parent],
+                        [child]: value
+                    };
+                }
             } else {
-                // Direct content field like businessName, heroTitle, etc.
+                // Top-level property: "businessName", "heroTitle"
                 (newContent as any)[path] = value;
             }
             return { ...prev, content: newContent };
@@ -218,6 +218,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             }
 
             // Success - show the coupon
+            setLoading(false);
             setSuccessOpen(true);
             setCouponCode(result.coupon.code);
 
@@ -253,6 +254,15 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             setLoading(false);
         }
     };
+
+    const [showOnboarding, setShowOnboarding] = useState(false);
+
+    useEffect(() => {
+        if (searchParams.get('new') === 'true' && canEdit) {
+            setShowOnboarding(true);
+            setTimeout(() => setShowOnboarding(false), 5000); // Auto hide after 5s
+        }
+    }, [searchParams, canEdit]);
 
     const handleSaveToPhotos = async () => {
         if (!couponRef.current) return;
@@ -310,6 +320,31 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                 }
             `}</style>
 
+            {/* Edit Mode Banner */}
+            {isEditing && (
+                <div className="bg-blue-600 text-white text-center py-2 px-4 shadow-md sticky top-0 z-50 animate-in slide-in-from-top">
+                    <p className="text-sm font-bold flex items-center justify-center gap-2">
+                        <Edit2 className="w-4 h-4" />
+                        Editing Mode Active
+                        <span className="text-blue-200 font-normal text-xs ml-2 hidden sm:inline">Tap any text to edit</span>
+                    </p>
+                </div>
+            )}
+
+            {/* Onboarding Toast */}
+            {showOnboarding && (
+                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[60] bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl animate-in fade-in zoom-in slide-in-from-bottom-4 duration-500 flex items-center gap-3">
+                    <span className="text-2xl">👋</span>
+                    <div>
+                        <p className="font-bold text-sm">Welcome to your new page!</p>
+                        <p className="text-xs text-slate-300">Tap the blue pen button to start editing.</p>
+                    </div>
+                    <button onClick={() => setShowOnboarding(false)} className="bg-white/10 rounded-full p-1 hover:bg-white/20 ml-2">
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+            )}
+
             {/* ===== 顶部深绿色区域 ===== */}
             <div className="header-bg relative pb-[100px] overflow-hidden">
                 {/* Decorative background glow */}
@@ -344,7 +379,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                             <EditableLabel
                                 path="businessName"
                                 value={content.businessName}
-                                fallback="店铺名称"
+                                fallback="Business Name"
                                 darkBg={true}
                             />
                         </h1>
@@ -385,7 +420,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                         <h2 className="text-white text-[36px] font-bold leading-tight mb-2">
                             <EditableLabel
                                 path="offer.value"
-                                value={content.offer?.value || displayValue}
+                                value={normalizedOffer.value}
                                 fallback="20%"
                                 darkBg={true}
                                 className="inline-block w-auto min-w-[60px]"
@@ -394,7 +429,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                             <span className="text-orange-300 text-2xl">
                                 <EditableLabel
                                     path="offer.unit"
-                                    value={content.offer?.unit || displayUnit}
+                                    value={normalizedOffer.unit || displayUnit}
                                     fallback="OFF"
                                     darkBg={true}
                                     className="inline-block w-auto min-w-[40px]"
@@ -410,7 +445,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 fallback="折扣描述..."
                                 darkBg={true}
                                 as="textarea"
-                                className="min-h-[50px]"
+                                className="min-h-[50px] bg-transparent border-b border-white/20 text-white placeholder:text-white/50 w-full"
                             />
                         </div>
 
@@ -424,7 +459,13 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 ))}
                             </div>
                             <p className="text-white/80 text-xs font-medium">
-                                {claimedCount + 42} claimed this week
+                                {(merchant.virtual_base_count || 120) + claimedCount}
+                                <EditableLabel
+                                    path="customLabels.social_proof_text"
+                                    value={(content.customLabels as any)?.social_proof_text}
+                                    fallback=" claimed this week"
+                                    className="bg-transparent border-b border-white/20 text-white placeholder:text-white/50 w-auto inline-block ml-1"
+                                />
                             </p>
                         </div>
                     </div>
@@ -607,7 +648,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             {/* ===== Info Card ===== */}
             <div className="px-5 mt-5">
                 <div className="bg-white rounded-[20px] shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden">
-                    {/* Address */}
+                    {/* Address Card */}
                     <div className="flex items-start gap-4 p-4">
                         <div className="w-5 pt-1">
                             <MapPin className="text-[#FF5722] w-6 h-6" />
@@ -634,7 +675,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                             )}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-10 h-10 rounded-xl bg-[#5D4037] text-white flex items-center justify-center"
+                            className="w-10 h-10 rounded-xl bg-[#5D4037] text-white flex items-center justify-center hover:bg-[#4E342E] transition-colors"
                         >
                             <ArrowRight className="w-5 h-5 -rotate-45" />
                         </a>
@@ -666,34 +707,36 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                     </div>
 
                     {/* Website (Optional) */}
-                    {content.website && (
-                        <>
-                            <div className="border-t border-slate-100 mx-4"></div>
-                            <div className="flex items-center gap-4 p-4">
-                                <div className="w-5">
-                                    <Globe className="text-[#1976D2] w-6 h-6" />
+                    {
+                        content.website && (
+                            <>
+                                <div className="border-t border-slate-100 mx-4"></div>
+                                <div className="flex items-center gap-4 p-4">
+                                    <div className="w-5">
+                                        <Globe className="text-[#1976D2] w-6 h-6" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-slate-800 font-semibold text-[15px] mb-0.5">
+                                            <EditableLabel
+                                                path="customLabels.section_title_website"
+                                                value={content.customLabels?.section_title_website}
+                                                fallback="Website"
+                                            />
+                                        </p>
+                                        <p className="text-slate-500 text-[13px] truncate max-w-[200px]">{content.website}</p>
+                                    </div>
+                                    <a
+                                        href={content.website}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-10 h-10 rounded-xl flex items-center justify-center text-[#1976D2] hover:bg-blue-50"
+                                    >
+                                        <ArrowRight className="w-5 h-5 -rotate-45" />
+                                    </a>
                                 </div>
-                                <div className="flex-1">
-                                    <p className="text-slate-800 font-semibold text-[15px] mb-0.5">
-                                        <EditableLabel
-                                            path="customLabels.section_title_website"
-                                            value={content.customLabels?.section_title_website}
-                                            fallback="Website"
-                                        />
-                                    </p>
-                                    <p className="text-slate-500 text-[13px] truncate max-w-[200px]">{content.website}</p>
-                                </div>
-                                <a
-                                    href={content.website}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-10 h-10 rounded-xl flex items-center justify-center text-[#1976D2] hover:bg-blue-50"
-                                >
-                                    <ArrowRight className="w-5 h-5 -rotate-45" />
-                                </a>
-                            </div>
-                        </>
-                    )}
+                            </>
+                        )
+                    }
 
                     <div className="border-t border-slate-100 mx-4"></div>
 

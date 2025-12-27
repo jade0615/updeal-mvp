@@ -5,61 +5,76 @@ import { useRouter } from 'next/navigation'
 import { createMerchant, generateSlug } from '@/actions/merchants'
 import type { MerchantFormData } from '@/lib/utils/validation'
 import Link from 'next/link'
+import { Loader2 } from 'lucide-react'
 
+// Enhanced Presets with robust defaults
 const PRESETS: Record<string, Partial<MerchantFormData>> = {
-  arcadia: {
-    name: 'Arcadia Entertainment',
-    template_type: 'sushi', // Uses the clean white theme
-    content: {
-      businessName: 'ARCADIA',
-      heroTitle: 'Grand Opening Special',
-      heroSubtitle: 'West Palm Beach',
-      heroImageUrl: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070&auto=format&fit=crop',
-      offer_type: 'bundle',
-      offerTitle: 'Grand Opening Bundle',
-      offerDescription: 'Grand Opening & Christmas Special: 5 FREE Tokens + VIP Spin! Play Passes (30/40/60 Mins). BOGO 50% OFF. Free Gift with Share!',
-      offer_value: 'ALL ACCESS',
-      offerDiscount: 'ALL ACCESS',
-      offer_badge_text: 'LIMITED TIME',
-      features: [
-        { title: 'Free Tokens', description: 'Get 5 Free Tokens just for visiting' },
-        { title: 'VIP Spin', description: 'Win prizes on our lucky wheel' },
-        { title: 'Play Area', description: 'Free Play Area access with first purchase' },
-      ],
-      galleryImages: [],
-      phone: '(561) 247-7312',
-      address: {
-        street: '2885D N Military Trail',
-        area: 'West Palm Beach, FL 33409',
-        fullAddress: '2885D N Military Trail, West Palm Beach, FL 33409'
-      },
-      primaryColor: '#ec4899',
-      openingHours: {
-        isOpen: true,
-        currentStatus: 'Open Daily',
-        closingTime: '9:00 PM', // Legacy
-        specialHours: '11:00 AM – 9:00 PM'
-      },
-    }
-  },
-  restaurant: {
-    name: 'Tasty Restaurant',
+  sushi: {
     template_type: 'sushi',
     content: {
-      businessName: 'Tasty Restaurant',
-      heroTitle: 'Holiday Feast',
-      heroSubtitle: 'Family Special',
-      heroImageUrl: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop',
+      businessName: '', // Placeholder
+      businessType: 'Restaurant',
+      heroTitle: 'Grand Opening',
+      heroSubtitle: 'Taste the Freshness',
+      heroImageUrl: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=2070&auto=format&fit=crop',
       offer_type: 'discount',
-      offerTitle: 'Family Feast Special',
-      offerDescription: 'Get 20% OFF your entire bill when you dine with us this weekend.',
+      offerTitle: 'Grand Opening Special',
+      offerDescription: 'Get 20% OFF your entire bill when you dine with us. Valid for a limited time!',
       offer_value: '20% OFF',
-      offerDiscount: '20% OFF',
-      offer_badge_text: 'BEST VALUE',
-      features: [],
-      galleryImages: [],
-      phone: '',
-      address: { street: '', area: '', fullAddress: '' },
+      offer_badge_text: 'LIMITED TIME',
+      primaryColor: '#F43F5E',
+      openingHours: { isOpen: true, currentStatus: 'Open Daily', closingTime: '10:00 PM' }
+    }
+  },
+  nail: {
+    template_type: 'nail',
+    content: {
+      businessName: '',
+      businessType: 'Beauty & Spa',
+      heroTitle: 'Luxury Manicure',
+      heroSubtitle: 'Treat Yourself Today',
+      heroImageUrl: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=2070&auto=format&fit=crop',
+      offer_type: 'discount',
+      offerTitle: 'New Customer Special',
+      offerDescription: 'Get $10 OFF your first Gel Manicure or Pedi Spa usage.',
+      offer_value: '$10 OFF',
+      offer_badge_text: 'NEW CLIENTS',
+      primaryColor: '#D946EF',
+      openingHours: { isOpen: true, currentStatus: 'Open Now', closingTime: '7:00 PM' }
+    }
+  },
+  massage: {
+    template_type: 'massage',
+    content: {
+      businessName: '',
+      businessType: 'Wellness',
+      heroTitle: 'Relax & Rejuvenate',
+      heroSubtitle: 'Professional Massage Therapy',
+      heroImageUrl: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?q=80&w=2070&auto=format&fit=crop',
+      offer_type: 'discount',
+      offerTitle: '60-Min Massage Deal',
+      offerDescription: 'Complete relaxation for mind and body. Book your session today.',
+      offer_value: '$49 ONLY',
+      offer_badge_text: 'HOT DEAL',
+      primaryColor: '#0EA5E9',
+      openingHours: { isOpen: true, currentStatus: 'Open Daily', closingTime: '9:00 PM' }
+    }
+  },
+  entertainment: {
+    template_type: 'sushi', // Fallback to compatible template
+    content: {
+      businessName: '',
+      businessType: 'Entertainment',
+      heroTitle: 'Fun for Everyone',
+      heroSubtitle: 'Arcade & Games',
+      heroImageUrl: 'https://images.unsplash.com/photo-1511882150382-421056c89033?q=80&w=2071&auto=format&fit=crop',
+      offer_type: 'bogo',
+      offerTitle: 'Buy 1 Get 1 Free',
+      offerDescription: 'Buy one hour of play time and get the second hour absolutely FREE!',
+      offer_value: 'BOGO FREE',
+      offer_badge_text: 'POPULAR',
+      primaryColor: '#8B5CF6',
+      openingHours: { isOpen: true, currentStatus: 'Open Late', closingTime: '11:00 PM' }
     }
   }
 }
@@ -68,43 +83,58 @@ export default function NewMerchantPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [selectedPreset, setSelectedPreset] = useState('sushi')
 
   const [formData, setFormData] = useState<MerchantFormData>({
     name: '',
     slug: '',
-    template_type: 'nail',
+    template_type: 'sushi',
     logo_url: '',
     ga4_measurement_id: '',
-    virtual_base_count: 200,
+    virtual_base_count: 200, // UX requirement: Default to realistic number
     is_active: true,
     content: {
+      // Default fallback content is critical if user picks 'sushi' immediately
+      ...PRESETS['sushi'].content as any,
       businessName: '',
-      heroTitle: '',
-      heroSubtitle: '',
-      heroImageUrl: '',
-      offer_type: 'discount',
-      offerTitle: '',
-      offerDescription: '',
-      offer_value: '',
-      offer_badge_text: '',
-      offerDiscount: '',
-      features: [
-        { title: '', description: '' },
-        { title: '', description: '' },
-        { title: '', description: '' },
-      ],
-      galleryImages: [],
       phone: '',
       address: { street: '', area: '', fullAddress: '' },
-      primaryColor: '#ec4899',
+      website: '',
+      requirements: { collectName: true, collectEmail: false }
     }
   })
 
-  // Auto-generate PIN on mount
+  // Auto-generate PIN and Virtual Heat on mount
   useEffect(() => {
     const randomPin = Math.floor(1000 + Math.random() * 9000).toString()
-    setFormData(prev => ({ ...prev, redeem_pin: randomPin }))
+    const randomHeat = Math.floor(120 + Math.random() * 300)
+    setFormData(prev => ({
+      ...prev,
+      redeem_pin: randomPin,
+      virtual_base_count: randomHeat
+    }))
   }, [])
+
+  // Sync Preset Changes
+  useEffect(() => {
+    const preset = PRESETS[selectedPreset]
+    if (preset && preset.content) {
+      setFormData(prev => ({
+        ...prev,
+        template_type: preset.template_type as any,
+        content: {
+          ...prev.content,
+          ...preset.content,
+          // Preserve user-entered critical info
+          businessName: prev.content.businessName,
+          phone: prev.content.phone,
+          address: prev.content.address,
+          openingHours: prev.content.openingHours // Keep hours if modified, else preset overwrites? Let's check.
+          // Actually simple approach: Preset overwrites aesthetics, keeps identity.
+        }
+      }))
+    }
+  }, [selectedPreset])
 
   const handleNameChange = async (name: string) => {
     setFormData(prev => ({
@@ -112,48 +142,18 @@ export default function NewMerchantPage() {
       name,
       content: {
         ...prev.content,
-        businessName: name // Sync business name with merchant name
+        businessName: name // Sync business name
       }
     }))
-    if (name) {
+
+    // Auto-generate slug with debounce/check
+    if (name && name.length > 2) {
       try {
         const slug = await generateSlug(name)
         setFormData(prev => ({ ...prev, slug: slug || '' }))
       } catch (e) {
         console.error('Slug generation failed', e)
       }
-    }
-  }
-
-  const applyPreset = async (key: string) => {
-    const preset = PRESETS[key]
-    if (!preset) return
-
-    try {
-      // Merge preset into formData, handling nested content
-      const newContent = {
-        ...formData.content,
-        ...preset.content
-      }
-
-      const baseName = preset.name || 'New Campaign'
-      let slug = ''
-      try {
-        slug = await generateSlug(baseName)
-      } catch (e) {
-        console.error('Slug error in preset', e)
-      }
-
-      setFormData(prev => ({
-        ...prev,
-        ...preset,
-        name: baseName,
-        slug: slug || prev.slug,
-        content: newContent
-      }))
-    } catch (e) {
-      console.error('Preset application failed', e)
-      setError('Failed to apply preset')
     }
   }
 
@@ -166,7 +166,9 @@ export default function NewMerchantPage() {
       const result = await createMerchant(formData)
 
       if (result.success) {
-        router.push('/admin/merchants')
+        // Feature: Redirect to Visual Editor
+        const editUrl = `/${result.merchant?.slug}?mode=edit&new=true`
+        router.push(editUrl)
       } else {
         setError(result.error || 'Failed to create merchant')
         setLoading(false)
@@ -177,608 +179,138 @@ export default function NewMerchantPage() {
     }
   }
 
-  const updateContent = (field: keyof typeof formData.content, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      content: {
-        ...prev.content,
-        [field]: value
-      }
-    }))
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow mb-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center space-x-8">
-              <Link href="/admin" className="text-xl font-bold text-gray-900">
-                UpDeal
-              </Link>
-              <Link href="/admin/merchants" className="text-gray-700 hover:text-gray-900">
-                商家管理
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">新增商家 / 落地页</h1>
-          <p className="text-gray-600 mt-1">创建新的营销活动落地页</p>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <div className="max-w-xl w-full">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Create New Merchant</h1>
+          <p className="text-gray-600 mt-2">Simplify your setup. Details can be edited visually later.</p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
-            {error}
-          </div>
-        )}
-
-        {/* Quick Fill Toolbar */}
-        <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4 mb-6">
-          <h3 className="text-sm font-semibold text-indigo-900 mb-3">🚀 快速填充模板 (Quick Fill)</h3>
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => applyPreset('arcadia')}
-              className="px-4 py-2 bg-white border border-indigo-200 text-indigo-700 rounded-md shadow-sm hover:bg-indigo-50 flex items-center gap-2"
-            >
-              🎮 Arcade / Entertainment
-            </button>
-            <button
-              type="button"
-              onClick={() => applyPreset('restaurant')}
-              className="px-4 py-2 bg-white border-indigo-200 text-indigo-700 rounded-md shadow-sm hover:bg-indigo-50 flex items-center gap-2"
-            >
-              🍣 Restaurant / Dining
-            </button>
-          </div>
-          <p className="text-xs text-indigo-600 mt-2">点击上方按钮可快速填充内容，然后只需修改细节。</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-6">
-          {/* Basic Info */}
-          <div>
-            <h2 className="text-lg font-medium text-gray-900 mb-4">基本信息</h2>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  商家/活动名称 *
-                </label>
-                <input
-                  type="text"
-                  value={formData.name || ''}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  className="w-full border rounded px-3 py-2 text-gray-900"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  URL Slug (链接后缀) *
-                </label>
-                <input
-                  type="text"
-                  value={formData.slug || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                  className="w-full border rounded px-3 py-2 text-gray-900"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  落地页地址: updeal.top/{formData.slug || '...'}
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  模板类型 *
-                </label>
-                <select
-                  value={formData.template_type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, template_type: e.target.value as any }))}
-                  className="w-full border rounded px-3 py-2 text-gray-900"
-                  required
+        <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
+          {/* Template Selector Banner */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
+            <label className="block text-sm font-medium mb-2 opacity-90">Select Industry / Template</label>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { id: 'sushi', label: '🍣 Restaurant' },
+                { id: 'nail', label: '💅 Beauty/Nail' },
+                { id: 'massage', label: '💆 Massage' },
+                { id: 'entertainment', label: '🎮 Fun/Arcade' },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setSelectedPreset(t.id)}
+                  className={`py-2 px-1 text-xs sm:text-sm rounded-lg border transition-all ${selectedPreset === t.id
+                    ? 'bg-white text-blue-700 border-white font-bold shadow-lg ring-2 ring-blue-300 ring-opacity-50'
+                    : 'bg-blue-800/30 border-transparent hover:bg-blue-600 text-white'
+                    }`}
                 >
-                  <option value="sushi">Modern White (通用/Arcadia)</option>
-                  <option value="nail">Nail (美甲)</option>
-                  <option value="chinese">Chinese (中餐)</option>
-                  <option value="bbq">BBQ (烧烤)</option>
-                  <option value="massage">Massage (按摩)</option>
-                  <option value="boba">Boba (珍珠奶茶)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Google Analytics ID (可选)
-                </label>
-                <input
-                  type="text"
-                  value={formData.ga4_measurement_id || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, ga4_measurement_id: e.target.value }))}
-                  placeholder="G-XXXXXXXXXX"
-                  className="w-full border rounded px-3 py-2 text-gray-900"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  店铺核销密码 (PIN)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={formData.redeem_pin || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, redeem_pin: e.target.value }))}
-                    className="w-full border rounded px-3 py-2 text-gray-900 font-mono tracking-widest"
-                    placeholder="1234"
-                    maxLength={4}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, redeem_pin: Math.floor(1000 + Math.random() * 9000).toString() }))}
-                    className="px-3 py-2 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
-                    title="重新生成"
-                  >
-                    🔄
-                  </button>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  店员登录核销页面的密码 (自动生成，可修改)
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  营销热度-虚拟基数 (Virtual Base Heat)
-                </label>
-                <input
-                  type="number"
-                  value={formData.virtual_base_count || 200}
-                  onChange={(e) => setFormData(prev => ({ ...prev, virtual_base_count: parseInt(e.target.value) || 0 }))}
-                  className="w-full border rounded px-3 py-2 text-gray-900"
-                  placeholder="200"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  显示销量 = 真实销量 + 虚拟基数。建议设为 100-500 以增加信任感。
-                </p>
-              </div>
+                  {t.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Content */}
-          <div>
-            <h2 className="text-lg font-medium text-gray-900 mb-4">页面内容</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hero 标题 *
-                </label>
-                <input
-                  type="text"
-                  value={formData.content.heroTitle || ''}
-                  onChange={(e) => updateContent('heroTitle', e.target.value)}
-                  className="w-full border rounded px-3 py-2 text-gray-900"
-                  required
-                />
+          <form onSubmit={handleSubmit} className="p-8 space-y-6">
+            {error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100 flex items-center">
+                <span className="mr-2">⚠️</span> {error}
               </div>
+            )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hero 副标题 *
-                </label>
-                <input
-                  type="text"
-                  value={formData.content.heroSubtitle || ''}
-                  onChange={(e) => updateContent('heroSubtitle', e.target.value)}
-                  className="w-full border rounded px-3 py-2 text-gray-900"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hero 图片 URL *
-                </label>
-                <input
-                  type="url"
-                  value={formData.content.heroImageUrl || ''}
-                  onChange={(e) => updateContent('heroImageUrl', e.target.value)}
-                  placeholder="https://example.com/hero.jpg"
-                  className="w-full border rounded px-3 py-2 text-gray-900"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    优惠标题 *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.content.offerTitle || ''}
-                    onChange={(e) => updateContent('offerTitle', e.target.value)}
-                    className="w-full border rounded px-3 py-2 text-gray-900"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    优惠类型 *
-                  </label>
-                  <select
-                    value={formData.content.offer_type || 'discount'}
-                    onChange={(e) => updateContent('offer_type', e.target.value)}
-                    className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
-                  >
-                    <option value="discount">Direct Discount (50% OFF)</option>
-                    <option value="coupon">Coupon (Get $10 Off)</option>
-                    <option value="bogo">BOGO (Buy 1 Get 1)</option>
-                    <option value="reservation">Reservation (Book Now)</option>
-                    <option value="free_item">Free Item (Free Appetizer)</option>
-                    <option value="bundle">Bundle ($29.99 Special)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    核心价值/金额 (Offer Value) *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={formData.content.offer_value || formData.content.offerDiscount || ''}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setFormData(prev => ({
-                          ...prev,
-                          content: {
-                            ...prev.content,
-                            offer_value: val,
-                            offerDiscount: val
-                          }
-                        }));
-                      }}
-                      placeholder="e.g. 50% OFF, $10, Buy 1 Get 1"
-                      className="w-full border rounded px-3 py-2 text-gray-900"
-                      required
-                    />
-                    <p className="mt-1 text-xs text-gray-500">
-                      大字展示的内容 (如: 50%)
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    角标文案 (Badge Text)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.content.offer_badge_text || ''}
-                    onChange={(e) => updateContent('offer_badge_text', e.target.value)}
-                    placeholder="e.g. LIMITED TIME, BEST VALUE"
-                    className="w-full border rounded px-3 py-2 text-gray-900"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    官方网站 (可选)
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.content.website || ''}
-                    onChange={(e) => updateContent('website', e.target.value)}
-                    placeholder="https://example.com"
-                    className="w-full border rounded px-3 py-2 text-gray-900"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    联系电话
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.content.phone || ''}
-                    onChange={(e) => updateContent('phone', e.target.value)}
-                    className="w-full border rounded px-3 py-2 text-gray-900"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  优惠描述 *
-                </label>
-                <textarea
-                  value={formData.content.offerDescription || ''}
-                  onChange={(e) => updateContent('offerDescription', e.target.value)}
-                  rows={3}
-                  className="w-full border rounded px-3 py-2 text-gray-900"
-                  required
-                />
-              </div>
-
-              {/* Address Section */}
-              <div className="space-y-4 border-t pt-4">
-                <h3 className="text-sm font-medium text-gray-900">地址信息</h3>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Address (显示在页面的地址)</label>
-                  <input
-                    type="text"
-                    value={formData.content.address?.fullAddress || ''}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      content: {
-                        ...prev.content,
-                        address: {
-                          ...(prev.content.address || {}),
-                          fullAddress: e.target.value
-                        }
-                      }
-                    }))}
-                    className="w-full border rounded px-3 py-2 text-gray-900"
-                    placeholder="e.g. 123 Main St, New York, NY"
-                  />
-                </div>
-              </div>
-
-              {/* Data Collection Settings */}
-              <div className="space-y-4 border-t pt-4">
-                <h3 className="text-sm font-medium text-gray-900">数据收集设置 (Data Collection)</h3>
-                <div className="flex gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.content.requirements?.collectName ?? true}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        content: {
-                          ...prev.content,
-                          requirements: {
-                            collectName: e.target.checked,
-                            collectEmail: prev.content.requirements?.collectEmail ?? false
-                          }
-                        }
-                      }))}
-                      className="w-4 h-4 text-blue-600 rounded"
-                    />
-                    <span className="text-sm text-gray-700">收集姓名 (Name)</span>
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.content.requirements?.collectEmail ?? false}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        content: {
-                          ...prev.content,
-                          requirements: {
-                            collectName: prev.content.requirements?.collectName ?? true,
-                            collectEmail: e.target.checked
-                          }
-                        }
-                      }))}
-                      className="w-4 h-4 text-blue-600 rounded"
-                    />
-                    <span className="text-sm text-gray-700">收集邮箱 (Email)</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Custom Labels Settings */}
-              <div className="space-y-4 border-t pt-4">
-                <h3 className="text-sm font-medium text-gray-900">高级文案定制 (Advanced Text Customization)</h3>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 bg-gray-50 p-4 rounded-lg">
-
-                  <div className="col-span-2">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Claim Form (领券表单)</h4>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">标题 (Section Title)</label>
-                    <input
-                      type="text"
-                      placeholder="Get Your Coupon"
-                      value={formData.content.customLabels?.section_title_claim || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        content: {
-                          ...prev.content,
-                          customLabels: { ...prev.content.customLabels, section_title_claim: e.target.value }
-                        }
-                      }))}
-                      className="w-full border rounded px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">按钮文字 (Button Text)</label>
-                    <input
-                      type="text"
-                      placeholder="Claim Coupon Now"
-                      value={formData.content.customLabels?.button_text_claim || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        content: {
-                          ...prev.content,
-                          customLabels: { ...prev.content.customLabels, button_text_claim: e.target.value }
-                        }
-                      }))}
-                      className="w-full border rounded px-3 py-2 text-sm"
-                    />
-                  </div>
-
-                  <div className="col-span-2 mt-2">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Success State (领券成功 - Discount Mode)</h4>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">成功标题 (Title)</label>
-                    <input
-                      type="text"
-                      placeholder="Coupon Claimed!"
-                      value={formData.content.customLabels?.success_title || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        content: {
-                          ...prev.content,
-                          customLabels: { ...prev.content.customLabels, success_title: e.target.value }
-                        }
-                      }))}
-                      className="w-full border rounded px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">副标题 (Subtitle)</label>
-                    <input
-                      type="text"
-                      placeholder="Show this code to the staff."
-                      value={formData.content.customLabels?.success_subtitle || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        content: {
-                          ...prev.content,
-                          customLabels: { ...prev.content.customLabels, success_subtitle: e.target.value }
-                        }
-                      }))}
-                      className="w-full border rounded px-3 py-2 text-sm"
-                    />
-                  </div>
-
-                  <div className="col-span-2 mt-2">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">VIP Welcome (VIP 模式文案)</h4>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">欢迎标题 (VIP Title)</label>
-                    <input
-                      type="text"
-                      placeholder="Welcome to the Club!"
-                      value={formData.content.customLabels?.vip_welcome_title || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        content: {
-                          ...prev.content,
-                          customLabels: { ...prev.content.customLabels, vip_welcome_title: e.target.value }
-                        }
-                      }))}
-                      className="w-full border rounded px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">欢迎详情 (VIP Subtitle)</label>
-                    <textarea
-                      placeholder="You are now on our VIP list..."
-                      value={formData.content.customLabels?.vip_welcome_subtitle || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        content: {
-                          ...prev.content,
-                          customLabels: { ...prev.content.customLabels, vip_welcome_subtitle: e.target.value }
-                        }
-                      }))}
-                      className="w-full border rounded px-3 py-2 text-sm"
-                      rows={2}
-                    />
-                  </div>
-
-                  <div className="col-span-2 mt-2">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Section Headers (页脚标题)</h4>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Visit Title</label>
-                    <input
-                      type="text"
-                      placeholder="Visit Us"
-                      value={formData.content.customLabels?.section_title_visit || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        content: {
-                          ...prev.content,
-                          customLabels: { ...prev.content.customLabels, section_title_visit: e.target.value }
-                        }
-                      }))}
-                      className="w-full border rounded px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Hours Title</label>
-                    <input
-                      type="text"
-                      placeholder="Opening Hours"
-                      value={formData.content.customLabels?.section_title_hours || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        content: {
-                          ...prev.content,
-                          customLabels: { ...prev.content.customLabels, section_title_hours: e.target.value }
-                        }
-                      }))}
-                      className="w-full border rounded px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Website Title</label>
-                    <input
-                      type="text"
-                      placeholder="Website"
-                      value={formData.content.customLabels?.section_title_website || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        content: {
-                          ...prev.content,
-                          customLabels: { ...prev.content.customLabels, section_title_website: e.target.value }
-                        }
-                      }))}
-                      className="w-full border rounded px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Call Title</label>
-                    <input
-                      type="text"
-                      placeholder="Call Us"
-                      value={formData.content.customLabels?.section_title_call || ''}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        content: {
-                          ...prev.content,
-                          customLabels: { ...prev.content.customLabels, section_title_call: e.target.value }
-                        }
-                      }))}
-                      className="w-full border rounded px-3 py-2 text-sm"
-                    />
-                  </div>
-
-                </div>
-              </div>
-
+            {/* Core Fields */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Business Name *</label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleNameChange(e.target.value)}
+                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 py-3 px-4 text-lg"
+                placeholder="e.g. Tasty Bistro"
+                required
+                autoFocus
+              />
+              <p className="text-xs text-gray-500 mt-1">This will be the main title of your page.</p>
             </div>
-          </div>
 
-          {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-6 border-t">
-            <Link
-              href="/admin/merchants"
-              className="px-4 py-2 border rounded text-gray-700 hover:bg-gray-50"
-            >
-              取消
-            </Link>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? '创建中...' : '创建商户页面'}
-            </button>
-          </div>
-        </form>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                <input
+                  type="tel"
+                  value={formData.content.phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, content: { ...prev.content, phone: e.target.value } }))}
+                  className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 py-2 px-3"
+                  placeholder="(555) 123-4567"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">Used for the "Call Us" button.</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Opening Hours (Display)</label>
+                <input
+                  type="text"
+                  value={formData.content.openingHours?.currentStatus || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev, content: {
+                      ...prev.content,
+                      openingHours: { ...(prev.content.openingHours || {}), currentStatus: e.target.value }
+                    }
+                  }))}
+                  className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 py-2 px-3"
+                  placeholder="e.g. Open Mon-Sun 10AM-9PM"
+                />
+                <p className="text-xs text-gray-500 mt-1">Displayed in the "Info" card.</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Full Address *</label>
+              <input
+                type="text"
+                value={formData.content.address?.fullAddress || ''}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  content: {
+                    ...prev.content,
+                    address: { ...(prev.content.address || {}), fullAddress: e.target.value, street: e.target.value } // Lazy sync street
+                  }
+                }))}
+
+                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 py-2 px-3"
+                placeholder="123 Main St, New York, NY 10001"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">This will be used for Google Maps links.</p>
+            </div>
+
+            {/* Hidden Logic / Summary */}
+            <div className="bg-gray-50 rounded-lg p-4 text-xs text-gray-500 flex justify-between items-center">
+              <div>
+                <p><strong>URL:</strong> /{formData.slug || '...'}</p>
+                <p><strong>PIN:</strong> {formData.redeem_pin}</p>
+              </div>
+              <div className="text-right">
+                <p><strong>Heat:</strong> +{formData.virtual_base_count} views</p>
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all transform hover:scale-[1.01]"
+              >
+                {loading ? <Loader2 className="animate-spin w-5 h-5 mr-2" /> : '✨ Generate Landing Page'}
+              </button>
+              <div className="text-center mt-4">
+                <Link href="/admin/merchants" className="text-sm text-gray-500 hover:text-gray-700">Cancel & Return to Dashboard</Link>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )

@@ -111,6 +111,8 @@ export const merchantSchema = z.object({
       section_title_hours: z.string().optional(),
       section_title_website: z.string().optional(),
       section_title_call: z.string().optional(),
+      social_proof_text: z.string().optional(),
+      social_proof_claimed: z.string().optional(),
     }).optional(),
   })
 })

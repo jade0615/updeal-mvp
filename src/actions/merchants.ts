@@ -155,7 +155,50 @@ export async function getMerchant(id: string) {
     .eq('id', id)
     .single()
 
-  if (error) throw error
+  if (error) {
+    if (error.code === 'PGRST116') { // No rows found
+      return null
+    }
+    console.error('Error fetching merchant:', error)
+    return null
+  }
+
+  /*
+   * UPDATED ANALYTICS STATS FETCHING (Real-time Counts)
+   * Instead of relying on possibly out-of-sync landing_page_stats table,
+   * we count the actual rows in page_views and customer_claims.
+   */
+  if (merchant) {
+    try {
+      const [
+        { count: pageViewsCount },
+        { count: claimsCount },
+        { count: formSubmitsCount }
+      ] = await Promise.all([
+        // Count total page views from page_views table
+        supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('merchant_id', id),
+        // Count total claims from customer_claims table
+        supabase.from('customer_claims').select('*', { count: 'exact', head: true }).eq('merchant_id', id),
+        // Count submits from events (as backup if separate table not used for submits yet)
+        supabase.from('events').select('*', { count: 'exact', head: true }).eq('merchant_id', id).eq('event_type', 'form_submit')
+      ])
+
+      const totalPageViews = pageViewsCount || 0
+      const totalClaims = claimsCount || 0
+      const conversionRate = totalPageViews > 0 ? ((totalClaims / totalPageViews) * 100).toFixed(2) : 0
+
+      // @ts-ignore - Injecting calculated stats
+      merchant.landing_page_stats = {
+        total_page_views: totalPageViews,
+        total_coupon_claims: totalClaims,
+        total_form_submits: formSubmitsCount || 0,
+        conversion_rate: Number(conversionRate),
+        last_calculated_at: new Date().toISOString()
+      }
+    } catch (statsError) {
+      console.error('Error calculating live stats, falling back to cached:', statsError)
+    }
+  }
 
   return merchant
 }
