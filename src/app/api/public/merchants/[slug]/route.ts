@@ -10,10 +10,20 @@ export async function GET(
     const { slug } = await params;
     const supabase = createAdminClient();
 
-    // 1. Get Merchant
+    // 1. Get Merchant (只选择公开字段，排除敏感信息如 redeem_pin)
     const { data: merchant, error: merchantError } = await supabase
         .from('merchants')
-        .select('*')
+        .select(`
+            id,
+            name,
+            slug,
+            content,
+            template,
+            is_active,
+            virtual_base_count,
+            internal_id,
+            created_at
+        `)
         .eq('slug', slug)
         .single();
 

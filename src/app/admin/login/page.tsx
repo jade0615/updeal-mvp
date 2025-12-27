@@ -70,11 +70,6 @@ export default function LoginPage() {
             {loading ? '登录中...' : '登录'}
           </button>
         </form>
-
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <p>默认账号: admin@updeal.com</p>
-          <p>默认密码: admin123</p>
-        </div>
       </div>
     </div>
   )
