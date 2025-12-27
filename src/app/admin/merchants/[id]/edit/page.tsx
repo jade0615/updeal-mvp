@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { updateMerchant, getMerchant } from '@/actions/merchants'
 import type { MerchantFormData } from '@/lib/utils/validation'
 import Link from 'next/link'
-import { Copy, ExternalLink, Check } from 'lucide-react'
+import { Copy, ExternalLink, Check, MapPin, Clock, Phone, Globe } from 'lucide-react'
 
 export default function EditMerchantPage() {
     const router = useRouter()
@@ -59,7 +59,11 @@ export default function EditMerchantPage() {
             heroImageUrl: '',
             features: [],
             galleryImages: [],
-            customLabels: {}
+            customLabels: {},
+            requirements: {
+                collectName: true,
+                collectEmail: false
+            }
         }
     })
 
@@ -76,6 +80,10 @@ export default function EditMerchantPage() {
                         businessType: 'Restaurant',
                         priceRange: '$$',
                         establishedYear: 2020,
+                        heroTitle: '',
+                        heroSubtitle: '',
+                        rating: 4.8,
+                        reviewCount: '100',
                         offer: {
                             type: 'Exclusive',
                             value: '',
@@ -83,10 +91,14 @@ export default function EditMerchantPage() {
                             description: '',
                             totalLimit: 500
                         },
+                        offer_badge_text: '',
                         address: { street: '', area: '', fullAddress: '' },
-                        openingHours: { isOpen: true, currentStatus: 'Open Now', closingTime: '10 PM' },
+                        openingHours: { isOpen: true, currentStatus: 'Open Now', closingTime: '10 PM', specialHours: '' },
+                        phone: '',
+                        website: '',
                         reviews: [],
-                        customLabels: {}
+                        customLabels: {},
+                        requirements: { collectName: true, collectEmail: false }
                     };
 
                     // Deep merge or overwrite defaults with actual data
@@ -96,6 +108,7 @@ export default function EditMerchantPage() {
                     if (merchant.content?.address) mergedContent.address = { ...defaultContent.address, ...merchant.content.address };
                     if (merchant.content?.openingHours) mergedContent.openingHours = { ...defaultContent.openingHours, ...merchant.content.openingHours };
                     if (merchant.content?.customLabels) mergedContent.customLabels = { ...defaultContent.customLabels, ...merchant.content.customLabels };
+                    if (merchant.content?.requirements) mergedContent.requirements = { ...defaultContent.requirements, ...merchant.content.requirements };
 
                     setFormData({
                         ...merchant,
@@ -142,9 +155,13 @@ export default function EditMerchantPage() {
                 return { ...prev, content: newContent };
             }
 
-            // Handle nested paths: "offer.value" or "address.street"
+            // Handle nested paths: "offer.value", "address.street", "requirements.collectName", etc.
             const [parent, child] = path.split('.');
-            if (parent && child && (newContent as any)[parent]) {
+            if (parent && child) {
+                // Initialize parent object if it doesn't exist
+                if (!(newContent as any)[parent]) {
+                    (newContent as any)[parent] = {};
+                }
                 (newContent as any)[parent] = {
                     ...(newContent as any)[parent],
                     [child]: value
@@ -310,12 +327,588 @@ export default function EditMerchantPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-8">
-                    {/* === 1. System Info === */}
-                    <div>
-                        <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">System Info</h2>
+                        {/* ============================================================ */}
+                    {/* 📍 区域1: 页面顶部 - 深绿色背景区域 */}
+                    {/* ============================================================ */}
+                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 -mx-6 px-6 py-6 rounded-lg border border-emerald-200">
+                        <h2 className="text-lg font-bold text-emerald-800 border-b border-emerald-200 pb-2 mb-4 flex items-center gap-2">
+                            <span className="text-xl">📍</span> 区域1: 页面顶部 (深绿色背景)
+                        </h2>
+                        <p className="text-sm text-emerald-600 mb-4 bg-white/50 p-3 rounded-lg">
+                            这些内容显示在页面最上方的深绿色区域，包括店名、标语和评分
+                        </p>
+
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            {/* Hero Title - 店名上方小字 */}
+                            <div className="col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    🏷️ 店名上方小标题 <span className="text-gray-400 font-normal">(heroTitle)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">例如: HOLIDAY FEAST、LIMITED TIME - 显示在店名正上方的小字</p>
+                                <input
+                                    type="text"
+                                    value={formData.content.heroTitle || ''}
+                                    onChange={(e) => updateContent('heroTitle', e.target.value)}
+                                    placeholder="例如: HOLIDAY FEAST"
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+
+                            {/* Business Name - 大标题店名 */}
+                            <div className="col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    🏪 店名 (大标题) * <span className="text-gray-400 font-normal">(businessName)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">显示在页面最显眼位置的店铺名称</p>
+                                <input
+                                    type="text"
+                                    value={formData.content.businessName || ''}
+                                    onChange={(e) => updateContent('businessName', e.target.value)}
+                                    placeholder="例如: Tasty Restaurant"
+                                    className="w-full border rounded px-3 py-2 text-lg font-semibold"
+                                    required
+                                />
+                            </div>
+
+                            {/* Hero Subtitle - 店名下方副标题 */}
+                            <div className="col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    📝 店名下方副标题 <span className="text-gray-400 font-normal">(heroSubtitle)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">例如: Family Special、Since 1990 - 显示在店名正下方的描述文字</p>
+                                <input
+                                    type="text"
+                                    value={formData.content.heroSubtitle || ''}
+                                    onChange={(e) => updateContent('heroSubtitle', e.target.value)}
+                                    placeholder="例如: Family Special"
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+
+                            {/* Rating */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Internal Name *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    ⭐ 评分 <span className="text-gray-400 font-normal">(rating)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">店铺评分，如 4.8</p>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0"
+                                    max="5"
+                                    value={formData.content.rating || 4.8}
+                                    onChange={(e) => updateContent('rating', parseFloat(e.target.value))}
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+
+                            {/* Review Count */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    💬 评论数量 <span className="text-gray-400 font-normal">(reviewCount)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">如: "1.2k"、"500" - 显示在评分旁边</p>
+                                <input
+                                    type="text"
+                                    value={formData.content.reviewCount || ''}
+                                    onChange={(e) => updateContent('reviewCount', e.target.value)}
+                                    placeholder="例如: 1.2k 或 500"
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ============================================================ */}
+                    {/* 🎁 区域2: 折扣卡片 - 玻璃效果区域 */}
+                    {/* ============================================================ */}
+                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 -mx-6 px-6 py-6 rounded-lg border border-orange-200">
+                        <h2 className="text-lg font-bold text-orange-800 border-b border-orange-200 pb-2 mb-4 flex items-center gap-2">
+                            <span className="text-xl">🎁</span> 区域2: 折扣卡片 (玻璃效果区域)
+                        </h2>
+                        <p className="text-sm text-orange-600 mb-4 bg-white/50 p-3 rounded-lg">
+                            这是显示折扣信息的半透明卡片区域，包含折扣金额、描述和热度
+                        </p>
+
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                            {/* Offer Value - 折扣数值 */}
+                            <div className="col-span-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    💰 折扣数值 * <span className="text-gray-400 font-normal">(offer.value)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">卡片上最大的数字，如 "20%"、"$10"、"Buy 1 Get 1"</p>
+                                <input
+                                    type="text"
+                                    value={formData.content.offer?.value || ''}
+                                    onChange={(e) => updateContent('offer.value', e.target.value)}
+                                    placeholder="例如: 20% 或 $10"
+                                    className="w-full border rounded px-3 py-2 font-bold text-2xl text-orange-600"
+                                    required
+                                />
+                            </div>
+
+                            {/* Offer Unit */}
+                            <div className="col-span-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    📌 单位 <span className="text-gray-400 font-normal">(offer.unit)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">跟在数值后面，如 "OFF"</p>
+                                <select
+                                    value={formData.content.offer?.unit || 'Off'}
+                                    onChange={(e) => updateContent('offer.unit', e.target.value)}
+                                    className="w-full border rounded px-3 py-2 bg-white"
+                                >
+                                    <option value="Off">Off (折扣)</option>
+                                    <option value="Free">Free (免费)</option>
+                                    <option value="Off Your Order">Off Your Order</option>
+                                    <option value="">无单位</option>
+                                </select>
+                            </div>
+
+                            {/* Offer Type */}
+                            <div className="col-span-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    🏆 优惠类型 <span className="text-gray-400 font-normal">(offer.type)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">显示在折扣数值上方的小标签</p>
+                                <select
+                                    value={formData.content.offer?.type || 'discount'}
+                                    onChange={(e) => updateContent('offer.type', e.target.value)}
+                                    className="w-full border rounded px-3 py-2 bg-white"
+                                >
+                                    <option value="discount">不显示标签</option>
+                                    <option value="Exclusive">Exclusive (独家)</option>
+                                    <option value="Limited">Limited (限时)</option>
+                                    <option value="Special">Special (特别)</option>
+                                    <option value="Holiday">Holiday (节日)</option>
+                                    <option value="VIP">VIP</option>
+                                </select>
+                            </div>
+
+                            {/* Offer Description */}
+                            <div className="col-span-3">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    📄 折扣描述 <span className="text-gray-400 font-normal">(offer.description)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">折扣卡片上的详细说明文字</p>
+                                <textarea
+                                    value={formData.content.offer?.description || ''}
+                                    onChange={(e) => updateContent('offer.description', e.target.value)}
+                                    placeholder="例如: Get 20% OFF your entire bill when you dine with us this weekend."
+                                    className="w-full border rounded px-3 py-2"
+                                    rows={2}
+                                />
+                            </div>
+
+                            {/* Badge Text */}
+                            <div className="col-span-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    🔥 角标文字 <span className="text-gray-400 font-normal">(offer_badge_text)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">卡片右下角的小标签，如 "HOT"、"BEST VALUE"</p>
+                                <input
+                                    type="text"
+                                    value={formData.content.offer_badge_text || ''}
+                                    onChange={(e) => updateContent('offer_badge_text', e.target.value)}
+                                    placeholder="例如: HOT"
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+
+                            {/* Virtual Base Count - 虚拟热度 */}
+                            <div className="col-span-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    👥 虚拟热度基数 <span className="text-gray-400 font-normal">(virtual_base_count)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">"XX claimed this week" 的虚拟数字基数</p>
+                                <input
+                                    type="number"
+                                    value={formData.virtual_base_count || 0}
+                                    onChange={(e) => setFormData({ ...formData, virtual_base_count: parseInt(e.target.value) || 0 })}
+                                    placeholder="例如: 200"
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+
+                            {/* Total Limit */}
+                            <div className="col-span-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    🎟️ 总限额 <span className="text-gray-400 font-normal">(offer.totalLimit)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">最多可以发放多少张优惠券</p>
+                                <input
+                                    type="number"
+                                    value={formData.content.offer?.totalLimit || 500}
+                                    onChange={(e) => updateContent('offer.totalLimit', parseInt(e.target.value))}
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ============================================================ */}
+                    {/* 📝 区域3: 表单区域 - 用户填写信息领取优惠券 */}
+                    {/* ============================================================ */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 -mx-6 px-6 py-6 rounded-lg border border-blue-200">
+                        <h2 className="text-lg font-bold text-blue-800 border-b border-blue-200 pb-2 mb-4 flex items-center gap-2">
+                            <span className="text-xl">📝</span> 区域3: 领取表单区域
+                        </h2>
+                        <p className="text-sm text-blue-600 mb-4 bg-white/50 p-3 rounded-lg">
+                            用户填写信息领取优惠券的白色卡片区域
+                        </p>
+
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            {/* Section Title */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    📋 表单标题 <span className="text-gray-400 font-normal">(section_title_claim)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">表单区域的大标题</p>
+                                <input
+                                    type="text"
+                                    value={formData.content.customLabels?.section_title_claim || ''}
+                                    onChange={(e) => updateContent('customLabels.section_title_claim', e.target.value)}
+                                    placeholder="默认: Get Your Coupon"
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+
+                            {/* Section Subtitle */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    📝 表单副标题 <span className="text-gray-400 font-normal">(section_subtitle_claim)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">表单标题下方的小字说明</p>
+                                <input
+                                    type="text"
+                                    value={formData.content.customLabels?.section_subtitle_claim || ''}
+                                    onChange={(e) => updateContent('customLabels.section_subtitle_claim', e.target.value)}
+                                    placeholder="默认: Fill details to claim instant discount"
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+
+                            {/* Button Text */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    🔘 按钮文字 <span className="text-gray-400 font-normal">(button_text_claim)</span>
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">橙色提交按钮上的文字</p>
+                                <input
+                                    type="text"
+                                    value={formData.content.customLabels?.button_text_claim || ''}
+                                    onChange={(e) => updateContent('customLabels.button_text_claim', e.target.value)}
+                                    placeholder="默认: Claim Coupon Now"
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+
+                            {/* Form Fields Control */}
+                            <div className="col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    📥 要收集的用户信息
+                                </label>
+                                <p className="text-xs text-gray-500 mb-3">选择表单中要显示哪些输入框（电话号码始终必填）</p>
+                                <div className="flex flex-wrap gap-4">
+                                    <label className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border cursor-pointer hover:bg-gray-50">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.content.requirements?.collectName ?? true}
+                                            onChange={(e) => updateContent('requirements.collectName', e.target.checked)}
+                                            className="h-4 w-4 text-blue-600 rounded"
+                                        />
+                                        <span className="text-sm">收集姓名 (Name)</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border cursor-pointer hover:bg-gray-50">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.content.requirements?.collectEmail ?? false}
+                                            onChange={(e) => updateContent('requirements.collectEmail', e.target.checked)}
+                                            className="h-4 w-4 text-blue-600 rounded"
+                                        />
+                                        <span className="text-sm">收集邮箱 (Email)</span>
+                                    </label>
+                                    <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg border">
+                                        <input type="checkbox" checked disabled className="h-4 w-4 rounded" />
+                                        <span className="text-sm text-gray-500">电话号码 (必填)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ============================================================ */}
+                    {/* ✅ 区域4: 成功页面 - 用户领取后看到的内容 */}
+                    {/* ============================================================ */}
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 -mx-6 px-6 py-6 rounded-lg border border-green-200">
+                        <h2 className="text-lg font-bold text-green-800 border-b border-green-200 pb-2 mb-4 flex items-center gap-2">
+                            <span className="text-xl">✅</span> 区域4: 领取成功页面
+                        </h2>
+                        <p className="text-sm text-green-600 mb-4 bg-white/50 p-3 rounded-lg">
+                            用户点击领取按钮后看到的成功页面内容
+                        </p>
+
+                        {/* Normal Mode */}
+                        <div className="mb-6">
+                            <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">普通模式</span>
+                                显示优惠券代码
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        成功标题 <span className="text-gray-400 font-normal">(success_title)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.content.customLabels?.success_title || ''}
+                                        onChange={(e) => updateContent('customLabels.success_title', e.target.value)}
+                                        placeholder="默认: Coupon Claimed!"
+                                        className="w-full border rounded px-3 py-2 text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        成功副标题 <span className="text-gray-400 font-normal">(success_subtitle)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.content.customLabels?.success_subtitle || ''}
+                                        onChange={(e) => updateContent('customLabels.success_subtitle', e.target.value)}
+                                        placeholder="默认: Show this code to the staff."
+                                        className="w-full border rounded px-3 py-2 text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        代码标签 <span className="text-gray-400 font-normal">(success_code_label)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.content.customLabels?.success_code_label || ''}
+                                        onChange={(e) => updateContent('customLabels.success_code_label', e.target.value)}
+                                        placeholder="默认: Redemption Code"
+                                        className="w-full border rounded px-3 py-2 text-sm"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* VIP Mode */}
+                        <div>
+                            <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">VIP模式</span>
+                                当优惠类型为VIP时显示
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        VIP欢迎标题 <span className="text-gray-400 font-normal">(vip_welcome_title)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.content.customLabels?.vip_welcome_title || ''}
+                                        onChange={(e) => updateContent('customLabels.vip_welcome_title', e.target.value)}
+                                        placeholder="默认: Welcome to the Club!"
+                                        className="w-full border rounded px-3 py-2 text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        VIP欢迎副标题 <span className="text-gray-400 font-normal">(vip_welcome_subtitle)</span>
+                                    </label>
+                                    <textarea
+                                        value={formData.content.customLabels?.vip_welcome_subtitle || ''}
+                                        onChange={(e) => updateContent('customLabels.vip_welcome_subtitle', e.target.value)}
+                                        placeholder="默认: You are now on our VIP list..."
+                                        className="w-full border rounded px-3 py-2 text-sm"
+                                        rows={2}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ============================================================ */}
+                    {/* 📍 区域5: 底部商家信息卡片 */}
+                    {/* ============================================================ */}
+                    <div className="bg-gradient-to-r from-slate-50 to-gray-100 -mx-6 px-6 py-6 rounded-lg border border-slate-200">
+                        <h2 className="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 mb-4 flex items-center gap-2">
+                            <span className="text-xl">📍</span> 区域5: 底部商家信息卡片
+                        </h2>
+                        <p className="text-sm text-slate-600 mb-4 bg-white/50 p-3 rounded-lg">
+                            页面底部的白色卡片，显示地址、营业时间、电话等联系方式
+                        </p>
+
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            {/* Visit Us Section */}
+                            <div className="col-span-2 bg-white p-4 rounded-lg border">
+                                <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                    <MapPin className="w-4 h-4 text-orange-500" /> Visit Us 地址部分
+                                </h4>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            标题文字 <span className="text-gray-400 font-normal">(section_title_visit)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.content.customLabels?.section_title_visit || ''}
+                                            onChange={(e) => updateContent('customLabels.section_title_visit', e.target.value)}
+                                            placeholder="默认: Visit Us"
+                                            className="w-full border rounded px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            街道地址 <span className="text-gray-400 font-normal">(address.street)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.content.address?.street || ''}
+                                            onChange={(e) => updateContent('address.street', e.target.value)}
+                                            placeholder="例如: 123 Main Street"
+                                            className="w-full border rounded px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            城市/区域 <span className="text-gray-400 font-normal">(address.area)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.content.address?.area || ''}
+                                            onChange={(e) => updateContent('address.area', e.target.value)}
+                                            placeholder="例如: San Francisco, CA"
+                                            className="w-full border rounded px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            完整地址 (用于地图链接) <span className="text-gray-400 font-normal">(address.fullAddress)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.content.address?.fullAddress || ''}
+                                            onChange={(e) => updateContent('address.fullAddress', e.target.value)}
+                                            placeholder="例如: 123 Main St, San Francisco, CA 94102"
+                                            className="w-full border rounded px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Opening Hours Section */}
+                            <div className="bg-white p-4 rounded-lg border">
+                                <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-orange-500" /> Opening Hours 营业时间
+                                </h4>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            标题文字 <span className="text-gray-400 font-normal">(section_title_hours)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.content.customLabels?.section_title_hours || ''}
+                                            onChange={(e) => updateContent('customLabels.section_title_hours', e.target.value)}
+                                            placeholder="默认: Opening Hours"
+                                            className="w-full border rounded px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            营业时间显示 <span className="text-gray-400 font-normal">(openingHours.specialHours)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.content.openingHours?.specialHours || ''}
+                                            onChange={(e) => updateContent('openingHours.specialHours', e.target.value)}
+                                            placeholder="例如: Mon-Sun 10:00 AM - 9:00 PM"
+                                            className="w-full border rounded px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Call Us Section */}
+                            <div className="bg-white p-4 rounded-lg border">
+                                <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                    <Phone className="w-4 h-4 text-orange-500" /> Call Us 联系电话
+                                </h4>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            标题文字 <span className="text-gray-400 font-normal">(section_title_call)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.content.customLabels?.section_title_call || ''}
+                                            onChange={(e) => updateContent('customLabels.section_title_call', e.target.value)}
+                                            placeholder="默认: Call Us"
+                                            className="w-full border rounded px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            电话号码 <span className="text-gray-400 font-normal">(phone)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.content.phone || ''}
+                                            onChange={(e) => updateContent('phone', e.target.value)}
+                                            placeholder="例如: (555) 123-4567"
+                                            className="w-full border rounded px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Website Section (Optional) */}
+                            <div className="col-span-2 bg-white p-4 rounded-lg border">
+                                <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                    <Globe className="w-4 h-4 text-blue-500" /> Website 网站 (可选)
+                                </h4>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            标题文字 <span className="text-gray-400 font-normal">(section_title_website)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.content.customLabels?.section_title_website || ''}
+                                            onChange={(e) => updateContent('customLabels.section_title_website', e.target.value)}
+                                            placeholder="默认: Website"
+                                            className="w-full border rounded px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            网站链接 <span className="text-gray-400 font-normal">(website)</span>
+                                        </label>
+                                        <input
+                                            type="url"
+                                            value={formData.content.website || ''}
+                                            onChange={(e) => updateContent('website', e.target.value)}
+                                            placeholder="例如: https://www.example.com"
+                                            className="w-full border rounded px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ============================================================ */}
+                    {/* ⚙️ 系统设置 (折叠) */}
+                    {/* ============================================================ */}
+                    <details className="bg-gray-50 -mx-6 px-6 py-4 rounded-lg border border-gray-200">
+                        <summary className="cursor-pointer text-lg font-bold text-gray-700 flex items-center gap-2">
+                            <span className="text-xl">⚙️</span> 系统设置 (点击展开)
+                        </summary>
+                        <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">内部名称 (Internal Name) *</label>
                                 <input
                                     type="text"
                                     value={formData.name}
@@ -335,7 +928,7 @@ export default function EditMerchantPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">状态</label>
                                 <div className="flex items-center mt-2">
                                     <input
                                         type="checkbox"
@@ -343,8 +936,19 @@ export default function EditMerchantPage() {
                                         onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                                         className="h-4 w-4 text-blue-600 rounded border-gray-300"
                                     />
-                                    <span className="ml-2 text-sm text-gray-900">Active</span>
+                                    <span className="ml-2 text-sm text-gray-900">激活 (Active)</span>
                                 </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">兑换PIN码 (Store Password)</label>
+                                <input
+                                    type="text"
+                                    value={formData.redeem_pin || ''}
+                                    onChange={(e) => setFormData({ ...formData, redeem_pin: e.target.value })}
+                                    placeholder="例如: 1234"
+                                    className="w-full border rounded px-3 py-2 font-mono"
+                                />
+                                <p className="mt-1 text-xs text-gray-500">商家员工核销时使用的密码</p>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">GA4 ID</label>
@@ -361,87 +965,17 @@ export default function EditMerchantPage() {
                                     type="text"
                                     value={formData.meta_pixel_id || ''}
                                     onChange={(e) => setFormData({ ...formData, meta_pixel_id: e.target.value })}
-                                    placeholder="e.g. 1234567890"
+                                    placeholder="例如: 1234567890"
                                     className="w-full border rounded px-3 py-2"
                                 />
                             </div>
-                        </div>
-                    </div>
-
-                    {/* === Security / Access === */}
-                    <div>
-                        <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">Security / Access</h2>
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Redemption PIN (Store Password)</label>
-                                <input
-                                    type="text"
-                                    value={formData.redeem_pin || ''}
-                                    onChange={(e) => setFormData({ ...formData, redeem_pin: e.target.value })}
-                                    placeholder="e.g. 1234"
-                                    className="w-full border rounded px-3 py-2 font-mono"
-                                />
-                                <p className="mt-1 text-xs text-gray-500">
-                                    Used by merchant staff to access the redemption terminal.
-                                </p>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">营销热度-虚拟基数 (Virtual Base Heat)</label>
-                                <input
-                                    type="number"
-                                    value={formData.virtual_base_count || 0}
-                                    onChange={(e) => setFormData({ ...formData, virtual_base_count: parseInt(e.target.value) || 0 })}
-                                    className="w-full border rounded px-3 py-2"
-                                />
-                                <p className="mt-1 text-xs text-gray-500">
-                                    Display = Real + Virtual. Used for social proof urgency.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* === 2. Business Basic Info === */}
-                    <div>
-                        <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">Business Info (Public)</h2>
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                            <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Business Name (Display Name) *</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.businessName || ''}
-                                    onChange={(e) => updateContent('businessName', e.target.value)}
-                                    className="w-full border rounded px-3 py-2"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Business Type (e.g. Italian Cuisine)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Business Type</label>
                                 <input
                                     type="text"
                                     value={formData.content.businessType || ''}
                                     onChange={(e) => updateContent('businessType', e.target.value)}
-                                    className="w-full border rounded px-3 py-2"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
-                                <select
-                                    value={formData.content.priceRange || '$$'}
-                                    onChange={(e) => updateContent('priceRange', e.target.value)}
-                                    className="w-full border rounded px-3 py-2 bg-white"
-                                >
-                                    <option value="$">$</option>
-                                    <option value="$$">$$</option>
-                                    <option value="$$$">$$$</option>
-                                    <option value="$$$$">$$$$</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Established Year</label>
-                                <input
-                                    type="number"
-                                    value={formData.content.establishedYear || 2020}
-                                    onChange={(e) => updateContent('establishedYear', parseInt(e.target.value))}
+                                    placeholder="例如: Italian Cuisine"
                                     className="w-full border rounded px-3 py-2"
                                 />
                             </div>
@@ -456,230 +990,7 @@ export default function EditMerchantPage() {
                                 />
                             </div>
                         </div>
-                    </div>
-
-                    {/* === 3. Offer Details === */}
-                    <div>
-                        <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">Offer Details</h2>
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Offer Value *</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.offer?.value || ''}
-                                    onChange={(e) => updateContent('offer.value', e.target.value)}
-                                    placeholder="e.g. 50% or $10"
-                                    className="w-full border rounded px-3 py-2 font-bold text-indigo-600"
-                                    required
-                                />
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
-                                <select
-                                    value={formData.content.offer?.unit || 'Off'}
-                                    onChange={(e) => updateContent('offer.unit', e.target.value)}
-                                    className="w-full border rounded px-3 py-2 bg-white"
-                                >
-                                    <option value="Off">Off</option>
-                                    <option value="Free">Free</option>
-                                    <option value="Off Your Order">Off Your Order</option>
-                                    <option value="">None</option>
-                                </select>
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Type (Badge)</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.offer?.type || 'Exclusive'}
-                                    onChange={(e) => updateContent('offer.type', e.target.value)}
-                                    className="w-full border rounded px-3 py-2"
-                                />
-                            </div>
-                            <div className="col-span-3">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.offer?.description || ''}
-                                    onChange={(e) => updateContent('offer.description', e.target.value)}
-                                    className="w-full border rounded px-3 py-2"
-                                />
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Total Limit</label>
-                                <input
-                                    type="number"
-                                    value={formData.content.offer?.totalLimit || 500}
-                                    onChange={(e) => updateContent('offer.totalLimit', parseInt(e.target.value))}
-                                    className="w-full border rounded px-3 py-2"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* === 4. Location & Contact === */}
-                    <div>
-                        <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">Location & Contact</h2>
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                            <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.address?.street || ''}
-                                    onChange={(e) => updateContent('address.street', e.target.value)}
-                                    className="w-full border rounded px-3 py-2"
-                                />
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Area / City</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.address?.area || ''}
-                                    onChange={(e) => updateContent('address.area', e.target.value)}
-                                    className="w-full border rounded px-3 py-2"
-                                />
-                            </div>
-                            <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Full Address (for Maps Link)</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.address?.fullAddress || ''}
-                                    onChange={(e) => updateContent('address.fullAddress', e.target.value)}
-                                    className="w-full border rounded px-3 py-2"
-                                />
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.phone || ''}
-                                    onChange={(e) => updateContent('phone', e.target.value)}
-                                    className="w-full border rounded px-3 py-2"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* === 5. Advanced Text (Custom Labels) === */}
-                    <div>
-                        <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">Advanced Text Customization</h2>
-                        <div className="bg-gray-50 p-6 rounded-lg grid grid-cols-1 gap-6 sm:grid-cols-2">
-                            <div className="col-span-2">
-                                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Claim Form</h4>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Section Title</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.customLabels?.section_title_claim || ''}
-                                    onChange={(e) => updateContent('customLabels.section_title_claim', e.target.value)}
-                                    placeholder="Get Your Coupon"
-                                    className="w-full border rounded px-3 py-2 text-sm"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Button Text</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.customLabels?.button_text_claim || ''}
-                                    onChange={(e) => updateContent('customLabels.button_text_claim', e.target.value)}
-                                    placeholder="Claim Coupon Now"
-                                    className="w-full border rounded px-3 py-2 text-sm"
-                                />
-                            </div>
-
-                            <div className="col-span-2 mt-2">
-                                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Success (Discount Mode)</h4>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.customLabels?.success_title || ''}
-                                    onChange={(e) => updateContent('customLabels.success_title', e.target.value)}
-                                    placeholder="Coupon Claimed!"
-                                    className="w-full border rounded px-3 py-2 text-sm"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.customLabels?.success_subtitle || ''}
-                                    onChange={(e) => updateContent('customLabels.success_subtitle', e.target.value)}
-                                    placeholder="Show this code to the staff."
-                                    className="w-full border rounded px-3 py-2 text-sm"
-                                />
-                            </div>
-
-                            <div className="col-span-2 mt-2">
-                                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">VIP Welcome (VIP Mode)</h4>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.customLabels?.vip_welcome_title || ''}
-                                    onChange={(e) => updateContent('customLabels.vip_welcome_title', e.target.value)}
-                                    placeholder="Welcome to the Club!"
-                                    className="w-full border rounded px-3 py-2 text-sm"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
-                                <textarea
-                                    value={formData.content.customLabels?.vip_welcome_subtitle || ''}
-                                    onChange={(e) => updateContent('customLabels.vip_welcome_subtitle', e.target.value)}
-                                    placeholder="You are now on our VIP list..."
-                                    className="w-full border rounded px-3 py-2 text-sm"
-                                    rows={2}
-                                />
-                            </div>
-
-                            <div className="col-span-2 mt-2">
-                                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Section Headers (页脚标题)</h4>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Visit Title</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.customLabels?.section_title_visit || ''}
-                                    onChange={(e) => updateContent('customLabels.section_title_visit', e.target.value)}
-                                    placeholder="Visit Us"
-                                    className="w-full border rounded px-3 py-2 text-sm"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Hours Title</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.customLabels?.section_title_hours || ''}
-                                    onChange={(e) => updateContent('customLabels.section_title_hours', e.target.value)}
-                                    placeholder="Opening Hours"
-                                    className="w-full border rounded px-3 py-2 text-sm"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Website Title</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.customLabels?.section_title_website || ''}
-                                    onChange={(e) => updateContent('customLabels.section_title_website', e.target.value)}
-                                    placeholder="Website"
-                                    className="w-full border rounded px-3 py-2 text-sm"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Call Title</label>
-                                <input
-                                    type="text"
-                                    value={formData.content.customLabels?.section_title_call || ''}
-                                    onChange={(e) => updateContent('customLabels.section_title_call', e.target.value)}
-                                    placeholder="Call Us"
-                                    className="w-full border rounded px-3 py-2 text-sm"
-                                />
-                            </div>
-                        </div>
-                    </div>
+                    </details>
 
                     <div className="flex justify-end space-x-3 pt-6 border-t">
                         <Link
