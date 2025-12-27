@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 店内核销API
  * 店员使用店内设备核销优惠券，无需PIN验证

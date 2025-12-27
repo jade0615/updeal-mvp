@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Get simple stats for the merchant terminal
  * Requires merchantSlug in query param for now (simplified for MVP)

@@ -3,6 +3,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { customAlphabet } from 'nanoid';
 import { trackCouponClaim } from '@/actions/analytics';
 
+export const dynamic = 'force-dynamic';
+
 // Create a generator for the code suffix (4 chars, uppercase + numbers)
 const generateSuffix = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 4);
 

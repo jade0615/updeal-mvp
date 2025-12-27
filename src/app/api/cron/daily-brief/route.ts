@@ -1,7 +1,8 @@
-
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
+
+export const dynamic = 'force-dynamic';
 
 // To protect this route, we use a CRON_SECRET from env
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;

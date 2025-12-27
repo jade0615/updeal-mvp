@@ -3,6 +3,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { cookies } from 'next/headers';
 import { validateSession } from '@/lib/auth/session';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     // Require admin authentication

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 验证商户店内密码
  * 允许店员访问该商户的核销页面
