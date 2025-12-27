@@ -1,17 +1,18 @@
 /**
- * 实时通知系统
+ * 实时通知系统 - 阿里云 SMTP 邮件备份
  *
- * 当新客户领取优惠券时发送通知
- * 支持多种通知渠道:
- * - Email (使用 Resend API)
- * - Slack Webhook
- * - 自定义 Webhook
+ * 当新客户领取优惠券时发送邮件通知
+ * 即使数据库写入失败，邮件备份可以帮助恢复数据
  *
  * 环境变量配置:
- * - RESEND_API_KEY: Resend API 密钥
- * - NOTIFICATION_EMAIL: 接收通知的邮箱地址
- * - SLACK_WEBHOOK_URL: Slack 通知 Webhook (可选)
+ * - ALIYUN_SMTP_HOST: smtpdm.aliyun.com
+ * - ALIYUN_SMTP_PORT: 465
+ * - ALIYUN_SMTP_USER: store@mail.wifimee.com
+ * - ALIYUN_SMTP_PASS: SMTP密码
+ * - ADMIN_BACKUP_EMAIL: 接收备份邮件的管理员邮箱
  */
+
+import nodemailer from 'nodemailer';
 
 interface ClaimNotificationData {
   merchantId: string;
@@ -22,11 +23,11 @@ interface ClaimNotificationData {
 }
 
 /**
- * 发送新客户领取通知
+ * 发送新客户领取通知（邮件备份）
  */
 export async function sendClaimNotification(data: ClaimNotificationData): Promise<boolean> {
   const results = await Promise.allSettled([
-    sendEmailNotification(data),
+    sendEmailBackup(data),
     sendSlackNotification(data),
   ]);
 
@@ -35,74 +36,104 @@ export async function sendClaimNotification(data: ClaimNotificationData): Promis
 }
 
 /**
- * 通过 Resend 发送邮件通知
+ * 通过阿里云 SMTP 发送邮件备份
  */
-async function sendEmailNotification(data: ClaimNotificationData): Promise<boolean> {
-  const apiKey = process.env.RESEND_API_KEY;
-  const toEmail = process.env.NOTIFICATION_EMAIL;
+async function sendEmailBackup(data: ClaimNotificationData): Promise<boolean> {
+  const smtpHost = process.env.ALIYUN_SMTP_HOST;
+  const smtpPort = Number(process.env.ALIYUN_SMTP_PORT) || 465;
+  const smtpUser = process.env.ALIYUN_SMTP_USER;
+  const smtpPass = process.env.ALIYUN_SMTP_PASS;
+  const adminEmail = process.env.ADMIN_BACKUP_EMAIL;
 
-  if (!apiKey || !toEmail) {
-    console.log('Email notification not configured, skipping');
+  if (!smtpHost || !smtpUser || !smtpPass || !adminEmail) {
+    console.log('[Email Backup] Not configured, skipping. Missing:', {
+      host: !smtpHost,
+      user: !smtpUser,
+      pass: !smtpPass,
+      admin: !adminEmail
+    });
     return false;
   }
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
+    // 配置阿里云 SMTP
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: true, // use SSL for port 465
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
       },
-      body: JSON.stringify({
-        from: 'UpDeal <notifications@updeal.app>',
-        to: [toEmail],
-        subject: `[新客户] ${data.merchantName} - ${data.phone}`,
-        html: `
-          <h2>新客户领取优惠券</h2>
-          <table style="border-collapse: collapse; width: 100%; max-width: 500px;">
-            <tr>
-              <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">商家</td>
-              <td style="padding: 8px; border: 1px solid #ddd;">${data.merchantName}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">电话</td>
-              <td style="padding: 8px; border: 1px solid #ddd;">${data.phone}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">姓名</td>
-              <td style="padding: 8px; border: 1px solid #ddd;">${data.name || '-'}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">优惠码</td>
-              <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace;">${data.couponCode}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">时间</td>
-              <td style="padding: 8px; border: 1px solid #ddd;">${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}</td>
-            </tr>
-          </table>
-          <p style="color: #666; font-size: 12px; margin-top: 16px;">
-            此邮件由 UpDeal 系统自动发送
-          </p>
-        `,
-      }),
     });
 
-    if (!response.ok) {
-      console.error('Email notification failed:', response.status, await response.text());
-      return false;
-    }
+    const now = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
 
-    console.log('Email notification sent for:', data.couponCode);
+    // 发送邮件
+    await transporter.sendMail({
+      from: `"UpDeal 系统" <${smtpUser}>`,
+      to: adminEmail,
+      subject: `[新客户] ${data.merchantName} - ${data.phone}`,
+      text: `
+新客户领券成功！
+================
+店铺: ${data.merchantName}
+姓名: ${data.name || '-'}
+电话: ${data.phone}
+券码: ${data.couponCode}
+时间: ${now}
+================
+*这是一封数据库备份邮件*
+      `,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
+          <h2 style="color: #FF5722; border-bottom: 2px solid #FF5722; padding-bottom: 10px;">
+            🎉 新客户领券成功！
+          </h2>
+          <table style="border-collapse: collapse; width: 100%;">
+            <tr>
+              <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9; width: 80px;">店铺</td>
+              <td style="padding: 12px; border: 1px solid #ddd;">${data.merchantName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">姓名</td>
+              <td style="padding: 12px; border: 1px solid #ddd;">${data.name || '-'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">电话</td>
+              <td style="padding: 12px; border: 1px solid #ddd; font-family: monospace; font-size: 16px; color: #333;">
+                <strong>${data.phone}</strong>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">券码</td>
+              <td style="padding: 12px; border: 1px solid #ddd; font-family: monospace; background: #FFF3E0; color: #E65100;">
+                ${data.couponCode}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; background: #f9f9f9;">时间</td>
+              <td style="padding: 12px; border: 1px solid #ddd; color: #666;">${now}</td>
+            </tr>
+          </table>
+          <p style="color: #999; font-size: 12px; margin-top: 20px; text-align: center;">
+            📧 这是一封数据库备份邮件，由 UpDeal 系统自动发送
+          </p>
+        </div>
+      `,
+    });
+
+    console.log('[Email Backup] Sent successfully for:', data.couponCode);
     return true;
   } catch (error) {
-    console.error('Email notification error:', error);
+    console.error('[Email Backup] Failed:', error);
+    // 邮件发送失败不应阻止主流程
     return false;
   }
 }
 
 /**
- * 发送 Slack 通知
+ * 发送 Slack 通知（可选）
  */
 async function sendSlackNotification(data: ClaimNotificationData): Promise<boolean> {
   const webhookUrl = process.env.SLACK_WEBHOOK_URL;
@@ -161,13 +192,13 @@ async function sendSlackNotification(data: ClaimNotificationData): Promise<boole
     });
 
     if (!response.ok) {
-      console.error('Slack notification failed:', response.status);
+      console.error('[Slack] Notification failed:', response.status);
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('Slack notification error:', error);
+    console.error('[Slack] Notification error:', error);
     return false;
   }
 }
