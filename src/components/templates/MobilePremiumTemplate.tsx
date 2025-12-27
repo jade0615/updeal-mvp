@@ -234,16 +234,23 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             setSuccessOpen(true);
             setCouponCode(result.coupon.code);
 
-            // Track Lead Event (Client Side)
-            import('react-facebook-pixel')
-                .then((x) => x.default)
-                .then((ReactPixel) => {
-                    ReactPixel.track('Lead', {
+            // Track Lead Event - 使用原生 window.fbq (更可靠)
+            if (typeof window !== 'undefined' && (window as any).fbq) {
+                try {
+                    (window as any).fbq('track', 'Lead', {
                         content_name: merchant.name,
                         content_category: 'Coupon',
                         content_ids: [result.coupon.code],
+                        value: 0,
+                        currency: 'USD'
                     });
-                });
+                    console.log('[Meta Pixel] Lead event tracked for:', merchant.name);
+                } catch (fbError) {
+                    console.error('[Meta Pixel] Failed to track Lead:', fbError);
+                }
+            } else {
+                console.warn('[Meta Pixel] fbq not available, skipping Lead tracking');
+            }
 
             // Track GA4 conversion
             if (typeof window !== 'undefined' && (window as any).gtag) {
