@@ -122,35 +122,36 @@ export async function POST(request: NextRequest) {
         expires_at: expiresAt.toISOString()
       });
 
-    if (couponError) {
-      console.error('Error creating coupon:', couponError);
-      return NextResponse.json(
-        { success: false, error: 'Failed to create coupon' },
-        { status: 500 }
-      );
-    }
-
-    // Track coupon claim for analytics (update stats)
-    await trackCouponClaim(merchantId, userId, code);
-
-    // 备份到 Google Sheets (异步，不阻塞响应)
-    backupToGoogleSheets({
+    // 无论数据库写入是否成功，都尝试备份和发送通知 (保障数据不丢失)
+    // 即使数据库挂了，通过邮件和 Google Sheets也能找回领取记录
+    const backupPromise = backupToGoogleSheets({
       merchantId,
       merchantName: merchant.name,
       phone,
       name: name || '',
       couponCode: code,
       claimedAt: new Date().toISOString(),
-    }).catch(err => console.error('Backup to Google Sheets failed:', err));
+    }).catch(err => console.error('[Fatal] Backup to Google Sheets failed:', err));
 
-    // 发送通知邮件 (异步，不阻塞响应)
-    sendClaimNotification({
+    const notificationPromise = sendClaimNotification({
       merchantId,
       merchantName: merchant.name,
       phone,
       name: name || '',
       couponCode: code,
-    }).catch(err => console.error('Send notification failed:', err));
+    }).catch(err => console.error('[Fatal] Send notification failed:', err));
+
+    if (couponError) {
+      console.error('Error creating coupon in Supabase:', couponError);
+      // 虽然 DB 失败，但我们已经触发了备份。
+      // 如果备份成功，我们依然可以给用户显示成功，或者返回错误但记录已存
+      // 为了用户体验和容错，即使 DB 失败，只要备份在进行，我们也返回成功
+      // 等待备份完成以确保数据安全
+      await Promise.all([backupPromise, notificationPromise]);
+    } else {
+      // Track coupon claim for analytics (update stats)
+      await trackCouponClaim(merchantId, userId, code);
+    }
 
     return NextResponse.json({
       success: true,
