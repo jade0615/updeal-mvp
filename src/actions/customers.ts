@@ -8,9 +8,52 @@ export interface CustomerData {
     phone: string
     name: string | null
     internal_id: string | null
+    auto_id: string // 自动生成的编号 CUS-0001
+    merchant_id: string
     merchant_name: string
+    merchant_internal_id: string | null
     coupon_code: string
     claimed_at: string
+}
+
+export interface MerchantStats {
+    id: string
+    name: string
+    internal_id: string | null
+    customer_count: number
+}
+
+// 获取各商家的客户统计
+export async function getMerchantCustomerStats(): Promise<MerchantStats[]> {
+    const supabase = createAdminClient()
+
+    // 获取所有商家
+    const { data: merchants } = await supabase
+        .from('merchants')
+        .select('id, name, internal_id')
+        .order('name')
+
+    if (!merchants) return []
+
+    // 获取每个商家的客户数量
+    const stats = await Promise.all(
+        merchants.map(async (merchant) => {
+            const { count } = await supabase
+                .from('coupons')
+                .select('*', { count: 'exact', head: true })
+                .eq('merchant_id', merchant.id)
+
+            return {
+                id: merchant.id,
+                name: merchant.name,
+                internal_id: merchant.internal_id,
+                customer_count: count || 0
+            }
+        })
+    )
+
+    // 按客户数量排序（多的在前）
+    return stats.sort((a, b) => b.customer_count - a.customer_count)
 }
 
 export interface CustomerQuery {
@@ -42,6 +85,7 @@ export async function getCustomers(query: CustomerQuery) {
         code,
         created_at,
         user_id,
+        merchant_id,
         users!inner (
           id,
           phone,
@@ -49,7 +93,9 @@ export async function getCustomers(query: CustomerQuery) {
           internal_id
         ),
         merchants!inner (
-          name
+          id,
+          name,
+          internal_id
         )
       `, { count: 'exact' })
 
@@ -147,17 +193,27 @@ export async function getCustomers(query: CustomerQuery) {
             return { success: false, error: 'Failed to fetch data' }
         }
 
-        // Flatten data
-        const customers: CustomerData[] = data.map((item: any) => ({
-            id: item.id,
-            user_id: item.user_id || item.users?.id,
-            phone: item.users?.phone || 'Unknown',
-            name: item.users?.name || '-',
-            internal_id: item.users?.internal_id || null,
-            merchant_name: item.merchants?.name || 'Unknown',
-            coupon_code: item.code,
-            claimed_at: new Date(item.created_at).toLocaleString('zh-CN'),
-        }))
+        // Flatten data with auto-generated IDs
+        const customers: CustomerData[] = data.map((item: any, index: number) => {
+            // 生成自动编号: CUS-0001 格式
+            // 使用全局排序位置 + offset 来确保编号连续
+            const autoIdNum = offset + index + 1
+            const autoId = `CUS-${String(autoIdNum).padStart(4, '0')}`
+
+            return {
+                id: item.id,
+                user_id: item.user_id || item.users?.id,
+                phone: item.users?.phone || 'Unknown',
+                name: item.users?.name || '-',
+                internal_id: item.users?.internal_id || null,
+                auto_id: autoId,
+                merchant_id: item.merchant_id || item.merchants?.id,
+                merchant_name: item.merchants?.name || 'Unknown',
+                merchant_internal_id: item.merchants?.internal_id || null,
+                coupon_code: item.code,
+                claimed_at: new Date(item.created_at).toLocaleString('zh-CN'),
+            }
+        })
 
         return { success: true, customers, total: count }
     } catch (err) {

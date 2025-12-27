@@ -8,7 +8,6 @@ import {
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { Merchant } from '@/types/merchant';
 import { updateMerchant } from '@/actions/merchants';
-import { createClaim } from '@/actions/claims';
 import confetti from 'canvas-confetti';
 
 interface Props {
