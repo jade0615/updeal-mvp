@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
       coupon: {
         code: coupon.code,
         merchant: merchant?.name || 'N/A',
-        offer: merchant?.content?.offerDiscount || merchant?.content?.offer_value || '优惠',
+        offer: merchant?.content?.offer?.value || merchant?.content?.offerDiscount || merchant?.content?.offer_value || '优惠',
         customer: `***${phoneLastFour}`,
         redeemedAt: now
       }

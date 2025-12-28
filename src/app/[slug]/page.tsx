@@ -76,8 +76,6 @@ export default async function LandingPage({ params }: Props) {
   const displayCount = (realClaimedCount || 0) + (merchant.virtual_base_count || 200)
 
   // 4. Render Template
-  const ga4Id = merchant.ga4_measurement_id || process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID
-
   // Decide which template to use.
   // Default to MobilePremiumTemplate as requested, or switch based on type
   // If user specifically requested "Use this!!!", we default to it.
@@ -101,28 +99,6 @@ export default async function LandingPage({ params }: Props) {
 
   return (
     <>
-      {/* Google Analytics 4 */}
-      {ga4Id && (
-        <>
-          <script
-            async
-            src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}
-          />
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${ga4Id}', {
-                  page_path: window.location.pathname,
-                });
-              `,
-            }}
-          />
-        </>
-      )}
-
       {/* MetaPixel 已在 layout.tsx 全局加载，FB 会自动根据广告点击进行归因 */}
 
       <TemplateComponent

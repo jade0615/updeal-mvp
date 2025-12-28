@@ -67,18 +67,20 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
                         coupon_code: result.coupon.code
                     });
                 }
-                // Meta Pixel Lead Event
-                import('react-facebook-pixel')
-                    .then((x) => x.default)
-                    .then((ReactPixel) => {
-                        ReactPixel.track('Lead', {
+                // Meta Pixel Lead Event - 使用原生 window.fbq (更可靠)
+                if ((window as any).fbq) {
+                    try {
+                        (window as any).fbq('track', 'Lead', {
                             content_name: 'Coupon Claim',
                             content_category: 'Lead',
                             content_ids: [result.coupon.code],
                             currency: 'USD',
                             value: 10.00 // Arbitrary value for lead
                         });
-                    });
+                    } catch (fbError) {
+                        console.error('[Meta Pixel] Failed to track Lead in ClaimForm:', fbError);
+                    }
+                }
             }
 
         } catch (err: any) {

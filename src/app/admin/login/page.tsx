@@ -14,10 +14,24 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
-    const result = await loginAdmin(email, password)
+    try {
+      const result = await loginAdmin(email, password)
 
-    if (result?.error) {
-      setError(result.error)
+      if (result?.error) {
+        setError(result.error)
+        setLoading(false)
+      }
+      // If success, logic inside loginAdmin redirects.
+      // If it stays here without a redirect (unlikely if redirect works), we should reset loading.
+      // Note: next/navigation redirect() throws an error that's caught here 
+      // but usually the browser handles the jump before subsequent state updates.
+    } catch (err: any) {
+      // Re-throw if it's a redirect error (though usually not necessary in app router client components like this)
+      if (err?.digest?.startsWith('NEXT_REDIRECT')) {
+        throw err;
+      }
+      console.error('Login submission error:', err)
+      setError(err?.message || '登录异常，请稍后重试')
       setLoading(false)
     }
   }

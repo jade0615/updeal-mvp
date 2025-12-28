@@ -56,45 +56,57 @@ function clearAttempts(identifier: string) {
 }
 
 export async function loginAdmin(email: string, password: string) {
-  // 使用 email 作为速率限制标识符
-  const identifier = email.toLowerCase()
+  try {
+    // 使用 email 作为速率限制标识符
+    const identifier = email.toLowerCase()
 
-  // 检查速率限制
-  const rateCheck = checkRateLimit(identifier)
-  if (!rateCheck.allowed) {
-    return { error: `登录尝试次数过多，请 ${rateCheck.remainingTime} 分钟后重试` }
+    // 检查速率限制
+    const rateCheck = checkRateLimit(identifier)
+    if (!rateCheck.allowed) {
+      return { error: `登录尝试次数过多，请 ${rateCheck.remainingTime} 分钟后重试` }
+    }
+
+    const supabase = createAdminClient()
+
+    const { data: admin, error: fetchError } = await supabase
+      .from('admin_users')
+      .select('*')
+      .eq('email', email)
+      .eq('is_active', true)
+      .single()
+
+    if (fetchError || !admin) {
+      console.error('[Auth] User not found or DB error:', fetchError?.message || 'User not found')
+      recordFailedAttempt(identifier)
+      return { error: '账号或密码错误' }
+    }
+
+    const isValid = await verifyPassword(password, admin.password_hash)
+    if (!isValid) {
+      recordFailedAttempt(identifier)
+      return { error: '账号或密码错误' }
+    }
+
+    // 登录成功，清除失败记录
+    clearAttempts(identifier)
+
+    await createSession(admin.id)
+
+    // 更新最后登录时间
+    await supabase
+      .from('admin_users')
+      .update({ last_login_at: new Date().toISOString() })
+      .eq('id', admin.id)
+
+    // Clear any potential hanging state by ensuring redirect is outside try/catch if needed, 
+    // but Next.js redirect MUST be handled carefully.
+  } catch (error: any) {
+    if (error?.digest?.startsWith('NEXT_REDIRECT')) {
+      throw error; // Let Next.js handle redirects
+    }
+    console.error('[Auth] Critical login error:', error)
+    return { error: error.message || '登录过程中发生未知错误，请重试' }
   }
-
-  const supabase = createAdminClient()
-
-  const { data: admin } = await supabase
-    .from('admin_users')
-    .select('*')
-    .eq('email', email)
-    .eq('is_active', true)
-    .single()
-
-  if (!admin) {
-    recordFailedAttempt(identifier)
-    return { error: '账号或密码错误' }
-  }
-
-  const isValid = await verifyPassword(password, admin.password_hash)
-  if (!isValid) {
-    recordFailedAttempt(identifier)
-    return { error: '账号或密码错误' }
-  }
-
-  // 登录成功，清除失败记录
-  clearAttempts(identifier)
-
-  await createSession(admin.id)
-
-  // 更新最后登录时间
-  await supabase
-    .from('admin_users')
-    .update({ last_login_at: new Date().toISOString() })
-    .eq('id', admin.id)
 
   redirect('/admin')
 }

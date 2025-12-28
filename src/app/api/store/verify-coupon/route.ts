@@ -97,9 +97,8 @@ export async function POST(request: NextRequest) {
         // Use the offer title from merchant content if available, fallback to generic
         const merchantData = coupon.merchants as any
         const userData = coupon.users as any
-        // Try to find the offer title. Usually stored in content.offerDiscount or similar.
-        // Based on previous files, it seems to be in `content`.
-        const offerTitle = merchantData?.content?.offerDiscount || merchantData?.content?.offer_value || '优惠券'
+        // Try to find the offer title. Usually stored in content.offer.value or content.offerDiscount.
+        const offerTitle = merchantData?.content?.offer?.value || merchantData?.content?.offerDiscount || merchantData?.content?.offer_value || '优惠券'
 
         // Mask phone for privacy
         const rawPhone = userData?.phone || ''
