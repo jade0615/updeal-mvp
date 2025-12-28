@@ -2,6 +2,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import RedeemButton from './RedeemButton'
 
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   params: { code: string }
 }

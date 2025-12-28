@@ -50,6 +50,7 @@ export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: Qu
                 }
 
                 // PUSH TO GTM (Add this immediately after success validation)
+                alert("SYSTEM CHECK: New Code Is Running!"); // Debug: verify deployment
                 (window as any).dataLayer = (window as any).dataLayer || [];
                 (window as any).dataLayer.push({
                     'event': 'generate_lead',  // This exact name is CRITICAL

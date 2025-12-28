@@ -83,6 +83,7 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
                 }
 
                 // PUSH TO GTM (Add this immediately after success validation)
+                alert("SYSTEM CHECK: New Code Is Running!"); // Debug: verify deployment
                 if (typeof window !== 'undefined') {
                     (window as any).dataLayer = (window as any).dataLayer || [];
                     (window as any).dataLayer.push({

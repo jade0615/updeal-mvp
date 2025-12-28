@@ -3,6 +3,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { validateSession } from '@/lib/auth/session';
 import { cookies } from 'next/headers';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
     // Auth check
     const cookieStore = await cookies();
