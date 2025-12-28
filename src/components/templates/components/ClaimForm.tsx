@@ -16,7 +16,7 @@ const formSchema = z.object({
             return val;
         }
     }),
-    name: z.string().optional(),
+    name: z.string().min(1, 'Name is required'),
 });
 
 type FormValues = z.infer<typeof formSchema>;

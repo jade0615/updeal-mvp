@@ -534,18 +534,18 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
 
                         <div className="space-y-4">
                             {/* Name Input (Conditional) */}
-                            {Boolean(content.requirements?.collectName ?? true) && (
-                                <div>
-                                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Name</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Your Name"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                        className="w-full h-12 px-4 rounded-xl input-field text-slate-800 placeholder:text-slate-400 outline-none transition-all font-medium"
-                                    />
-                                </div>
-                            )}
+                            {/* Name Input - Always required for real lead gen */}
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Name</label>
+                                <input
+                                    type="text"
+                                    placeholder="Your Name"
+                                    required
+                                    value={formData.name}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                    className="w-full h-12 px-4 rounded-xl input-field text-slate-800 placeholder:text-slate-400 outline-none transition-all font-medium"
+                                />
+                            </div>
 
                             {/* Phone Input (Always Required) */}
                             <div>
@@ -575,7 +575,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
 
                             <button
                                 onClick={handleClaim}
-                                disabled={loading || !formData.phone || formData.phone.length < 10}
+                                disabled={loading || !formData.phone || formData.phone.length < 10 || !formData.name}
                                 className="mt-2 w-full btn-orange py-4 rounded-xl text-white font-bold text-[16px] flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-70 disabled:grayscale"
                             >
                                 {loading ? 'Processing...' : (

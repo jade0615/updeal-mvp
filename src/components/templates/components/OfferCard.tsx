@@ -40,7 +40,8 @@ export default function OfferCard({
                             <span className="text-white/40 text-[10px] font-black tracking-[0.2em] uppercase">Verified Member Deal</span>
                         </div>
                         <h3 className="text-white text-[42px] font-black leading-tight tracking-tighter">
-                            {offer.value}<span className="text-orange-500">{offer.unit}</span> {offer.unit === 'OFF' ? '' : 'OFF'}
+                            {offer.value}
+                            {offer.unit && offer.unit !== 'OFF' && <span className="text-orange-500 ml-1">{offer.unit}</span>}
                         </h3>
                         <p className="text-white/60 text-sm font-medium pr-10">
                             {offer.description}
