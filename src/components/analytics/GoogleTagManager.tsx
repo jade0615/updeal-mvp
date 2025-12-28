@@ -32,3 +32,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </>
     );
 }
+
+// Helper function to push events to dataLayer
+export function pushToDataLayer(event: string, data?: Record<string, any>) {
+  if (typeof window !== 'undefined') {
+    (window as any).dataLayer = (window as any).dataLayer || []
+    ;(window as any).dataLayer.push({
+      event,
+      ...data,
+    })
+  }
+}

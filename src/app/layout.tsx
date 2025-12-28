@@ -52,9 +52,9 @@ export default function RootLayout({
         className={`${jakarta.variable} ${poppins.variable} ${playfair.variable} ${inter.variable} antialiased`}
       >
         <Suspense fallback={null}>
+          <GoogleTagManager />
           <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
           <MicrosoftClarity />
-          <GoogleTagManager />
         </Suspense>
         {children}
       </body>

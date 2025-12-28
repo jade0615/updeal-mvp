@@ -1,6 +1,8 @@
 import { getAllMerchantsStats } from '@/actions/analytics'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AnalyticsPage() {
   const merchants = await getAllMerchantsStats()
 

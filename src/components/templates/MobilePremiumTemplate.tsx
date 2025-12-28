@@ -252,12 +252,16 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                 console.warn('[Meta Pixel] fbq not available, skipping Lead tracking');
             }
 
-            // Track GA4 conversion
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-                (window as any).gtag('event', 'claim_coupon', {
+            // Track GTM generate_lead event
+            if (typeof window !== 'undefined' && (window as any).dataLayer) {
+                (window as any).dataLayer.push({
+                    event: 'generate_lead',
+                    merchant_name: merchant.name,
                     merchant_id: merchant.id,
-                    coupon_code: result.coupon.code
+                    coupon_code: result.coupon.code,
+                    lead_source: 'coupon_claim'
                 });
+                console.log('[GTM] generate_lead event pushed for:', merchant.name);
             }
 
             confetti({
