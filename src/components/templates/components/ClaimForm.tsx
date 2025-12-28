@@ -81,6 +81,17 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
                         console.error('[Meta Pixel] Failed to track Lead in ClaimForm:', fbError);
                     }
                 }
+
+                // PUSH TO GTM (Add this immediately after success validation)
+                if (typeof window !== 'undefined') {
+                    (window as any).dataLayer = (window as any).dataLayer || [];
+                    (window as any).dataLayer.push({
+                        'event': 'generate_lead',  // This exact name is CRITICAL
+                        'value': 10.00,            // Optional value
+                        'currency': 'USD'
+                    });
+                    console.log('GTM Event Pushed: generate_lead'); // Add log for debugging
+                }
             }
 
         } catch (err: any) {

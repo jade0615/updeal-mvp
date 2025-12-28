@@ -33,11 +33,6 @@ export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: Qu
             if (!result.success) {
                 // If already claimed, we might want to handle it gracefully
                 if (result.error?.includes('already claimed')) {
-                    // Still treat as success for the UI flow, just show the code
-                    // But usually the API returns the code even if claimed? 
-                    // Let's assume standard error flow first.
-                    // Actually, for "already claimed", we likely want to just show the coupon.
-                    // But let's stick to basic error handling for now unless we know the API behavior.
                     throw new Error(result.error);
                 }
                 throw new Error(result.error || 'Failed to claim coupon');
@@ -53,6 +48,15 @@ export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: Qu
                         coupon_code: result.coupon.code
                     });
                 }
+
+                // PUSH TO GTM (Add this immediately after success validation)
+                (window as any).dataLayer = (window as any).dataLayer || [];
+                (window as any).dataLayer.push({
+                    'event': 'generate_lead',  // This exact name is CRITICAL
+                    'value': 10.00,            // Optional value
+                    'currency': 'USD'
+                });
+                console.log('GTM Event Pushed: generate_lead'); // Add log for debugging
             }
 
         } catch (err: any) {
