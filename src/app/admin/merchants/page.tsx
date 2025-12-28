@@ -5,6 +5,9 @@ import { CopyButton, ExportMerchantsButton } from '@/components/admin/MerchantUt
 import ToggleMerchantStatus from '@/components/admin/ToggleMerchantStatus'
 import MerchantSearch from '@/components/admin/MerchantSearch'
 
+// Prevent static generation - this page requires runtime env vars
+export const dynamic = 'force-dynamic'
+
 interface Props {
   searchParams: Promise<{ q?: string }>
 }
