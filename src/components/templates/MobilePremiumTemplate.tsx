@@ -253,11 +253,22 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             }
 
             // Track GA4 conversion
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-                (window as any).gtag('event', 'claim_coupon', {
-                    merchant_id: merchant.id,
-                    coupon_code: result.coupon.code
+            if (typeof window !== 'undefined') {
+                if ((window as any).gtag) {
+                    (window as any).gtag('event', 'claim_coupon', {
+                        merchant_id: merchant.id,
+                        coupon_code: result.coupon.code
+                    });
+                }
+
+                // PUSH TO GTM
+                (window as any).dataLayer = (window as any).dataLayer || [];
+                (window as any).dataLayer.push({
+                    'event': 'generate_lead',
+                    'value': 10.00,
+                    'currency': 'USD'
                 });
+                console.log('GTM Event Pushed: generate_lead');
             }
 
             confetti({
@@ -445,15 +456,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 className="inline-block w-auto min-w-[60px]"
                             />
                             {' '}
-                            <span className="text-orange-300 text-2xl">
-                                <EditableLabel
-                                    path="offer.unit"
-                                    value={normalizedOffer.unit !== undefined ? normalizedOffer.unit : displayUnit}
-                                    fallback=""
-                                    darkBg={true}
-                                    className="inline-block w-auto min-w-[40px]"
-                                />
-                            </span>
+                            {/* OFF Unit Removed */}
                         </h2>
 
                         {/* Offer Description with Multi-line Support */}
