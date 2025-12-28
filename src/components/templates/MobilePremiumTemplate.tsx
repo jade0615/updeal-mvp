@@ -253,6 +253,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             }
 
             // Track GTM generate_lead event
+            alert("SYSTEM CHECK: New Code Is Running!"); // Debug: verify deployment
             if (typeof window !== 'undefined' && (window as any).dataLayer) {
                 (window as any).dataLayer.push({
                     event: 'generate_lead',
