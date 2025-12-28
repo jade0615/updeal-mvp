@@ -39,6 +39,7 @@ export const metadata: Metadata = {
 import { Suspense } from 'react';
 import MetaPixel from "@/components/analytics/MetaPixel";
 import MicrosoftClarity from "@/components/analytics/MicrosoftClarity";
+import GoogleTagManager from "@/components/analytics/GoogleTagManager";
 
 export default function RootLayout({
   children,
@@ -51,6 +52,7 @@ export default function RootLayout({
         className={`${jakarta.variable} ${poppins.variable} ${playfair.variable} ${inter.variable} antialiased`}
       >
         <Suspense fallback={null}>
+          <GoogleTagManager gtmId="GTM-MLF6LPW2" />
           <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
           <MicrosoftClarity />
         </Suspense>
