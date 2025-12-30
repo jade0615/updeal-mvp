@@ -297,14 +297,18 @@ export async function getMerchantEvents(
 export async function getAllMerchantsStats() {
   const supabase = createAdminClient()
 
+  // 1. Fetch basic merchant info
   const { data: merchants, error } = await supabase
     .from('merchants')
     .select(`
       id,
       name,
       slug,
+      internal_id,
+      redeem_pin,
       template_type,
       is_active,
+      virtual_base_count,
       landing_page_stats (
         total_page_views,
         total_form_submits,
@@ -320,7 +324,62 @@ export async function getAllMerchantsStats() {
     return []
   }
 
-  return merchants
+  // 2. Fetch Real-time Aggregations for each merchant
+  // We use Promise.all to fetch them in parallel for performance
+  const enrichedMerchants = await Promise.all(merchants.map(async (merchant) => {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayISO = todayStart.toISOString();
+
+    const [
+      { count: totalViews },
+      { count: todayViews },
+      { count: totalClaims },
+      { count: totalRedeemed },
+      { count: todayRedeemed }
+    ] = await Promise.all([
+      // Total Views (Trusting landing_page_stats for speed where possible, but querying for "Real" consistency if cache is suspect)
+      // Using direct count for now to ensure 100% match with user expectation of "Real Data"
+      supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id),
+
+      // Today Views
+      supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).gte('viewed_at', todayISO),
+
+      // Total Claims (True count from coupons)
+      supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id),
+
+      // Total Redemptions (True count)
+      supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).eq('status', 'redeemed'),
+
+      // Today Redemptions
+      supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).eq('status', 'redeemed').gte('redeemed_at', todayISO)
+    ]);
+
+    // Calculate Rate
+    const realTotalViews = totalViews || 0;
+    const realTotalClaims = totalClaims || 0;
+    const realTotalRedeemed = totalRedeemed || 0;
+
+    // Fallback: If page views table is empty (legacy), try to use landing_page_stats
+    const finalViews = realTotalViews > 0 ? realTotalViews : (merchant.landing_page_stats?.[0]?.total_page_views || 0);
+
+    // Redemption Rate = Redeemed / Claims (NOT Views, as per user request to see quality of claims)
+    const redemptionRate = realTotalClaims > 0 ? ((realTotalRedeemed / realTotalClaims) * 100).toFixed(1) : '0.0';
+
+    return {
+      ...merchant,
+      real_stats: {
+        views: finalViews,
+        today_views: todayViews || 0,
+        claims: realTotalClaims,
+        redemptions: realTotalRedeemed,
+        today_redemptions: todayRedeemed || 0,
+        redemption_rate: redemptionRate
+      }
+    };
+  }));
+
+  return enrichedMerchants
 }
 
 function parseUtmFromUrl(url?: string) {
