@@ -5,21 +5,25 @@ import { CopyButton, ExportMerchantsButton } from '@/components/admin/MerchantUt
 import ToggleMerchantStatus from '@/components/admin/ToggleMerchantStatus'
 import MerchantSearch from '@/components/admin/MerchantSearch'
 import { getAllMerchantsStats } from '@/actions/analytics'
+import TimeRangeFilter from '@/components/admin/TimeRangeFilter'
 
 interface Props {
-  searchParams: Promise<{ q?: string }>
+  searchParams: Promise<{ q?: string; period?: string }>
 }
 
 export default async function MerchantsPage({ searchParams }: Props) {
-  const { q: searchQuery } = await searchParams
+  const { q: searchQuery, period } = await searchParams
+
+  // Fetch stats based on selected period (default 'today')
+  // The backend now returns numbers SPECIFIC to this period.
+  const currentPeriod = period || 'today';
 
   // Fetch all merchants with REAL-TIME aggregated stats
-  // This function now returns 'real_stats' object with total/today counts
-  const allMerchants: any[] = await getAllMerchantsStats()
+  const allMerchants: any[] = await getAllMerchantsStats(currentPeriod)
 
   let merchants = allMerchants
 
-  // Client-side filtering (since we fetch all for stats aggregation anyway, filtering here is efficient for <1000 records)
+  // Client-side filtering for search
   if (searchQuery) {
     const lowerQ = searchQuery.toLowerCase()
     merchants = allMerchants.filter(m =>
@@ -30,23 +34,33 @@ export default async function MerchantsPage({ searchParams }: Props) {
     )
   }
 
-  // Ideally we get the base URL from env, but client components will use window.location
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://updeal.top'
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">商家管理 dashboard</h1>
-          <div className="flex gap-3 items-center">
-            <MerchantSearch />
-            <ExportMerchantsButton merchants={merchants || []} />
-            <Link
-              href="/admin/merchants/new"
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors flex items-center whitespace-nowrap"
-            >
-              + 新增商家
-            </Link>
+        <div className="flex flex-col gap-6 mb-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-gray-900">商家管理 dashboard</h1>
+            <div className="flex gap-3 items-center">
+              <MerchantSearch />
+              <ExportMerchantsButton merchants={merchants || []} />
+              <Link
+                href="/admin/merchants/new"
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors flex items-center whitespace-nowrap"
+              >
+                + 新增商家
+              </Link>
+            </div>
+          </div>
+
+          {/* Time Filter Row */}
+          <div className="flex items-center gap-4 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
+            <span className="text-sm font-medium text-gray-500">统计时间范围:</span>
+            <TimeRangeFilter />
+            <span className="text-xs text-gray-400 ml-auto">
+              Data updates in real-time
+            </span>
           </div>
         </div>
 
@@ -78,7 +92,7 @@ export default async function MerchantsPage({ searchParams }: Props) {
                     商家名称 (Merchant)
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    📊 运营数据 (Real-time Core Metrics)
+                    📊 运营数据 ({currentPeriod.toUpperCase()})
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Link & Action
@@ -118,10 +132,10 @@ export default async function MerchantsPage({ searchParams }: Props) {
                       </div>
                     </td>
 
-                    {/* Core Metrics Column (The NEW Feature) */}
+                    {/* Core Metrics Column (Time-Filtered) */}
                     <td className="px-6 py-4 bg-slate-50/50">
                       <div className="flex flex-col gap-2 min-w-[200px]">
-                        {/* Redemptions - Most Important */}
+                        {/* Redemptions */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5">
                             <span className="text-lg">✅</span>
@@ -131,11 +145,6 @@ export default async function MerchantsPage({ searchParams }: Props) {
                             <span className="text-sm font-bold text-green-600 block">
                               {(merchant.real_stats?.redemptions || 0).toLocaleString()}
                             </span>
-                            {merchant.real_stats?.today_redemptions > 0 && (
-                              <span className="text-[10px] text-green-500 bg-green-50 px-1 rounded-full">
-                                +{merchant.real_stats.today_redemptions} 今日
-                              </span>
-                            )}
                           </div>
                         </div>
 
@@ -156,17 +165,12 @@ export default async function MerchantsPage({ searchParams }: Props) {
                         <div className="flex items-center justify-between border-t border-gray-100 pt-1">
                           <div className="flex items-center gap-1.5">
                             <span className="text-lg">👁️</span>
-                            <span className="text-xs font-medium text-gray-400 w-16">浏览</span>
+                            <span className="text-xs font-medium text-gray-500 w-16">浏览</span>
                           </div>
                           <div className="text-right">
                             <span className="text-sm font-medium text-gray-500 block">
                               {(merchant.real_stats?.views || 0).toLocaleString()}
                             </span>
-                            {merchant.real_stats?.today_views > 0 && (
-                              <span className="text-[10px] text-blue-400">
-                                +{merchant.real_stats.today_views} 今日
-                              </span>
-                            )}
                           </div>
                         </div>
 

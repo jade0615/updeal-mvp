@@ -294,7 +294,7 @@ export async function getMerchantEvents(
 /**
  * Get aggregated stats for all merchants (admin dashboard)
  */
-export async function getAllMerchantsStats() {
+export async function getAllMerchantsStats(period: string = 'today') {
   const supabase = createAdminClient()
 
   // 1. Fetch basic merchant info
@@ -324,57 +324,92 @@ export async function getAllMerchantsStats() {
     return []
   }
 
-  // 2. Fetch Real-time Aggregations for each merchant
-  // We use Promise.all to fetch them in parallel for performance
+  // 2. Calculate Date Range
+  const now = new Date();
+  let startDate: string | null = null;
+  let endDate: string | null = null;
+
+  // Helper to set start of day
+  const getStartOfDay = (d: Date) => {
+    const copy = new Date(d);
+    copy.setHours(0, 0, 0, 0);
+    return copy.toISOString();
+  }
+
+  switch (period) {
+    case 'today':
+      startDate = getStartOfDay(now);
+      break;
+    case 'yesterday':
+      const yest = new Date(now);
+      yest.setDate(yest.getDate() - 1);
+      startDate = getStartOfDay(yest);
+      endDate = getStartOfDay(now);
+      break;
+    case '7d':
+      const d7 = new Date(now);
+      d7.setDate(d7.getDate() - 7);
+      startDate = getStartOfDay(d7);
+      break;
+    case '30d':
+      const d30 = new Date(now);
+      d30.setDate(d30.getDate() - 30);
+      startDate = getStartOfDay(d30);
+      break;
+    case 'all':
+    default:
+      startDate = null;
+      break;
+  }
+
+  // 3. Fetch Real-time Aggregations for each merchant
   const enrichedMerchants = await Promise.all(merchants.map(async (merchant) => {
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayISO = todayStart.toISOString();
+    let viewsQuery = supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id);
+    let claimsQuery = supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id);
+    let redeemedQuery = supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).eq('status', 'redeemed');
+
+    if (startDate) {
+      viewsQuery = viewsQuery.gte('viewed_at', startDate);
+      claimsQuery = claimsQuery.gte('created_at', startDate);
+      redeemedQuery = redeemedQuery.gte('redeemed_at', startDate);
+
+      if (endDate) {
+        viewsQuery = viewsQuery.lt('viewed_at', endDate);
+        claimsQuery = claimsQuery.lt('created_at', endDate);
+        redeemedQuery = redeemedQuery.lt('redeemed_at', endDate);
+      }
+    }
 
     const [
       { count: totalViews },
-      { count: todayViews },
       { count: totalClaims },
       { count: totalRedeemed },
-      { count: todayRedeemed }
     ] = await Promise.all([
-      // Total Views (Trusting landing_page_stats for speed where possible, but querying for "Real" consistency if cache is suspect)
-      // Using direct count for now to ensure 100% match with user expectation of "Real Data"
-      supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id),
-
-      // Today Views
-      supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).gte('viewed_at', todayISO),
-
-      // Total Claims (True count from coupons)
-      supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id),
-
-      // Total Redemptions (True count)
-      supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).eq('status', 'redeemed'),
-
-      // Today Redemptions
-      supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).eq('status', 'redeemed').gte('redeemed_at', todayISO)
+      viewsQuery,
+      claimsQuery,
+      redeemedQuery
     ]);
 
-    // Calculate Rate
     const realTotalViews = totalViews || 0;
     const realTotalClaims = totalClaims || 0;
     const realTotalRedeemed = totalRedeemed || 0;
 
-    // Fallback: If page views table is empty (legacy), try to use landing_page_stats
-    const finalViews = realTotalViews > 0 ? realTotalViews : (merchant.landing_page_stats?.[0]?.total_page_views || 0);
+    // Fallback for 'all' time if needed
+    let finalViews = realTotalViews;
+    if (period === 'all' && finalViews === 0 && (merchant.landing_page_stats?.[0]?.total_page_views || 0) > 0) {
+      finalViews = merchant.landing_page_stats[0].total_page_views;
+    }
 
-    // Redemption Rate = Redeemed / Claims (NOT Views, as per user request to see quality of claims)
     const redemptionRate = realTotalClaims > 0 ? ((realTotalRedeemed / realTotalClaims) * 100).toFixed(1) : '0.0';
 
     return {
       ...merchant,
       real_stats: {
         views: finalViews,
-        today_views: todayViews || 0,
         claims: realTotalClaims,
         redemptions: realTotalRedeemed,
-        today_redemptions: todayRedeemed || 0,
-        redemption_rate: redemptionRate
+        redemption_rate: redemptionRate,
+        period: period
       }
     };
   }));
