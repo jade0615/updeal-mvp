@@ -438,7 +438,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             </div>
 
             {/* ===== 玻璃卡片 (Glass Card) ===== */}
-            <div className="px-5 -mt-16 relative z-20">
+            <div className="pl-5 pr-8 -mt-16 relative z-20">
                 <div className="glass-card rounded-[28px] p-5 relative overflow-hidden min-h-[190px]">
                     <div className="relative z-10">
                         {/* Only show eyebrow if it's not 'discount' to keep it clean */}
@@ -492,9 +492,16 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                         </div>
                     </div>
 
-                    {/* Round Icon */}
-                    <div className="absolute right-4 top-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
-                        <Tag className="text-white w-5 h-5" />
+                    {/* Round Icon (Premium Gold) */}
+                    <div className="absolute right-4 top-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transform rotate-12"
+                            style={{
+                                background: 'linear-gradient(135deg, #FDE68A 0%, #F59E0B 50%, #B45309 100%)',
+                                boxShadow: '0 4px 15px rgba(245, 158, 11, 0.4), inset 0 2px 4px rgba(255,255,255,0.3)',
+                                border: '1px solid rgba(255,255,255,0.4)'
+                            }}>
+                            <Tag className="text-white w-6 h-6 fill-white drop-shadow-md" strokeWidth={1.5} />
+                        </div>
                     </div>
 
                     {/* Dynamic Badge */}
@@ -507,7 +514,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             </div>
 
             {/* ===== Claim Section (Inline Form or Success) ===== */}
-            <div className="px-5 mt-5">
+            <div className="pl-5 pr-8 mt-5">
                 {!successOpen ? (
                     <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100">
                         <div className="flex items-center gap-3 mb-6">
@@ -668,7 +675,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             </div>
 
             {/* ===== Info Card ===== */}
-            <div className="px-5 mt-5">
+            <div className="pl-5 pr-8 mt-5">
                 <div className="bg-white rounded-[20px] shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden">
                     {/* Address Card */}
                     <div className="flex items-start gap-4 p-4">
