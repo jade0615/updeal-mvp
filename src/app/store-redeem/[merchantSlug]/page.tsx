@@ -60,6 +60,31 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
     totalClaims: number;
   } | null>(null)
 
+  // Full History State
+  const [showHistoryModal, setShowHistoryModal] = useState(false)
+  const [fullHistory, setFullHistory] = useState<any[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+
+  const fetchHistory = async () => {
+    setHistoryLoading(true)
+    try {
+      const res = await fetch(`/api/store/redemptions?slug=${merchantSlug}`)
+      const data = await res.json()
+      if (data.success) {
+        setFullHistory(data.redemptions)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setHistoryLoading(false)
+    }
+  }
+
+  const handleOpenHistory = () => {
+    setShowHistoryModal(true)
+    fetchHistory()
+  }
+
   // ... (Keep Auth useEffects same as original) ...
   // Check if already authenticated in this session
   useEffect(() => {
@@ -372,7 +397,15 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
               </div>
               <div className="bg-purple-50 rounded-xl p-4 text-center">
                 <p className="text-xs font-bold text-purple-600 uppercase">累计核销</p>
-                <p className="text-2xl font-bold text-purple-900 mt-1">{stats.totalRedemptions}</p>
+                <div className="flex items-end justify-center gap-2 mt-1">
+                  <p className="text-2xl font-bold text-purple-900">{stats.totalRedemptions}</p>
+                  <button
+                    onClick={handleOpenHistory}
+                    className="text-xs text-purple-500 underline mb-1 hover:text-purple-700"
+                  >
+                    详情
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -530,6 +563,79 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
                 className="w-full py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-colors"
               >
                 确认核销
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full History Modal */}
+      {showHistoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <span>📋</span> 全部核销记录 (最近100条)
+              </h3>
+              <button
+                onClick={() => setShowHistoryModal(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-0">
+              {historyLoading ? (
+                <div className="p-12 text-center text-gray-500">
+                  加载中...
+                </div>
+              ) : fullHistory.length === 0 ? (
+                <div className="p-12 text-center text-gray-500">
+                  暂无核销记录
+                </div>
+              ) : (
+                <div className="min-w-full inline-block align-middle">
+                  <div className="border rounded-lg overflow-hidden m-4">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">时间</th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">优惠券 / 折扣</th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">顾客信息</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 bg-white">
+                        {fullHistory.map((item, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(item.redeemed_at).toLocaleString('zh-CN', {
+                                month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+                              })}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-bold text-gray-900">{item.offer_discount}</div>
+                              <div className="text-xs font-mono text-gray-500">{item.code}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-medium text-gray-900">{item.customer_name || '-'}</div>
+                              <div className="text-xs text-gray-500">{item.customer_phone || item.customer_email || '-'}</div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-gray-100 text-center">
+              <button
+                onClick={() => setShowHistoryModal(false)}
+                className="px-6 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 font-medium transition-colors"
+              >
+                关闭
               </button>
             </div>
           </div>
