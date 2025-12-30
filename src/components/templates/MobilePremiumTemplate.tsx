@@ -438,7 +438,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             </div>
 
             {/* ===== 玻璃卡片 (Glass Card) ===== */}
-            <div className="pl-5 pr-8 -mt-16 relative z-20">
+            <div className="mx-auto w-[92%] max-w-md -mt-16 relative z-20">
                 <div className="glass-card rounded-[28px] p-5 relative overflow-hidden min-h-[190px]">
                     <div className="relative z-10">
                         {/* Only show eyebrow if it's not 'discount' to keep it clean */}
@@ -460,7 +460,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                         </h2>
 
                         {/* Offer Description with Multi-line Support */}
-                        <div className="text-white/80 text-sm mb-5 pr-4 whitespace-pre-line leading-relaxed">
+                        <div className="text-white/80 text-sm mb-5 pr-16 whitespace-pre-line leading-relaxed">
                             <EditableLabel
                                 path="offer.description"
                                 value={content.offer?.description || normalizedOffer.description}
@@ -514,7 +514,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             </div>
 
             {/* ===== Claim Section (Inline Form or Success) ===== */}
-            <div className="pl-5 pr-8 mt-5">
+            <div className="mx-auto w-[92%] max-w-md mt-5">
                 {!successOpen ? (
                     <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100">
                         <div className="flex items-center gap-3 mb-6">
@@ -675,7 +675,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             </div>
 
             {/* ===== Info Card ===== */}
-            <div className="pl-5 pr-8 mt-5">
+            <div className="mx-auto w-[92%] max-w-md mt-5">
                 <div className="bg-white rounded-[20px] shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden">
                     {/* Address Card */}
                     <div className="flex items-start gap-4 p-4">
