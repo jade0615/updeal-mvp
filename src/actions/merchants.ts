@@ -173,12 +173,15 @@ export async function getMerchant(id: string) {
       const [
         { count: pageViewsCount },
         { count: claimsCount },
+        { count: redemptionsCount },
         { count: formSubmitsCount }
       ] = await Promise.all([
         // Count total page views from page_views table
         supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('merchant_id', id),
-        // Count total claims from customer_claims table
-        supabase.from('customer_claims').select('*', { count: 'exact', head: true }).eq('merchant_id', id),
+        // Count total claims from coupons table (actual claims)
+        supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', id),
+        // Count total redemptions
+        supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', id).eq('status', 'redeemed'),
         // Count submits from events (as backup if separate table not used for submits yet)
         supabase.from('events').select('*', { count: 'exact', head: true }).eq('merchant_id', id).eq('event_type', 'form_submit')
       ])
@@ -191,6 +194,7 @@ export async function getMerchant(id: string) {
       merchant.landing_page_stats = {
         total_page_views: totalPageViews,
         total_coupon_claims: totalClaims,
+        total_redemptions: redemptionsCount || 0,
         total_form_submits: formSubmitsCount || 0,
         conversion_rate: Number(conversionRate),
         last_calculated_at: new Date().toISOString()

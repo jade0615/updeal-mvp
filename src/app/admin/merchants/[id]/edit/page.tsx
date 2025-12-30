@@ -313,7 +313,7 @@ export default function EditMerchantPage() {
                     <h2 className="text-lg font-bold text-gray-900 border-b pb-2 mb-4 flex items-center gap-2">
                         📊 Live Analytics
                     </h2>
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 text-center">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-4 text-center">
                         <div className="p-4 bg-gray-50 rounded-lg">
                             <p className="text-xs font-bold text-gray-500 uppercase">Page Views</p>
                             <p className="text-2xl font-bold text-indigo-600 mt-1">
@@ -333,6 +333,17 @@ export default function EditMerchantPage() {
                                     const stats = formData.landing_page_stats;
                                     const s = Array.isArray(stats) ? stats[0] : stats;
                                     return (s?.total_coupon_claims || 0).toLocaleString();
+                                })()}
+                            </p>
+                        </div>
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                            <p className="text-xs font-bold text-gray-500 uppercase">Redemptions</p>
+                            <p className="text-2xl font-bold text-indigo-600 mt-1">
+                                {(() => {
+                                    // @ts-ignore
+                                    const stats = formData.landing_page_stats;
+                                    const s = Array.isArray(stats) ? stats[0] : stats;
+                                    return (s?.total_redemptions || 0).toLocaleString();
                                 })()}
                             </p>
                         </div>
