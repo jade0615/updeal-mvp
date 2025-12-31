@@ -43,6 +43,26 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Merchant Authentication
+  if (request.nextUrl.pathname.startsWith('/merchant')) {
+    // Skip login page
+    if (request.nextUrl.pathname === '/merchant/login') {
+      return response
+    }
+
+    const token = request.cookies.get('merchant_session_token')?.value
+
+    if (!token) {
+      return NextResponse.redirect(new URL('/merchant/login', request.url))
+    }
+
+    // We can't easily validte against DB in middleware in Edge runtime if we use sophisticated DB clients.
+    // However, if we just check for token existence here, and let the page/layout do the DB check, it's faster.
+    // But ideally we want to prevent even rendering the shell.
+    // For now, let's trust the cookie existence + page level validation (requireMerchantAuth).
+  }
+
+
   return response
 }
 
