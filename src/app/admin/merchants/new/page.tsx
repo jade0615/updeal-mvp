@@ -167,11 +167,11 @@ export default function NewMerchantPage() {
                     {/* ============================================================ */}
                     {/* 📍 区域1: 页面顶部 - 深绿色背景区域 */}
                     {/* ============================================================ */}
-                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 -mx-6 px-6 py-6 rounded-lg border border-emerald-200">
-                        <h2 className="text-lg font-bold text-emerald-800 border-b border-emerald-200 pb-2 mb-4 flex items-center gap-2">
+                    <div className="bg-gradient-to-r from-orange-50/80 to-amber-50/80 -mx-6 px-6 py-6 rounded-lg border border-orange-200/70 backdrop-blur-sm">
+                        <h2 className="text-lg font-bold text-orange-800 border-b border-orange-200 pb-2 mb-4 flex items-center gap-2">
                             <span className="text-xl">📍</span> 区域1: 页面顶部 (深绿色背景)
                         </h2>
-                        <p className="text-sm text-emerald-600 mb-4 bg-white/50 p-3 rounded-lg">
+                        <p className="text-sm text-orange-600 mb-4 bg-white/50 p-3 rounded-lg">
                             这些内容显示在页面最上方的深绿色区域，包括店名、标语和评分
                         </p>
 
@@ -433,11 +433,11 @@ export default function NewMerchantPage() {
                     {/* ============================================================ */}
                     {/* ✅ 区域4: 成功页面 */}
                     {/* ============================================================ */}
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 -mx-6 px-6 py-6 rounded-lg border border-green-200">
-                        <h2 className="text-lg font-bold text-green-800 border-b border-green-200 pb-2 mb-4 flex items-center gap-2">
+                    <div className="bg-gradient-to-r from-orange-50/80 to-amber-50/80 -mx-6 px-6 py-6 rounded-lg border border-orange-200/70 backdrop-blur-sm">
+                        <h2 className="text-lg font-bold text-orange-800 border-b border-orange-200 pb-2 mb-4 flex items-center gap-2">
                             <span className="text-xl">✅</span> 区域4: 领取成功页面
                         </h2>
-                        <p className="text-sm text-green-600 mb-4 bg-white/50 p-3 rounded-lg">
+                        <p className="text-sm text-orange-600 mb-4 bg-white/50 p-3 rounded-lg">
                             用户点击领取按钮后看到的成功页面内容
                         </p>
 

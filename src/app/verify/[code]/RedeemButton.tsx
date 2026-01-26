@@ -64,7 +64,7 @@ export default function RedeemButton({ couponId, couponCode }: RedeemButtonProps
         <button
           onClick={handleOpenDialog}
           disabled={loading}
-          className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full bg-gradient-to-r from-orange-400/90 to-amber-500/90 hover:from-orange-500 hover:to-amber-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] backdrop-blur-sm"
         >
           ✓ Redeem Coupon
         </button>
@@ -109,7 +109,7 @@ export default function RedeemButton({ couponId, couponCode }: RedeemButtonProps
                 placeholder="Enter PIN"
                 autoFocus
                 disabled={loading}
-                className="w-full px-4 py-3 text-center text-2xl font-mono tracking-widest border-2 border-gray-300 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 text-center text-2xl font-mono tracking-widest border-2 border-gray-300 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-200 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -130,7 +130,7 @@ export default function RedeemButton({ couponId, couponCode }: RedeemButtonProps
               <button
                 onClick={handleRedeem}
                 disabled={loading || !pin.trim()}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95"
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-400/90 to-amber-500/90 hover:from-orange-500 hover:to-amber-600 text-white font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95 backdrop-blur-sm"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">

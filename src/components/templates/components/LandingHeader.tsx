@@ -60,7 +60,7 @@ export default function LandingHeader() {
                         onClick={handleShare}
                         className="h-11 w-11 flex items-center justify-center rounded-full bg-white/10 border border-white/15 backdrop-blur-md text-white transition-all hover:bg-white/20 hover:scale-105 active:scale-95 group"
                     >
-                        {isShared ? <Check className="h-5 w-5 text-green-400" /> : <Share2 className="h-5 w-5 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />}
+                        {isShared ? <Check className="h-5 w-5 text-orange-400" /> : <Share2 className="h-5 w-5 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />}
                     </button>
                 </div>
             </nav>

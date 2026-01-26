@@ -191,7 +191,7 @@ export default function EditMerchantPage() {
                 className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
                 title="Copy to clipboard"
             >
-                {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                {copied ? <Check className="h-4 w-4 text-orange-600" /> : <Copy className="h-4 w-4" />}
             </button>
         )
     }
@@ -228,7 +228,7 @@ export default function EditMerchantPage() {
 
                 {/* Success Message */}
                 {saved && (
-                    <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-6 flex items-center justify-between">
+                    <div className="bg-orange-50/80 border border-orange-200 text-orange-700 px-4 py-3 rounded mb-6 flex items-center justify-between backdrop-blur-sm">
                         <div className="flex items-center gap-2">
                             <span className="text-lg">✅</span>
                             <span className="font-medium">已保存成功！</span>
@@ -237,7 +237,7 @@ export default function EditMerchantPage() {
                             href={`/${formData.slug}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-green-700 hover:text-green-900 font-medium underline flex items-center gap-1"
+                            className="text-orange-700 hover:text-orange-900 font-medium underline flex items-center gap-1"
                         >
                             查看落地页 ↗
                         </a>
@@ -365,11 +365,11 @@ export default function EditMerchantPage() {
                     {/* ============================================================ */}
                     {/* 📍 区域1: 页面顶部 - 深绿色背景区域 */}
                     {/* ============================================================ */}
-                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 -mx-6 px-6 py-6 rounded-lg border border-emerald-200">
-                        <h2 className="text-lg font-bold text-emerald-800 border-b border-emerald-200 pb-2 mb-4 flex items-center gap-2">
+                    <div className="bg-gradient-to-r from-orange-50/80 to-amber-50/80 -mx-6 px-6 py-6 rounded-lg border border-orange-200/70 backdrop-blur-sm">
+                        <h2 className="text-lg font-bold text-orange-800 border-b border-orange-200 pb-2 mb-4 flex items-center gap-2">
                             <span className="text-xl">📍</span> 区域1: 页面顶部 (深绿色背景)
                         </h2>
-                        <p className="text-sm text-emerald-600 mb-4 bg-white/50 p-3 rounded-lg">
+                        <p className="text-sm text-orange-600 mb-4 bg-white/50 p-3 rounded-lg">
                             这些内容显示在页面最上方的深绿色区域，包括店名、标语和评分
                         </p>
 
@@ -649,18 +649,18 @@ export default function EditMerchantPage() {
                     {/* ============================================================ */}
                     {/* ✅ 区域4: 成功页面 - 用户领取后看到的内容 */}
                     {/* ============================================================ */}
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 -mx-6 px-6 py-6 rounded-lg border border-green-200">
-                        <h2 className="text-lg font-bold text-green-800 border-b border-green-200 pb-2 mb-4 flex items-center gap-2">
+                    <div className="bg-gradient-to-r from-orange-50/80 to-amber-50/80 -mx-6 px-6 py-6 rounded-lg border border-orange-200/70 backdrop-blur-sm">
+                        <h2 className="text-lg font-bold text-orange-800 border-b border-orange-200 pb-2 mb-4 flex items-center gap-2">
                             <span className="text-xl">✅</span> 区域4: 领取成功页面
                         </h2>
-                        <p className="text-sm text-green-600 mb-4 bg-white/50 p-3 rounded-lg">
+                        <p className="text-sm text-orange-600 mb-4 bg-white/50 p-3 rounded-lg">
                             用户点击领取按钮后看到的成功页面内容
                         </p>
 
                         {/* Normal Mode */}
                         <div className="mb-6">
                             <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">普通模式</span>
+                                <span className="px-2 py-1 bg-orange-100/80 text-orange-700 rounded text-xs">普通模式</span>
                                 显示优惠券代码
                             </h4>
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

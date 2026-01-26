@@ -142,7 +142,7 @@ export default async function MerchantsPage({ searchParams }: Props) {
                             <span className="text-xs font-bold text-gray-500 uppercase w-16">核销</span>
                           </div>
                           <div className="text-right">
-                            <span className="text-sm font-bold text-green-600 block">
+                            <span className="text-sm font-bold text-orange-600 block">
                               {(merchant.real_stats?.redemptions || 0).toLocaleString()}
                             </span>
                           </div>
@@ -207,7 +207,7 @@ export default async function MerchantsPage({ searchParams }: Props) {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <ToggleMerchantStatus merchantId={merchant.id} isActive={merchant.is_active} />
-                        <span className={`text-xs font-semibold ${merchant.is_active ? 'text-green-700' : 'text-gray-500'}`}>
+                        <span className={`text-xs font-semibold ${merchant.is_active ? 'text-orange-700' : 'text-gray-500'}`}>
                           {merchant.is_active ? '启用' : '禁用'}
                         </span>
                       </div>

@@ -27,7 +27,7 @@ export default function OfferBadge({ type, value, badgeText, className = '' }: O
       case 'bogo':
         return {
           icon: '🎁',
-          bgColor: 'bg-green-500',
+          bgColor: 'bg-orange-400/90',
           textColor: 'text-white',
           text: badgeText || value || 'Buy 1 Get 1 Free'
         }

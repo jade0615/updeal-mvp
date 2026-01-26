@@ -21,7 +21,7 @@ function getOfferGradient(type: OfferType): string {
     case 'coupon':
       return 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20'
     case 'bogo':
-      return 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20'
+      return 'from-orange-50/80 to-amber-50/80 dark:from-orange-900/20 dark:to-amber-900/20'
     case 'reservation':
       return 'from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20'
     case 'free_item':
@@ -40,7 +40,7 @@ function getOfferBorderColor(type: OfferType): string {
     case 'coupon':
       return 'border-purple-100 dark:border-purple-800'
     case 'bogo':
-      return 'border-green-100 dark:border-green-800'
+      return 'border-orange-200/70 dark:border-orange-800'
     case 'reservation':
       return 'border-blue-100 dark:border-blue-800'
     case 'free_item':
@@ -59,7 +59,7 @@ function getOfferBadgeColor(type: OfferType): string {
     case 'coupon':
       return 'bg-purple-500'
     case 'bogo':
-      return 'bg-green-500'
+      return 'bg-orange-400/90'
     case 'reservation':
       return 'bg-blue-500'
     case 'free_item':
@@ -78,7 +78,7 @@ function getOfferTextColor(type: OfferType): string {
     case 'coupon':
       return 'text-purple-600 dark:text-purple-400'
     case 'bogo':
-      return 'text-green-600 dark:text-green-400'
+      return 'text-orange-600 dark:text-orange-400'
     case 'reservation':
       return 'text-blue-600 dark:text-blue-400'
     case 'free_item':
@@ -285,7 +285,7 @@ export default function SushiTemplate({ merchant }: TemplateProps) {
                     <div className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-wider font-mono">
                       {couponData.code}
                     </div>
-                    <p className="text-xs md:text-sm text-green-600 dark:text-green-400 font-semibold">
+                    <p className="text-xs md:text-sm text-orange-600 dark:text-orange-400 font-semibold">
                       ✓ {couponData.offerDiscount}
                     </p>
                   </div>
@@ -317,7 +317,7 @@ export default function SushiTemplate({ merchant }: TemplateProps) {
                         {couponData.merchantPhone && (
                           <a
                             href={`tel:${couponData.merchantPhone}`}
-                            className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+                            className="bg-orange-400/90 hover:bg-orange-500 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
                           >
                             <span>📞</span>
                             <span>Call</span>

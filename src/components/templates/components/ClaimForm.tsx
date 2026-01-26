@@ -103,13 +103,13 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
 
     if (successData) {
         return (
-            <div className="rounded-xl border border-green-100 bg-green-50 p-6 text-center animate-in zoom-in duration-500">
-                <h3 className="mb-2 text-xl font-bold text-green-800">Coupon Claimed!</h3>
-                <p className="mb-4 text-sm text-green-700">Check your phone for the coupon code.</p>
-                <div className="mx-auto mb-2 w-max rounded-lg bg-white px-4 py-2 font-mono text-xl font-bold tracking-widest text-green-600 shadow-sm border border-green-100">
+            <div className="rounded-xl border border-orange-200/70 bg-orange-50/80 p-6 text-center animate-in zoom-in duration-500 backdrop-blur-sm">
+                <h3 className="mb-2 text-xl font-bold text-orange-800">Coupon Claimed!</h3>
+                <p className="mb-4 text-sm text-orange-700">Check your phone for the coupon code.</p>
+                <div className="mx-auto mb-2 w-max rounded-lg bg-white px-4 py-2 font-mono text-xl font-bold tracking-widest text-orange-600 shadow-sm border border-orange-200/70">
                     {successData.coupon.code}
                 </div>
-                <p className="text-xs text-green-600">Expires: {new Date(successData.coupon.expiresAt).toLocaleDateString()}</p>
+                <p className="text-xs text-orange-600">Expires: {new Date(successData.coupon.expiresAt).toLocaleDateString()}</p>
             </div>
         );
     }
@@ -119,7 +119,7 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 to-red-500 opacity-20" />
 
             <div className="text-center mb-6">
-                <h3 className="text-2xl font-black bg-gradient-to-r from-[#1A4D40] to-[#0D3B30] bg-clip-text text-transparent mb-1">
+                <h3 className="text-2xl font-black lux-gold-text mb-1" style={{ textShadow: '0px 2px 4px rgba(0,0,0,0.3)' }}>
                     Claim Your Deal 🎁
                 </h3>
                 <p className="text-slate-500 text-sm font-medium">Fill in your info to get this special offer</p>
@@ -172,7 +172,7 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
                         </>
                     ) : (
                         <>
-                            <span>Claim Now</span>
+                            <span className="lux-gold-text" style={{ textShadow: '0px 2px 4px rgba(0,0,0,0.3)' }}>Claim Now</span>
                             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shadow-inner">
                                 <ArrowRight className="h-4.5 w-4.5" />
                             </div>

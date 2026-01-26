@@ -1,6 +1,8 @@
 import { getAllMerchantsStats } from '@/actions/analytics'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AnalyticsPage() {
   const merchants = await getAllMerchantsStats()
 
@@ -68,11 +70,11 @@ export default async function AnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-1">总表单提交</p>
-                <p className="text-3xl font-bold text-green-600">
+                <p className="text-3xl font-bold text-orange-600">
                   {totalStats.formSubmits.toLocaleString()}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-orange-100/80 rounded-full flex items-center justify-center">
                 <span className="text-2xl">📝</span>
               </div>
             </div>
@@ -178,11 +180,10 @@ export default async function AnalyticsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              merchant.is_active
-                                ? 'bg-green-100 text-green-800'
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${merchant.is_active
+                                ? 'bg-orange-100/80 text-orange-800'
                                 : 'bg-gray-100 text-gray-800'
-                            }`}
+                              }`}
                           >
                             {merchant.is_active ? '启用' : '禁用'}
                           </span>
@@ -204,13 +205,12 @@ export default async function AnalyticsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <div
-                            className={`text-sm font-bold ${
-                              conversionRate >= 5
-                                ? 'text-green-600'
+                            className={`text-sm font-bold ${conversionRate >= 5
+                                ? 'text-orange-600'
                                 : conversionRate >= 2
-                                ? 'text-yellow-600'
-                                : 'text-gray-600'
-                            }`}
+                                  ? 'text-yellow-600'
+                                  : 'text-gray-600'
+                              }`}
                           >
                             {conversionRate}%
                           </div>

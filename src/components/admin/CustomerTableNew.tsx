@@ -120,7 +120,7 @@ export default function CustomerTableNew({ data, total, page, limit, selectedMer
                                             title="复制电话"
                                         >
                                             {copiedId === `phone-${customer.id}` ? (
-                                                <Check className="h-3 w-3 text-green-500" />
+                                                <Check className="h-3 w-3 text-orange-500" />
                                             ) : (
                                                 <Copy className="h-3 w-3 text-gray-400" />
                                             )}
@@ -147,7 +147,7 @@ export default function CustomerTableNew({ data, total, page, limit, selectedMer
                                             title="复制优惠码"
                                         >
                                             {copiedId === `coupon-${customer.id}` ? (
-                                                <Check className="h-3 w-3 text-green-500" />
+                                                <Check className="h-3 w-3 text-orange-500" />
                                             ) : (
                                                 <Copy className="h-3 w-3 text-gray-400" />
                                             )}

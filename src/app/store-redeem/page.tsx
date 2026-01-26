@@ -165,10 +165,10 @@ export default function StoreRedeemPage() {
           {result && (
             <div className="mt-6">
               {result.success ? (
-                <div className="bg-green-50 border-2 border-green-500 rounded-xl p-6 space-y-3">
+                <div className="bg-orange-50/80 border-2 border-orange-400 rounded-xl p-6 space-y-3 backdrop-blur-sm">
                   <div className="flex items-center justify-center gap-3">
                     <span className="text-5xl">✅</span>
-                    <h3 className="text-2xl font-bold text-green-800">
+                    <h3 className="text-2xl font-bold text-orange-800">
                       核销成功！
                     </h3>
                   </div>
@@ -184,7 +184,7 @@ export default function StoreRedeemPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">优惠:</span>
-                        <span className="font-bold text-green-600">{result.coupon.offer}</span>
+                        <span className="font-bold text-orange-600">{result.coupon.offer}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">顾客:</span>
@@ -234,7 +234,7 @@ export default function StoreRedeemPage() {
                 <div
                   key={index}
                   className={`flex items-center justify-between p-3 rounded-lg ${
-                    item.success ? 'bg-green-50' : 'bg-gray-50'
+                    item.success ? 'bg-orange-50/80' : 'bg-gray-50'
                   }`}
                 >
                   <div className="flex items-center gap-3">
