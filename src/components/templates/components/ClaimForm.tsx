@@ -119,16 +119,16 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 to-red-500 opacity-20" />
 
             <div className="text-center mb-6">
-                <h3 className="text-2xl font-black lux-gold-text mb-1" style={{ textShadow: '0px 2px 4px rgba(0,0,0,0.3)' }}>
+                <h3 className="text-2xl font-black lux-gold-text mb-1">
                     Claim Your Deal 🎁
                 </h3>
-                <p className="text-slate-500 text-sm font-medium">Fill in your info to get this special offer</p>
+                <p className="text-[#5C4033] text-sm font-bold">Fill in your info to get this special offer</p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 {/* Name */}
                 <div className="relative group">
-                    <label className="block text-slate-600 text-[11px] font-bold uppercase tracking-wider mb-1.5 ml-1">Full Name</label>
+                    <label className="block text-[#5C4033] text-[11px] font-bold uppercase tracking-wider mb-1.5 ml-1">Full Name</label>
                     <div className="relative">
                         <input
                             type="text"
@@ -141,7 +141,7 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
 
                 {/* Phone */}
                 <div className="relative group">
-                    <label className="block text-slate-600 text-[11px] font-bold uppercase tracking-wider mb-1.5 ml-1">Phone Number</label>
+                    <label className="block text-[#5C4033] text-[11px] font-bold uppercase tracking-wider mb-1.5 ml-1">Phone Number</label>
                     <div className="relative">
                         <input
                             type="tel"
@@ -172,7 +172,7 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
                         </>
                     ) : (
                         <>
-                            <span className="lux-gold-text" style={{ textShadow: '0px 2px 4px rgba(0,0,0,0.3)' }}>Claim Now</span>
+                            <span className="lux-gold-text">Claim Now</span>
                             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shadow-inner">
                                 <ArrowRight className="h-4.5 w-4.5" />
                             </div>
@@ -180,7 +180,7 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
                     )}
                 </button>
 
-                <p className="text-center text-slate-400 text-[11px] font-medium mt-4">
+                <p className="text-center text-[#5C4033] text-[11px] font-bold mt-4">
                     🔒 Your info is safe. We never spam.
                 </p>
             </form>

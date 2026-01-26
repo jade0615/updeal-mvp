@@ -337,39 +337,20 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                 }
                 
                 /* ===== Make white text readable on gold ===== */
-                .header-bg,
-                .header-bg * {
-                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-                }
-
-                /* Stronger stroke for better definition as requested */
                 .header-bg .title,
-                .header-bg .subtitle,
                 .header-bg h1,
-                .header-bg h2,
-                .header-bg h3,
-                .header-bg p,
-                .header-bg span,
-                .header-bg div {
+                .glass-card h2 {
+                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
                     -webkit-text-stroke: 0.6px rgba(100, 100, 100, 0.6);
                 }
+
                 .glass-card {
                     background: linear-gradient(135deg, #FFD700 0%, #FFFACD 50%, #FFD700 100%);
                     backdrop-filter: blur(24px);
                     border: 1px solid rgba(255, 255, 255, 0.4);
                     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), inset 0 0 10px rgba(255, 255, 255, 0.4);
                 }
-                .glass-card * {
-                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-                }
-                .glass-card p,
-                .glass-card h1,
-                .glass-card h2,
-                .glass-card h3,
-                .glass-card span,
-                .glass-card div {
-                    -webkit-text-stroke: 0.6px rgba(100, 100, 100, 0.6);
-                }
+
                 .btn-orange {
                     background: linear-gradient(135deg, #FFD700 0%, #DB7093 100%);
                     box-shadow: 0 8px 24px rgba(219, 112, 147, 0.35);
@@ -434,7 +415,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                     <div className="relative z-10 w-[85%] drop-shadow-md">
                         {/* Hero Title - only show if has value OR in editing mode */}
                         {(content.heroTitle || isEditing) && (
-                            <p className="text-white/80 text-sm font-medium mb-1 tracking-wide uppercase">
+                            <p className="text-[#5C4033] text-sm font-bold mb-1 tracking-wide uppercase">
                                 <EditableLabel
                                     path="heroTitle"
                                     value={content.heroTitle}
@@ -453,7 +434,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                         </h1>
                         {/* Hero Subtitle - only show if has value OR in editing mode */}
                         {(content.heroSubtitle || isEditing) && (
-                            <p className="text-white/90 text-sm mb-4 leading-relaxed font-light">
+                            <p className="text-[#5C4033] text-sm mb-4 leading-relaxed font-bold">
                                 <EditableLabel
                                     path="heroSubtitle"
                                     value={content.heroSubtitle}
@@ -468,7 +449,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 <Star className="w-4 h-4 fill-current" />
                                 {Number(content.rating || 4.8).toFixed(1)}
                             </div>
-                            <span className="text-white/70 text-sm">({content.reviewCount || '1.2k'} Reviews)</span>
+                            <span className="text-[#5C4033] text-sm font-bold">({content.reviewCount || '1.2k'} Reviews)</span>
                         </div>
 
                     </div>
@@ -481,7 +462,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                     <div className="relative z-10">
                         {/* Only show eyebrow if it's not 'discount' to keep it clean */}
                         {normalizedOffer.type && normalizedOffer.type !== 'discount' && (
-                            <p className="text-white/70 text-[11px] tracking-[2px] font-semibold mb-1 uppercase">
+                            <p className="text-[#5C4033] text-[11px] tracking-[2px] font-bold mb-1 uppercase">
                                 {normalizedOffer.type.replace('_', ' ')}
                             </p>
                         )}
@@ -498,14 +479,14 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                         </h2>
 
                         {/* Offer Description with Multi-line Support */}
-                        <div className="text-white/80 text-sm mb-5 pr-16 whitespace-pre-line leading-relaxed">
+                        <div className="text-[#5C4033] text-sm mb-5 pr-16 whitespace-pre-line leading-relaxed font-bold">
                             <EditableLabel
                                 path="offer.description"
                                 value={content.offer?.description || normalizedOffer.description}
                                 fallback="折扣描述..."
                                 darkBg={true}
                                 as="textarea"
-                                className="min-h-[50px] bg-transparent border-b border-white/20 text-white placeholder:text-white/50 w-full"
+                                className="min-h-[50px] bg-transparent border-b border-[#5C4033]/20 text-[#5C4033] placeholder:text-[#5C4033]/50 w-full"
                             />
                         </div>
 
@@ -518,13 +499,13 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     </div>
                                 ))}
                             </div>
-                            <p className="text-white/80 text-xs font-medium">
+                            <p className="text-[#5C4033] text-xs font-bold">
                                 {(merchant.virtual_base_count || 120) + claimedCount}
                                 <EditableLabel
                                     path="customLabels.social_proof_text"
                                     value={(content.customLabels as any)?.social_proof_text}
                                     fallback=" claimed this week"
-                                    className="bg-transparent border-b border-white/20 text-white placeholder:text-white/50 w-auto inline-block ml-1"
+                                    className="bg-transparent border-b border-[#5C4033]/20 text-[#5C4033] placeholder:text-[#5C4033]/50 w-auto inline-block ml-1"
                                 />
                             </p>
                         </div>
