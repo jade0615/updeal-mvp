@@ -31,8 +31,8 @@ export const metadata: Metadata = {
   title: "UpDeal",
   description: "Best local deals",
   icons: {
-    icon: '/icon.png',
-    apple: '/apple-icon.png',
+    icon: '/raccoon-3d-premium.png',
+    apple: '/raccoon-3d-premium.png',
   },
 };
 
