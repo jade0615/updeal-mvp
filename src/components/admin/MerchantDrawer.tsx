@@ -35,7 +35,7 @@ export default function MerchantDrawer({ merchant, onClose }: Props) {
         setTimeout(() => setCopied(false), 2000);
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://updeal.top';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://hiraccoon.com';
 
     return (
         <>

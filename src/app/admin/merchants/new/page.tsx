@@ -636,7 +636,7 @@ export default function NewMerchantPage() {
                                     placeholder="自动从店名生成"
                                     className="w-full border rounded px-3 py-2"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">落地页地址: updeal.top/{formData.slug || '...'}</p>
+                                <p className="text-xs text-gray-500 mt-1">落地页地址: hiraccoon.com/{formData.slug || '...'}</p>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">状态</label>

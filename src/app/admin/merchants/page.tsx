@@ -34,7 +34,7 @@ export default async function MerchantsPage({ searchParams }: Props) {
     )
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://updeal.top'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://hiraccoon.com'
 
   return (
     <div className="min-h-screen bg-gray-50">
