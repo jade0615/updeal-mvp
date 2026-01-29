@@ -159,5 +159,6 @@ function QuickLink({ href, title, desc, icon, bg }: any) {
         <div className="text-sm text-slate-500">{desc}</div>
       </div>
     </a>
+  )
 }
 
