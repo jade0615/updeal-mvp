@@ -325,18 +325,37 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                 .font-poppins { font-family: 'Poppins', sans-serif; }
                 
                 .header-bg {
-                    background: linear-gradient(160deg, #1A4D40 0%, #0D3B30 50%, #0A2E25 100%);
+                    background: linear-gradient(
+                        135deg,
+                        #FFD700 0%,
+                        #FFFACD 25%,
+                        #FFD700 50%,
+                        #B8860B 75%,
+                        #FFD700 100%
+                    );
+                    /* polished inner glow */
+                    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5);
                     border-radius: 0 0 40px 40px;
                 }
-                .glass-card {
-                    background: linear-gradient(145deg, rgba(26, 77, 64, 0.85) 0%, rgba(10, 46, 37, 0.95) 100%);
-                    backdrop-filter: blur(24px);
-                    border: 1px solid rgba(255, 255, 255, 0.15);
-                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                
+                /* ===== Make white text readable on gold ===== */
+                .header-bg .title,
+                .header-bg h1,
+                .glass-card h2 {
+                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+                    -webkit-text-stroke: 0.6px rgba(100, 100, 100, 0.6);
                 }
+
+                .glass-card {
+                    background: linear-gradient(135deg, #FFD700 0%, #FFFACD 50%, #FFD700 100%);
+                    backdrop-filter: blur(24px);
+                    border: 1px solid rgba(255, 255, 255, 0.4);
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), inset 0 0 10px rgba(255, 255, 255, 0.4);
+                }
+
                 .btn-orange {
-                    background: linear-gradient(135deg, #FF6B4A 0%, #FF5233 100%);
-                    box-shadow: 0 8px 24px rgba(255, 82, 51, 0.35);
+                    background: linear-gradient(135deg, #FFD700 0%, #DB7093 100%);
+                    box-shadow: 0 8px 24px rgba(219, 112, 147, 0.35);
                 }
                 .rating-badge {
                     background: linear-gradient(135deg, #F5A623 0%, #F39C12 100%);
@@ -380,7 +399,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             {/* ===== 顶部深绿色区域 ===== */}
             <div className="header-bg relative pb-[100px] overflow-hidden">
                 {/* Decorative background glow */}
-                <div className="absolute -top-1/2 -right-[30%] w-[80%] h-full bg-[radial-gradient(ellipse,rgba(45,90,75,0.4)_0%,transparent_60%)] pointer-events-none" />
+                <div className="absolute -top-1/2 -right-[30%] w-[80%] h-full bg-[radial-gradient(ellipse,#FFD700_0%,transparent_60%)] opacity-[0.08] blur-[30px] pointer-events-none" />
 
                 {/* Navbar */}
                 <div className="flex justify-between items-center px-5 pt-12 pb-4 relative z-20">
@@ -395,10 +414,10 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                 {/* Hero Content */}
                 <div className="relative px-6 pt-2 pb-8 flex">
                     {/* Left Text */}
-                    <div className="relative z-10 w-[85%]">
+                    <div className="relative z-10 w-[85%] drop-shadow-md">
                         {/* Hero Title - only show if has value OR in editing mode */}
                         {(content.heroTitle || isEditing) && (
-                            <p className="text-white/80 text-sm font-medium mb-1 tracking-wide uppercase">
+                            <p className="text-[#5C4033] text-sm font-bold mb-1 tracking-wide uppercase">
                                 <EditableLabel
                                     path="heroTitle"
                                     value={content.heroTitle}
@@ -417,7 +436,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                         </h1>
                         {/* Hero Subtitle - only show if has value OR in editing mode */}
                         {(content.heroSubtitle || isEditing) && (
-                            <p className="text-white/90 text-sm mb-4 leading-relaxed font-light">
+                            <p className="text-[#5C4033] text-sm mb-4 leading-relaxed font-bold">
                                 <EditableLabel
                                     path="heroSubtitle"
                                     value={content.heroSubtitle}
@@ -432,7 +451,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 <Star className="w-4 h-4 fill-current" />
                                 {Number(content.rating || 4.8).toFixed(1)}
                             </div>
-                            <span className="text-white/70 text-sm">({content.reviewCount || '1.2k'} Reviews)</span>
+                            <span className="text-[#5C4033] text-sm font-bold">({content.reviewCount || '1.2k'} Reviews)</span>
                         </div>
 
                     </div>
@@ -445,7 +464,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                     <div className="relative z-10">
                         {/* Only show eyebrow if it's not 'discount' to keep it clean */}
                         {normalizedOffer.type && normalizedOffer.type !== 'discount' && (
-                            <p className="text-white/70 text-[11px] tracking-[2px] font-semibold mb-1 uppercase">
+                            <p className="text-[#5C4033] text-[11px] tracking-[2px] font-bold mb-1 uppercase">
                                 {normalizedOffer.type.replace('_', ' ')}
                             </p>
                         )}
@@ -462,14 +481,14 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                         </h2>
 
                         {/* Offer Description with Multi-line Support */}
-                        <div className="text-white/80 text-sm mb-5 pr-16 whitespace-pre-line leading-relaxed">
+                        <div className="text-[#5C4033] text-sm mb-5 pr-16 whitespace-pre-line leading-relaxed font-bold">
                             <EditableLabel
                                 path="offer.description"
                                 value={content.offer?.description || normalizedOffer.description}
                                 fallback="折扣描述..."
                                 darkBg={true}
                                 as="textarea"
-                                className="min-h-[50px] bg-transparent border-b border-white/20 text-white placeholder:text-white/50 w-full"
+                                className="min-h-[50px] bg-transparent border-b border-[#5C4033]/20 text-[#5C4033] placeholder:text-[#5C4033]/50 w-full"
                             />
                         </div>
 
@@ -482,13 +501,13 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     </div>
                                 ))}
                             </div>
-                            <p className="text-white/80 text-xs font-medium">
+                            <p className="text-[#5C4033] text-xs font-bold">
                                 {(merchant.virtual_base_count || 120) + claimedCount}
                                 <EditableLabel
                                     path="customLabels.social_proof_text"
                                     value={(content.customLabels as any)?.social_proof_text}
                                     fallback=" claimed this week"
-                                    className="bg-transparent border-b border-white/20 text-white placeholder:text-white/50 w-auto inline-block ml-1"
+                                    className="bg-transparent border-b border-[#5C4033]/20 text-[#5C4033] placeholder:text-[#5C4033]/50 w-auto inline-block ml-1"
                                 />
                             </p>
                         </div>
@@ -521,10 +540,10 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                     <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center">
-                                <Tag className="text-[#FF5722] w-5 h-5" />
+                                <Tag className="text-[#DB7093] w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-slate-800">
+                                <h3 className="text-lg font-bold text-slate-800" style={{ textShadow: '0px 2px 4px rgba(0,0,0,0.1)' }}>
                                     <EditableLabel
                                         path="customLabels.section_title_claim"
                                         value={content.customLabels?.section_title_claim}
@@ -602,6 +621,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 onClick={handleClaim}
                                 disabled={loading || !formData.phone || formData.phone.length < 10 || !formData.name}
                                 className="mt-2 w-full btn-orange py-4 rounded-xl text-white font-bold text-[16px] flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-70 disabled:grayscale"
+                                style={{ textShadow: '0px 2px 4px rgba(0,0,0,0.3)' }}
                             >
                                 {loading ? 'Processing...' : (
                                     <EditableLabel
@@ -650,7 +670,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                 ) : (
                     <div ref={couponRef} className="bg-white rounded-[24px] p-6 shadow-md border border-slate-100 animate-in zoom-in duration-300">
                         <div className="text-center">
-                            <div className="w-16 h-16 mx-auto rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-4">
+                            <div className="w-16 h-16 mx-auto rounded-full bg-orange-100/80 text-orange-500 flex items-center justify-center mb-4">
                                 <Check className="w-8 h-8" />
                             </div>
                             <h3 className="text-xl font-bold text-slate-800 mb-1">
@@ -840,7 +860,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                             <button
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="w-14 h-14 bg-green-600 text-white rounded-full shadow-xl flex items-center justify-center hover:bg-green-700 transition-all animate-bounce-subtle"
+                                className="w-14 h-14 bg-orange-500 text-white rounded-full shadow-xl flex items-center justify-center hover:bg-orange-600 transition-all animate-bounce-subtle"
                                 title="Save Changes"
                             >
                                 {isSaving ? <span className="loading loading-spinner w-5">...</span> : <Save className="w-6 h-6" />}

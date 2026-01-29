@@ -8,8 +8,8 @@
   --color-theme-secondary: #57534E;
   --color-theme-tertiary: #A8A29E;
   --color-theme-border: #E7E5E4;
-  --color-theme-accent: #0D9488;
-  --color-theme-accentSoft: #F0FDFA;
+  --color-theme-accent: #F97316;
+  --color-theme-accentSoft: #FFF7ED;
 
   /* Fonts */
   --font-sans: var(--font-poppins), var(--font-jakarta);
@@ -18,7 +18,7 @@
   /* Shadows */
   --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.04);
   --shadow-clean: 0 1px 3px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-float: 0 20px 40px -10px rgba(13, 148, 136, 0.15);
+  --shadow-float: 0 20px 40px -10px rgba(249, 115, 22, 0.15);
 
   /* Animations */
   --animate-shimmer-gold: shimmer-gold 2s infinite;
@@ -86,8 +86,15 @@ body {
 
 /* Custom Jelly & Glassmorphism Styles */
 .header-bg {
-  background: linear-gradient(160deg, #1A4D40 0%, #0D3B30 50%, #0A2E25 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFFACD 25%, #FFD700 50%, #B8860B 75%, #FFD700 100%);
   border-radius: 0 0 40px 40px;
+}
+
+.lux-gold-text {
+  background: linear-gradient(90deg, #FFD700 0%, #DB7093 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .jelly-card {

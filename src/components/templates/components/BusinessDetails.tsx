@@ -43,7 +43,7 @@ export default function BusinessDetails({
                 <div>
                     <div className="flex items-center gap-2">
                         <h4 className="font-semibold text-gray-900">Opening Hours</h4>
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${openingHours.isOpen ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${openingHours.isOpen ? 'bg-orange-100/80 text-orange-700' : 'bg-red-100 text-red-700'}`}>
                             {openingHours.currentStatus}
                         </span>
                     </div>

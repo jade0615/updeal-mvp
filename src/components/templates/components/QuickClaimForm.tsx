@@ -75,8 +75,8 @@ export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: Qu
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 to-red-500 opacity-20" />
 
             <div className="text-center mb-2 space-y-2">
-                <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <ShieldCheck className="w-6 h-6 text-green-600" />
+                <div className="bg-orange-100/80 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <ShieldCheck className="w-6 h-6 text-orange-500" />
                 </div>
 
                 <h3 className="text-xl font-black text-slate-900">

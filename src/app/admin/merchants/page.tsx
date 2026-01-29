@@ -1,28 +1,29 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
-import { ExportMerchantsButton } from '@/components/admin/MerchantUtilityButtons'
+import DeleteMerchantButton from '@/components/admin/DeleteMerchantButton'
+import { CopyButton, ExportMerchantsButton } from '@/components/admin/MerchantUtilityButtons'
+import ToggleMerchantStatus from '@/components/admin/ToggleMerchantStatus'
+import MerchantSearch from '@/components/admin/MerchantSearch'
 import { getAllMerchantsStats } from '@/actions/analytics'
-import DashboardHUD from '@/components/admin/DashboardHUD'
-import SmartFilterBar from '@/components/admin/SmartFilterBar'
-import MerchantsTable from '@/components/admin/MerchantsTable'
-import StoreMonitor from '@/components/admin/StoreMonitor'
-import { LayoutGrid, List } from 'lucide-react'
+import TimeRangeFilter from '@/components/admin/TimeRangeFilter'
 
 interface Props {
   searchParams: Promise<{ q?: string; period?: string }>
 }
 
 export default async function MerchantsPage({ searchParams }: Props) {
-  const { q: searchQuery, period, view } = await searchParams
+  const { q: searchQuery, period } = await searchParams
 
-  // 1. Fetch Data (Server-Side)
-  // Default to 'today' if no period selected
+  // Fetch stats based on selected period (default 'today')
+  // The backend now returns numbers SPECIFIC to this period.
   const currentPeriod = period || 'today';
-  const currentView = view || 'grid'; // Default to monitor/grid view
+
+  // Fetch all merchants with REAL-TIME aggregated stats
   const allMerchants: any[] = await getAllMerchantsStats(currentPeriod)
 
-  // 2. Filter Data (Client-Side Logic for Search)
   let merchants = allMerchants
+
+  // Client-side filtering for search
   if (searchQuery) {
     const lowerQ = searchQuery.toLowerCase()
     merchants = allMerchants.filter(m =>
@@ -33,71 +34,202 @@ export default async function MerchantsPage({ searchParams }: Props) {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-[#f8fbff] pb-20">
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://updeal.top'
 
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-          <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-              <span className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-2xl">🏢</span>
-              商家管理中心 (Operations)
-            </h1>
-            <p className="text-sm text-slate-500 mt-2 font-medium">管理落地页、监控实时核销数据并导出客户名单。</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex bg-white border border-slate-200 rounded-xl p-1 shadow-sm mr-2">
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col gap-6 mb-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-gray-900">商家管理 dashboard</h1>
+            <div className="flex gap-3 items-center">
+              <MerchantSearch />
+              <ExportMerchantsButton merchants={merchants || []} />
               <Link
-                href={`?view=grid&period=${currentPeriod}${searchQuery ? `&q=${searchQuery}` : ''}`}
-                className={`p-2 rounded-lg transition-all ${currentView === 'grid' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                href="/admin/merchants/new"
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors flex items-center whitespace-nowrap"
               >
-                <LayoutGrid className="w-5 h-5" />
-              </Link>
-              <Link
-                href={`?view=list&period=${currentPeriod}${searchQuery ? `&q=${searchQuery}` : ''}`}
-                className={`p-2 rounded-lg transition-all ${currentView === 'list' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
-              >
-                <List className="w-5 h-5" />
+                + 新增商家
               </Link>
             </div>
-            <ExportMerchantsButton merchants={merchants || []} />
-            <Link
-              href="/admin/merchants/new"
-              className="bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 font-bold flex items-center gap-2"
-            >
-              + Add Merchant
-            </Link>
+          </div>
+
+          {/* Time Filter Row */}
+          <div className="flex items-center gap-4 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
+            <span className="text-sm font-medium text-gray-500">统计时间范围:</span>
+            <TimeRangeFilter />
+            <span className="text-xs text-gray-400 ml-auto">
+              Data updates in real-time
+            </span>
           </div>
         </div>
 
-        {/* 1. HUD (Heads-Up Display) */}
-        <DashboardHUD merchants={merchants} />
+        {!merchants || merchants.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            {searchQuery ? (
+              <>
+                <p className="text-gray-500 mb-2">没有找到匹配 "{searchQuery}" 的商家</p>
+                <p className="text-sm text-gray-400">尝试使用其他关键词搜索</p>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-500 mb-4">还没有商家，点击上方按钮创建第一个商家</p>
+                <Link
+                  href="/admin/merchants/new"
+                  className="inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+                >
+                  创建商家
+                </Link>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[240px]">
+                    商家名称 (Merchant)
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    📊 运营数据 ({currentPeriod.toUpperCase()})
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Link & Action
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    状态
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    操作
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {merchants.map((merchant) => (
+                  <tr key={merchant.id} className="hover:bg-gray-50">
+                    {/* Merchant Info Column */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <div>
+                          <div className="text-sm font-bold text-gray-900">
+                            {merchant.name}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="text-xs text-gray-500 font-mono bg-gray-100 px-1.5 py-0.5 rounded">
+                              {merchant.slug}
+                            </div>
+                            {merchant.internal_id && (
+                              <div className="text-xs text-purple-600 font-mono bg-purple-50 px-1.5 py-0.5 rounded">
+                                #{merchant.internal_id}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-400 mt-1">
+                            PIN: <span className="font-mono text-gray-600 font-medium">{merchant.redeem_pin || 'N/A'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
 
-        {/* 2. Smart Filter Bar */}
-        <div className="mt-10">
-          <SmartFilterBar />
-        </div>
+                    {/* Core Metrics Column (Time-Filtered) */}
+                    <td className="px-6 py-4 bg-slate-50/50">
+                      <div className="flex flex-col gap-2 min-w-[200px]">
+                        {/* Redemptions */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-lg">✅</span>
+                            <span className="text-xs font-bold text-gray-500 uppercase w-16">核销</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-sm font-bold text-orange-600 block">
+                              {(merchant.real_stats?.redemptions || 0).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
 
-        {/* 3. Main Content View */}
-        <div className="mt-8">
-          {currentView === 'grid' ? (
-            <StoreMonitor merchants={merchants} />
-          ) : (
-            <MerchantsTable initialMerchants={merchants} />
-          )}
-        </div>
+                        {/* Claims */}
+                        <div className="flex items-center justify-between border-t border-gray-100 pt-2">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-lg">🎟️</span>
+                            <span className="text-xs font-medium text-gray-500 w-16">领取</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-sm font-medium text-orange-600 block">
+                              {(merchant.real_stats?.claims || 0).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
 
-        {/* Empty State */}
-        {(!merchants || merchants.length === 0) && (
-          <div className="mt-12 text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-            <p className="text-slate-400 font-medium mb-4">没有找到匹配的商家</p>
-            <Link href="/admin/merchants" className="text-blue-600 font-bold hover:underline">清除搜索条件</Link>
+                        {/* Views */}
+                        <div className="flex items-center justify-between border-t border-gray-100 pt-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-lg">👁️</span>
+                            <span className="text-xs font-medium text-gray-500 w-16">浏览</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-sm font-medium text-gray-500 block">
+                              {(merchant.real_stats?.views || 0).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Rate */}
+                        <div className="mt-1 text-right">
+                          <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                            核销率: {merchant.real_stats?.redemption_rate}%
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Links Column */}
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-400 w-8">C端:</span>
+                          <a href={`/${merchant.slug}`} target="_blank" className="text-blue-600 hover:underline text-xs truncate max-w-[100px]">
+                            Preview
+                          </a>
+                          <CopyButton text={`${baseUrl}/${merchant.slug}`} label="Copy" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-400 w-8">B端:</span>
+                          <a href={`/store-redeem/${merchant.slug}`} target="_blank" className="text-purple-600 hover:underline text-xs truncate max-w-[100px]">
+                            Redeem
+                          </a>
+                          <CopyButton text={`${baseUrl}/store-redeem/${merchant.slug}`} label="Copy" />
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <ToggleMerchantStatus merchantId={merchant.id} isActive={merchant.is_active} />
+                        <span className={`text-xs font-semibold ${merchant.is_active ? 'text-orange-700' : 'text-gray-500'}`}>
+                          {merchant.is_active ? '启用' : '禁用'}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      <Link
+                        href={`/admin/merchants/${merchant.id}/edit`}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        编辑
+                      </Link>
+                      <DeleteMerchantButton merchantId={merchant.id} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-
       </div>
     </div>
   )
 }
-

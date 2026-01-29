@@ -34,10 +34,10 @@ export default function OfferCard({ type, value, title, description, className =
       case 'bogo':
         return {
           icon: '🎁',
-          gradient: 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20',
-          borderColor: 'border-green-100 dark:border-green-800',
-          badgeColor: 'bg-green-500',
-          textColor: 'text-green-600 dark:text-green-400',
+          gradient: 'from-orange-50/80 to-amber-50/80 dark:from-orange-900/20 dark:to-amber-900/20',
+          borderColor: 'border-orange-200/70 dark:border-orange-800',
+          badgeColor: 'bg-orange-400/90',
+          textColor: 'text-orange-600 dark:text-orange-400',
           defaultTitle: 'BUY ONE GET ONE',
           defaultBadgeText: value
         }

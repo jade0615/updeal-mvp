@@ -25,7 +25,7 @@ export function CopyButton({ text, label }: CopyButtonProps) {
         <button
             onClick={handleCopy}
             className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded transition-colors ${copied
-                    ? 'bg-green-100 text-green-700'
+                    ? 'bg-orange-100/80 text-orange-700'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
             title={text}
@@ -94,7 +94,7 @@ export function ExportMerchantsButton({ merchants }: ExportMerchantsButtonProps)
     return (
         <button
             onClick={handleExport}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors flex items-center gap-2"
+            className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition-colors flex items-center gap-2"
         >
             <span>📊</span>
             导出商家链接

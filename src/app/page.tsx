@@ -1,65 +1,79 @@
-import Image from "next/image";
+import React, { Suspense } from 'react';
+import MobilePremiumTemplate from '@/components/templates/MobilePremiumTemplate';
+import { Merchant } from '@/types/merchant';
+
+// Mock data for the Gold-Blue Theme Demo
+const DEMO_MERCHANT: Merchant = {
+  id: 'demo-merchant-id',
+  name: 'Golden Palace Demo',
+  slug: 'golden-palace-demo',
+  template_type: 'mobile_premium',
+  virtual_base_count: 128,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  content: {
+    businessName: "Golden Palace",
+    businessType: "Fine Dining",
+    priceRange: "$$$",
+    establishedYear: 2024,
+    rating: 4.9,
+    reviewCount: "2.5k",
+    heroTitle: "GRAND OPENING",
+    heroSubtitle: "Experience the taste of luxury.",
+    offer: {
+      type: "Exclusive",
+      value: "20%",
+      unit: "OFF",
+      description: "Get 20% OFF your first premium dining experience.",
+      totalLimit: 500,
+      virtual_base_count: 320
+    },
+    offer_badge_text: "LIMITED TIME",
+    address: {
+      street: "123 Gold Avenue",
+      area: "Beverly Hills, CA 90210",
+      fullAddress: "123 Gold Avenue, Beverly Hills, CA 90210"
+    },
+    phone: "+1 (555) 888-9999",
+    openingHours: {
+      isOpen: true,
+      currentStatus: "Open Now",
+      closingTime: "11 PM",
+      specialHours: "Mon-Sun 11:00 AM - 11:00 PM"
+    },
+    website: "https://example.com",
+    requirements: {
+      collectName: true,
+      collectEmail: false
+    },
+    menu: [],
+    reviews: [
+      {
+        id: 1,
+        rating: 5,
+        text: "Absolutely stunning atmosphere and delicious food!",
+        authorName: "Sarah J.",
+        date: "2 days ago"
+      },
+      {
+        id: 2,
+        rating: 5,
+        text: "The gold theme is beautiful. Highly recommended.",
+        authorName: "Michael C.",
+        date: "1 week ago"
+      }
+    ]
+  }
+} as any; // Cast to any to avoid strict type checks on optional fields if any mismatch
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-orange-400">Loading...</div>}>
+      <MobilePremiumTemplate
+        merchant={DEMO_MERCHANT}
+        claimedCount={42}
+        canEdit={false}
+      />
+    </Suspense>
   );
 }

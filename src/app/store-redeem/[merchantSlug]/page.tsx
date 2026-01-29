@@ -391,9 +391,9 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
         {stats && (
           <div className="space-y-4">
             <div className="bg-white rounded-2xl shadow-xl p-6 grid grid-cols-2 gap-4">
-              <div className="bg-emerald-50 rounded-xl p-4 text-center">
-                <p className="text-xs font-bold text-emerald-600 uppercase">今日核销</p>
-                <p className="text-2xl font-bold text-emerald-900 mt-1">{stats.todayRedemptions}</p>
+              <div className="bg-orange-50/80 rounded-xl p-4 text-center backdrop-blur-sm">
+                <p className="text-xs font-bold text-orange-600 uppercase">今日核销</p>
+                <p className="text-2xl font-bold text-orange-900 mt-1">{stats.todayRedemptions}</p>
               </div>
               <div className="bg-purple-50 rounded-xl p-4 text-center">
                 <p className="text-xs font-bold text-purple-600 uppercase">累计核销</p>
@@ -465,10 +465,10 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
           {result && (
             <div className="mt-6 animation-fade-in">
               {result.success ? (
-                <div className="bg-green-50 border-2 border-green-500 rounded-xl p-6 space-y-3 text-center">
+                <div className="bg-orange-50/80 border-2 border-orange-400 rounded-xl p-6 space-y-3 text-center backdrop-blur-sm">
                   <div className="text-5xl mb-2">✅</div>
-                  <h3 className="text-2xl font-bold text-green-800">核销成功!</h3>
-                  <div className="text-green-700">
+                  <h3 className="text-2xl font-bold text-orange-800">核销成功!</h3>
+                  <div className="text-orange-700">
                     <p className="font-bold text-lg">{result.coupon?.offer}</p>
                     <p className="text-sm opacity-80">顾客: {result.coupon?.customer}</p>
                   </div>
@@ -500,7 +500,7 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
               {history.map((item, index) => (
                 <div
                   key={index}
-                  className={`flex items-center justify-between p-3 rounded-lg border l-4 ${item.success ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'}`}
+                  className={`flex items-center justify-between p-3 rounded-lg border l-4 ${item.success ? 'bg-orange-50/80 border-orange-200' : 'bg-orange-50 border-orange-200'}`}
                 >
                   <div className="flex flex-col">
                     <span className="font-bold text-gray-900">{item.couponName || 'Unknown Coupon'}</span>

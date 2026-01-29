@@ -315,13 +315,13 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
                         <div className="bg-white rounded-2xl shadow-sm border border-theme-border divide-y divide-stone-50">
                             {/* Hours (Placeholder) */}
                             <div className="p-4 flex items-start gap-4">
-                                <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <div className="w-8 h-8 rounded-full bg-orange-50/80 text-orange-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                                     <span className="material-symbols-outlined text-[18px]">schedule</span>
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-0.5">
                                         <h3 className="text-sm font-semibold text-theme-primary">Open Now</h3>
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
                                     </div>
                                     <p className="text-xs text-theme-secondary">Closes 10 PM • Happy Hour 5-7 PM</p>
                                 </div>

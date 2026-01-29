@@ -58,16 +58,16 @@ export default function CouponWallet({
             <div className="mx-6 mb-8 rounded-xl overflow-hidden border border-[#A3E635]/50 bg-[#f7fee7]">
                 {/* Expires In */}
                 <div className="py-4 text-center">
-                    <p className="text-xs font-bold text-green-800 uppercase tracking-wider mb-1">
+                    <p className="text-xs font-bold text-orange-800 uppercase tracking-wider mb-1">
                         Expires in
                     </p>
-                    <p className="text-xl font-black text-green-700 font-mono tracking-tight">
+                    <p className="text-xl font-black text-orange-700 font-mono tracking-tight">
                         {days} DAYS {hours}H
                     </p>
                 </div>
                 {/* Redeemed On */}
-                <div className="border-t border-[#A3E635]/20 py-2 text-center bg-[#ecfccb]/50">
-                    <p className="text-[10px] font-semibold text-green-900/60 uppercase tracking-widest">
+                <div className="border-t border-orange-300/20 py-2 text-center bg-orange-50/50">
+                    <p className="text-[10px] font-semibold text-orange-900/60 uppercase tracking-widest">
                         Activated: {redeemDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                 </div>
