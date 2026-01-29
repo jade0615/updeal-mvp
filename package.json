@@ -19,6 +19,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
     "html2canvas": "^1.4.1",
+    "ical-generator": "^10.0.0",
     "libphonenumber-js": "^1.12.31",
     "lucide-react": "^0.561.0",
     "nanoid": "^5.1.6",
@@ -36,6 +37,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "twilio": "^5.11.1",
+    "use-debounce": "^10.1.0",
     "zod": "^4.2.0"
   },
   "devDependencies": {

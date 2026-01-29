@@ -13,7 +13,7 @@ const generateSuffix = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 4)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { merchantId, phone, name } = body;
+    const { merchantId, phone, name, email, expectedVisitDate } = body;
 
     if (!merchantId || !phone) {
       return NextResponse.json(
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     // 1. Get Merchant to generate code prefix and check validity
     const { data: merchant, error: merchantError } = await supabase
       .from('merchants')
-      .select('id, name, content')
+      .select('id, name, slug, content')
       .eq('id', merchantId)
       .single();
 
@@ -40,25 +40,32 @@ export async function POST(request: NextRequest) {
 
     // 2. Find or Create User
     let userId: string;
+    let userEmail = email;
+
     // Check if user exists
     const { data: existingUser } = await supabase
       .from('users')
-      .select('id')
+      .select('id, email')
       .eq('phone', phone)
       .single();
 
     if (existingUser) {
       userId = existingUser.id;
+      userEmail = userEmail || existingUser.email;
 
-      // 更新用户姓名（如果提供了新的姓名）
-      if (name) {
+      // 更新用户姓名和邮箱（如果提供了新信息）
+      const updates: any = {};
+      if (name) updates.name = name;
+      if (email) updates.email = email;
+
+      if (Object.keys(updates).length > 0) {
         await supabase
           .from('users')
-          .update({ name })
+          .update(updates)
           .eq('id', userId);
       }
 
-      // Check if user already claimed this coupon (Optional: limit 1 per user)
+      // Check if user already claimed this coupon
       const { data: existingCoupon } = await supabase
         .from('coupons')
         .select('*')
@@ -88,12 +95,12 @@ export async function POST(request: NextRequest) {
         .insert({
           phone,
           name: name || undefined,
+          email: email || undefined,
         })
         .select('id')
         .single();
 
       if (createError || !newUser) {
-        console.error('Error creating user:', createError);
         return NextResponse.json(
           { success: false, error: 'Failed to register user' },
           { status: 500 }
@@ -103,7 +110,6 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Generate Coupon Code
-    // Prefix: First 4 chars of name, stripped of spaces, uppercase
     const prefix = merchant.name.replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase();
     const code = `${prefix}-${generateSuffix()}`;
 
@@ -119,11 +125,47 @@ export async function POST(request: NextRequest) {
         user_id: userId,
         code,
         status: 'active',
-        expires_at: expiresAt.toISOString()
+        expires_at: expiresAt.toISOString(),
+        expected_visit_date: expectedVisitDate ? new Date(expectedVisitDate).toISOString() : null,
+        email_sent_stage: 0
       });
 
-    // 无论数据库写入是否成功，都尝试备份和发送通知 (保障数据不丢失)
-    // 即使数据库挂了，通过邮件和 Google Sheets也能找回领取记录
+    if (couponError) {
+      console.error('Coupon DB Error:', couponError);
+    }
+
+    // 5. Automatic Email Trigger (T0)
+    // If we have an email and a visit date, send the immediate calendar invite
+    const shouldSendT0 = userEmail && expectedVisitDate;
+    let t0Success = false;
+
+    console.log('[Claim API] Checking T0 Trigger:', {
+      shouldSendT0,
+      userEmail,
+      expectedVisitDate,
+      merchantName: merchant.name
+    });
+
+    if (shouldSendT0) {
+      const { sendT0Confirmation } = await import('@/lib/email');
+      console.log('[Claim API] Sending T0 Confirmation...');
+      const emailRes = await sendT0Confirmation({
+        email: userEmail,
+        merchantName: merchant.name,
+        couponCode: code,
+        expectedDate: new Date(expectedVisitDate),
+        address: merchant.content?.address?.fullAddress,
+        merchantSlug: merchant.slug
+      });
+      console.log('[Claim API] T0 Result:', emailRes);
+
+      if (emailRes.success) {
+        t0Success = true;
+        await supabase.from('coupons').update({ email_sent_stage: 1 }).eq('code', code);
+      }
+    }
+
+    // Backup & Notifications
     const backupPromise = backupToGoogleSheets({
       merchantId,
       merchantName: merchant.name,
@@ -141,17 +183,7 @@ export async function POST(request: NextRequest) {
       couponCode: code,
     }).catch(err => console.error('[Fatal] Send notification failed:', err));
 
-    if (couponError) {
-      console.error('Error creating coupon in Supabase:', couponError);
-      // 虽然 DB 失败，但我们已经触发了备份。
-      // 如果备份成功，我们依然可以给用户显示成功，或者返回错误但记录已存
-      // 为了用户体验和容错，即使 DB 失败，只要备份在进行，我们也返回成功
-      // 等待备份完成以确保数据安全
-      await Promise.all([backupPromise, notificationPromise]);
-    } else {
-      // Track coupon claim for analytics (update stats)
-      await trackCouponClaim(merchantId, userId, code);
-    }
+    await trackCouponClaim(merchantId, userId, code);
 
     return NextResponse.json({
       success: true,
@@ -162,8 +194,10 @@ export async function POST(request: NextRequest) {
         offerValue: merchant.content?.offer?.value || 'Special Offer'
       },
       isExisting: false,
-      verifyUrl: `/verify/${code}`
+      verifyUrl: `/verify/${code}`,
+      emailSent: t0Success
     });
+
 
   } catch (error) {
     console.error('Claim API Error:', error);

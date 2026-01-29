@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>SMS Link Test</title>
+</head>
+
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
+
+    <div style="text-align: center;">
+        <h1>👇 测试 SMS 链接 👇</h1>
+        <p>点击下方按钮，它应该会尝试打开你电脑上的 <strong>iMessage (信息)</strong> 应用。</p>
+
+        <br>
+
+        <!-- EXACT code from your email template -->
+        <a href="sms:?body=Check%20out%20this%20deal%20at%20Best%20Buffet!%20https%3A%2F%2Fhiraccoon.com%2Fbest-buffet"
+            style="background: #4CAF50; color: white; padding: 20px 40px; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 18px;">
+            Text a Friend (测试)
+        </a>
+
+        <br><br><br>
+
+        <p style="color: #666;">
+            <strong>原理：</strong> 这是一个标准的 <code>sms:?body=...</code> 链接。<br>
+            如果在 MacBook 上点击，它通常会唤起 "信息" (Messages) 应用。<br>
+            如果在 iPhone/Android 上点击，它会唤起短信应用。<br>
+        </p>
+    </div>
+
+</body>
+
+</html>

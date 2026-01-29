@@ -364,9 +364,15 @@ export async function getAllMerchantsStats(period: string = 'today') {
 
   // 3. Fetch Real-time Aggregations for each merchant
   const enrichedMerchants = await Promise.all(merchants.map(async (merchant) => {
+    // Queries for the selected period
     let viewsQuery = supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id);
     let claimsQuery = supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id);
     let redeemedQuery = supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).eq('status', 'redeemed');
+
+    // Queries for TODAY specifically
+    const todayStart = getStartOfDay(now);
+    let todayViewsQuery = supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).gte('viewed_at', todayStart);
+    let todayRedeemedQuery = supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).eq('status', 'redeemed').gte('redeemed_at', todayStart);
 
     if (startDate) {
       viewsQuery = viewsQuery.gte('viewed_at', startDate);
@@ -384,17 +390,23 @@ export async function getAllMerchantsStats(period: string = 'today') {
       { count: totalViews },
       { count: totalClaims },
       { count: totalRedeemed },
+      { count: todayViews },
+      { count: todayRedemptions },
     ] = await Promise.all([
       viewsQuery,
       claimsQuery,
-      redeemedQuery
+      redeemedQuery,
+      todayViewsQuery,
+      todayRedeemedQuery
     ]);
 
     const realTotalViews = totalViews || 0;
     const realTotalClaims = totalClaims || 0;
     const realTotalRedeemed = totalRedeemed || 0;
+    const realTodayViews = todayViews || 0;
+    const realTodayRedemptions = todayRedemptions || 0;
 
-    // Fallback for 'all' time if needed
+    // Fallback for 'all' time if needed (legacy compatibility)
     let finalViews = realTotalViews;
     if (period === 'all' && finalViews === 0 && (merchant.landing_page_stats?.[0]?.total_page_views || 0) > 0) {
       finalViews = merchant.landing_page_stats[0].total_page_views;
@@ -409,6 +421,8 @@ export async function getAllMerchantsStats(period: string = 'today') {
         claims: realTotalClaims,
         redemptions: realTotalRedeemed,
         redemption_rate: redemptionRate,
+        today_views: realTodayViews,
+        today_redemptions: realTodayRedemptions,
         period: period
       }
     };

@@ -12,6 +12,8 @@ interface QuickClaimFormProps {
 export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: QuickClaimFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [email, setEmail] = useState('');
+    const [expectedVisitDate, setExpectedVisitDate] = useState('');
 
     const handleQuickClaim = async () => {
         setIsSubmitting(true);
@@ -23,8 +25,10 @@ export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: Qu
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     merchantId,
-                    phone: phone, // Use the prop phone
-                    name: 'Valued Customer', // Default name since we don't ask
+                    phone: phone,
+                    email: email || undefined,
+                    expectedVisitDate: expectedVisitDate || undefined,
+                    name: 'Valued Customer',
                 }),
             });
 
@@ -84,6 +88,29 @@ export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: Qu
             </div>
 
             <div className="space-y-4">
+                <div className="space-y-3">
+                    <div className="relative">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-2 mb-1 block">Email (Optional)</label>
+                        <input
+                            type="email"
+                            placeholder="To receive calendar invite"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                        />
+                    </div>
+                    <div className="relative">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-2 mb-1 block">When do you plan to visit?</label>
+                        <input
+                            type="date"
+                            min={new Date().toISOString().split('T')[0]}
+                            value={expectedVisitDate}
+                            onChange={(e) => setExpectedVisitDate(e.target.value)}
+                            className="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                        />
+                    </div>
+                </div>
+
                 {error && (
                     <div className="rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-600 border border-red-100 text-center">
                         {error}

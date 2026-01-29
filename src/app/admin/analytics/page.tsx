@@ -1,5 +1,6 @@
 import { getAllMerchantsStats } from '@/actions/analytics'
 import Link from 'next/link'
+import { ArrowUpRight } from 'lucide-react'
 
 export default async function AnalyticsPage() {
   const merchants = await getAllMerchantsStats()
@@ -133,16 +134,19 @@ export default async function AnalyticsPage() {
                       状态
                     </th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      页面访问
+                      浏览 (PV)
                     </th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      表单提交
+                      领取 (Claim)
                     </th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      优惠券领取
+                      核销 (Redeem)
                     </th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       转化率
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      核销率
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       操作
@@ -151,40 +155,33 @@ export default async function AnalyticsPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {merchants.map((merchant) => {
-                    const stats = merchant.landing_page_stats?.[0]
-                    const pageViews = stats?.total_page_views || 0
-                    const formSubmits = stats?.total_form_submits || 0
-                    const couponClaims = stats?.total_coupon_claims || 0
-                    const conversionRate = stats?.conversion_rate || 0
+                    const stats = merchant.real_stats
+                    const pageViews = stats?.views || 0
+                    const couponClaims = stats?.claims || 0
+                    const redemptions = stats?.redemptions || 0
+                    const claimRate = pageViews > 0 ? ((couponClaims / pageViews) * 100).toFixed(1) : '0'
+                    const redemptionRate = stats?.redemption_rate || '0'
 
                     return (
-                      <tr key={merchant.id} className="hover:bg-gray-50">
+                      <tr key={merchant.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-bold text-gray-900">
                               {merchant.name}
                             </div>
-                            <div className="text-sm text-gray-500">
-                              <a
-                                href={`/${merchant.slug}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline"
-                              >
-                                /{merchant.slug}
-                              </a>
+                            <div className="text-xs text-gray-500 font-mono">
+                              /{merchant.slug}
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              merchant.is_active
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}
+                            className={`px-2 py-0.5 inline-flex text-[10px] leading-5 font-bold rounded-full uppercase tracking-wider ${merchant.is_active
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-gray-100 text-gray-600'
+                              }`}
                           >
-                            {merchant.is_active ? '启用' : '禁用'}
+                            {merchant.is_active ? 'Active' : 'Disabled'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -193,32 +190,32 @@ export default async function AnalyticsPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <div className="text-sm font-semibold text-gray-900">
-                            {formSubmits.toLocaleString()}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <div className="text-sm font-semibold text-gray-900">
+                          <div className="text-sm font-semibold text-blue-600">
                             {couponClaims.toLocaleString()}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <div
-                            className={`text-sm font-bold ${
-                              conversionRate >= 5
-                                ? 'text-green-600'
-                                : conversionRate >= 2
-                                ? 'text-yellow-600'
-                                : 'text-gray-600'
-                            }`}
-                          >
-                            {conversionRate}%
+                          <div className="text-sm font-bold text-emerald-600">
+                            {redemptions.toLocaleString()}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="text-sm font-bold text-gray-900">
+                            {claimRate}%
+                          </div>
+                          <div className="text-[10px] text-gray-400 font-medium">领券率</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className={`text-sm font-black ${Number(redemptionRate) >= 10 ? 'text-emerald-600' : 'text-slate-900'
+                            }`}>
+                            {redemptionRate}%
+                          </div>
+                          <div className="text-[10px] text-gray-400 font-medium">核销率</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm space-x-3">
                           <Link
                             href={`/admin/merchants/${merchant.id}/edit`}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-blue-600 hover:text-blue-900 font-bold"
                           >
                             编辑
                           </Link>
@@ -226,15 +223,16 @@ export default async function AnalyticsPage() {
                             href={`/${merchant.slug}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-gray-600 hover:text-gray-900"
+                            className="inline-flex items-center gap-1 text-slate-400 hover:text-slate-900 transition-colors"
                           >
-                            查看
+                            访问 <ArrowUpRight className="w-3 h-3" />
                           </a>
                         </td>
                       </tr>
                     )
                   })}
                 </tbody>
+
               </table>
             </div>
           )}

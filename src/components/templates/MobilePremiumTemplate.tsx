@@ -197,7 +197,8 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
     const [formData, setFormData] = useState({
         phone: verifiedPhone || '',
         name: '',
-        email: ''
+        email: '',
+        expectedVisitDate: '',
     });
 
     const [loading, setLoading] = useState(false);
@@ -220,6 +221,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                     phone: formData.phone,
                     name: formData.name || undefined,
                     email: formData.email || undefined,
+                    expectedVisitDate: formData.expectedVisitDate || undefined,
                 }),
             });
 
@@ -566,19 +568,35 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 />
                             </div>
 
-                            {/* Email Input (Conditional) */}
-                            {Boolean(content.requirements?.collectEmail ?? false) && (
-                                <div>
-                                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Email <span className="text-slate-300 font-normal normal-case">(Optional)</span></label>
-                                    <input
-                                        type="email"
-                                        placeholder="john@example.com"
-                                        value={formData.email}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                                        className="w-full h-12 px-4 rounded-xl input-field text-slate-800 placeholder:text-slate-400 outline-none transition-all font-medium"
-                                    />
-                                </div>
-                            )}
+                            {/* Email Input (Always show for Calendar Sync if possible) */}
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Email <span className="text-slate-300 font-normal normal-case">(For Calendar Invite)</span></label>
+                                <input
+                                    type="email"
+                                    placeholder="john@example.com"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                    className="w-full h-12 px-4 rounded-xl input-field text-slate-800 placeholder:text-slate-400 outline-none transition-all font-medium"
+                                />
+                            </div>
+
+                            {/* Expected Visit Date */}
+                            <div className="bg-orange-50/50 p-4 rounded-2xl border border-orange-100/50">
+                                <label className="block text-xs font-semibold text-[#E65100] uppercase tracking-wider mb-1.5 ml-1 flex items-center gap-2">
+                                    <Calendar className="w-4 h-4" />
+                                    When do you plan to visit?
+                                </label>
+                                <input
+                                    type="date"
+                                    min={new Date().toISOString().split('T')[0]}
+                                    value={formData.expectedVisitDate}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, expectedVisitDate: e.target.value }))}
+                                    className="w-full h-12 px-4 rounded-xl border border-orange-200 bg-white text-slate-800 outline-none focus:ring-2 focus:ring-orange-500/20 font-medium"
+                                />
+                                <p className="text-[10px] text-orange-600/70 mt-2 ml-1 italic">
+                                    * We'll send a calendar invite and a reminder!
+                                </p>
+                            </div>
 
                             <button
                                 onClick={handleClaim}
