@@ -1,4 +1,4 @@
-import ical, { ICalCalendarMethod } from 'ical-generator';
+import ical, { ICalCalendarMethod, ICalEventBusyStatus } from 'ical-generator';
 
 interface CalendarEventData {
     merchantName: string;
@@ -24,10 +24,10 @@ export function generateICS(data: CalendarEventData): string {
         start: startTime,
         end: endTime,
         summary: `🍽️ Dine at ${data.merchantName}`,
-        description: `Don't forget to show your coupon code: ${data.couponCode} to the staff.\n\nVerify Link: https://pay.miaojieai.com/verify/${data.couponCode}`,
+        description: `Don't forget to show your coupon code: ${data.couponCode} to the staff.\n\nVerify Link: https://hiraccoon.com/verify/${data.couponCode}`,
         location: data.address || 'Reserved Restaurant',
-        busystatus: 'busy',
-        url: `https://pay.miaojieai.com/verify/${data.couponCode}`
+        busystatus: ICalEventBusyStatus.BUSY,
+        url: `https://hiraccoon.com/verify/${data.couponCode}`
     });
 
     return calendar.toString();
