@@ -25,7 +25,7 @@ interface SendEmailParams {
 export async function sendEmail({ to, subject, html, attachments }: SendEmailParams) {
   try {
     await transporter.sendMail({
-      from: `"Hiraccoon" <${smtpConfig.auth.user}>`,
+      from: `"Hiraccoon" <info@hiraccoon.com>`,
       to,
       subject,
       html,
