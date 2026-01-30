@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { sendT1Reminder, sendT2FinalCall } from '@/lib/email';
+import { sendT1Reminder, sendT2FinalCall, sendT3NoShow } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
     const results = {
         t1_sent: 0,
         t2_sent: 0,
+        t3_sent: 0,
         errors: [] as string[]
     };
 
@@ -92,6 +93,42 @@ export async function GET(request: NextRequest) {
                     if (res.success) {
                         await supabase.from('coupons').update({ email_sent_stage: 3 }).eq('id', coupon.id);
                         results.t2_sent++;
+                    }
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // 3. Process T3 No-Show Follow-up (Day After)
+        // -------------------------------------------------------------------------
+        // Target: Expected yesterday, still active (not redeemed)
+        // Time window: Expected date is between 24h and 48h ago (roughly)
+        const t3Limit = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24h ago
+        const t3Start = new Date(now.getTime() - 50 * 60 * 60 * 1000); // 50h ago
+
+        const { data: t3Coupons } = await supabase
+            .from('coupons')
+            .select(`
+                *,
+                users!inner(email, name),
+                merchants!inner(name, content)
+            `)
+            .lt('expected_visit_date', t3Limit.toISOString())
+            .gt('expected_visit_date', t3Start.toISOString())
+            .eq('status', 'active')
+            .lt('email_sent_stage', 4); // Only if not sent T3 yet
+
+        if (t3Coupons) {
+            for (const coupon of t3Coupons) {
+                if (coupon.users?.email) {
+                    const res = await sendT3NoShow({
+                        email: coupon.users.email,
+                        merchantName: coupon.merchants.name,
+                        couponCode: coupon.code,
+                    });
+                    if (res.success) {
+                        await supabase.from('coupons').update({ email_sent_stage: 4 }).eq('id', coupon.id);
+                        results.t3_sent++;
                     }
                 }
             }

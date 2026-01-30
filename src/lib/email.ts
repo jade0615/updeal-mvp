@@ -141,7 +141,39 @@ export async function sendT1Reminder(data: {
 
   return sendEmail({
     to: data.email,
-    subject: `Friendly Reminder: Your visit to ${data.merchantName} is tomorrow!`,
+    subject: `明天见！您的优惠券已准备好 (See you tomorrow!)`,
+    html,
+  });
+}
+
+/**
+ * T3: No-show Follow-up (Missed Visit)
+ */
+export async function sendT3NoShow(data: {
+  email: string;
+  merchantName: string;
+  couponCode: string;
+}) {
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #FF5722;">Missed you yesterday! 🥺</h2>
+      <p>Was it a busy day? No worries!</p>
+      <p>Your offer for <strong>${data.merchantName}</strong> is <strong>still valid</strong> all week.</p>
+      
+      <p>“是不是太忙忘记了？您的优惠依然有效，这周随时过来吧！”</p>
+      
+      <div style="background: #FFF3E0; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px dashed #FF5722;">
+         <p style="margin: 0; color: #E65100; font-size: 12px;">ACTIVE COUPON</p>
+         <strong style="font-size: 24px;">${data.couponCode}</strong>
+      </div>
+      
+      <p>Come by whenever you're hungry!</p>
+    </div>
+  `;
+
+  return sendEmail({
+    to: data.email,
+    subject: `Your ${data.merchantName} coupon is still waiting for you! 🎁`,
     html,
   });
 }
