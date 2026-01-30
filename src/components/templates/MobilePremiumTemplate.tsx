@@ -198,7 +198,6 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
         phone: verifiedPhone || '',
         name: '',
         email: '',
-        email: '',
         expectedVisitDate: '',
         expectedVisitTime: '',
     });

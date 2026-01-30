@@ -78,13 +78,15 @@ export default async function CustomersPage({ searchParams }: Props) {
                 </div>
 
                 {/* 客户表格 */}
-                <CustomerTableNew
-                    data={customers || []}
-                    total={total || 0}
-                    page={page}
-                    limit={limit}
-                    selectedMerchantName={selectedMerchant?.name}
-                />
+                <Suspense fallback={<div className="h-64 bg-gray-100 rounded-xl animate-pulse" />}>
+                    <CustomerTableNew
+                        data={customers || []}
+                        total={total || 0}
+                        page={page}
+                        limit={limit}
+                        selectedMerchantName={selectedMerchant?.name}
+                    />
+                </Suspense>
             </div>
         </div>
     );
