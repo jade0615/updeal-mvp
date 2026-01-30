@@ -15,6 +15,7 @@ export interface CustomerData {
     coupon_code: string
     claimed_at: string
     expected_visit_date: string | null
+    referred_by: string | null
 }
 
 export interface MerchantStats {
@@ -87,10 +88,10 @@ export async function getCustomers(query: CustomerQuery) {
         created_at,
         user_id,
         merchant_id,
+        referred_by,
         users!inner (
           id,
           phone,
-          name,
           name,
           internal_id
         ),
@@ -217,7 +218,8 @@ export async function getCustomers(query: CustomerQuery) {
                 claimed_at: new Date(item.created_at).toLocaleString('zh-CN'),
                 expected_visit_date: item.expected_visit_date
                     ? new Date(item.expected_visit_date).toLocaleDateString('zh-CN')
-                    : '未填写'
+                    : '未填写',
+                referred_by: item.referred_by || null
             }
         })
 

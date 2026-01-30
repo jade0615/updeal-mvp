@@ -23,7 +23,7 @@ async function applyMigration() {
         await client.connect();
         console.log('Connected to database');
 
-        const migrationPath = path.join(process.cwd(), 'supabase/migrations/add_internal_ids.sql');
+        const migrationPath = path.join(process.cwd(), 'supabase/migrations/add_referral_column.sql');
         const sql = fs.readFileSync(migrationPath, 'utf8');
 
         console.log('Applying migration...');

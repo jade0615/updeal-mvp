@@ -10,9 +10,11 @@ console.log('  SMTP_HOST:', process.env.ALIYUN_SMTP_HOST || '未设置')
 console.log('  SMTP_USER:', process.env.ALIYUN_SMTP_USER || '未设置')
 console.log('')
 
-import { sendT0Confirmation } from '../src/lib/email'
+// import { sendT0Confirmation } from '../src/lib/email'
 
 async function testEmail() {
+  // Dynamically import to ensure env vars are loaded first
+  const { sendT0Confirmation } = await import('../src/lib/email')
   console.log('📧 测试邮件发送到: wisdomjadefeng@gmail.com')
   console.log('发送方: Hiraccoon <info@hiraccoon.com>')
   console.log('')
@@ -23,7 +25,8 @@ async function testEmail() {
     couponCode: 'TEST123',
     expectedDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 明天
     address: '123 Test Street, Chicago, IL 60601',
-    merchantSlug: 'honoo-ramen-bar'
+    merchantSlug: 'honoo-ramen-bar',
+    referralCode: 'REF-TEST12'
   }
 
   console.log('📝 测试数据:')

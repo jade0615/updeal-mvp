@@ -227,6 +227,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                     expectedVisitDate: formData.expectedVisitTime
                         ? `${formData.expectedVisitDate}T${formData.expectedVisitTime}`
                         : formData.expectedVisitDate || undefined,
+                    referralCode: searchParams.get('uid') || undefined,
                 }),
             });
 

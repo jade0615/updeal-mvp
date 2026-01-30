@@ -13,7 +13,7 @@ const generateSuffix = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 4)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { merchantId, phone, name, email, expectedVisitDate } = body;
+    const { merchantId, phone, name, email, expectedVisitDate, referralCode } = body;
 
     if (!merchantId || !phone) {
       return NextResponse.json(
@@ -127,7 +127,8 @@ export async function POST(request: NextRequest) {
         status: 'active',
         expires_at: expiresAt.toISOString(),
         expected_visit_date: expectedVisitDate ? new Date(expectedVisitDate).toISOString() : null,
-        email_sent_stage: 0
+        email_sent_stage: 0,
+        referred_by: referralCode || null
       });
 
     if (couponError) {
@@ -148,6 +149,10 @@ export async function POST(request: NextRequest) {
 
     if (shouldSendT0) {
       const { sendT0Confirmation } = await import('@/lib/email');
+
+      // Generate referral code for this user (First 6 chars of User ID)
+      const referralCode = `REF-${userId.substring(0, 6).toUpperCase()}`;
+
       console.log('[Claim API] Sending T0 Confirmation...');
       const emailRes = await sendT0Confirmation({
         email: userEmail,
@@ -155,7 +160,10 @@ export async function POST(request: NextRequest) {
         couponCode: code,
         expectedDate: new Date(expectedVisitDate),
         address: merchant.content?.address?.fullAddress,
-        merchantSlug: merchant.slug
+        merchantSlug: merchant.slug,
+        referralCode: referralCode,
+        offerValue: merchant.content?.offer?.value || merchant.content?.offer_value || 'Special Offer',
+        offerDescription: merchant.content?.offer?.description || merchant.content?.offerDescription || ''
       });
       console.log('[Claim API] T0 Result:', emailRes);
 

@@ -3,10 +3,11 @@ import { generateICS, generateCalendarLinks } from './calendar';
 
 // Email Service Configuration
 // For Production: Swap these with SendGrid or AWS SES credentials
+const port = Number(process.env.EMAIL_SMTP_PORT) || Number(process.env.ALIYUN_SMTP_PORT) || 465;
 const smtpConfig = {
   host: process.env.EMAIL_SMTP_HOST || process.env.ALIYUN_SMTP_HOST,
-  port: Number(process.env.EMAIL_SMTP_PORT) || Number(process.env.ALIYUN_SMTP_PORT) || 465,
-  secure: true,
+  port: port,
+  secure: port === 465, // Use SSL for port 465, otherwise use STARTTLS
   auth: {
     user: process.env.EMAIL_SMTP_USER || process.env.ALIYUN_SMTP_USER,
     pass: process.env.EMAIL_SMTP_PASS || process.env.ALIYUN_SMTP_PASS,
@@ -25,7 +26,7 @@ interface SendEmailParams {
 export async function sendEmail({ to, subject, html, attachments }: SendEmailParams) {
   try {
     await transporter.sendMail({
-      from: `"Hiraccoon" <info@hiraccoon.com>`,
+      from: process.env.EMAIL_SENDER || `"Hiraccoon" <info@hiraccoon.com>`,
       to,
       subject,
       html,
@@ -48,8 +49,13 @@ export async function sendT0Confirmation(data: {
   expectedDate: Date;
   address?: string;
   merchantSlug: string;
+  referralCode?: string;
+  offerValue?: string;
+  offerDescription?: string;
 }) {
   const icsContent = generateICS(data);
+  const shareUrl = `https://hiraccoon.com/${data.merchantSlug}${data.referralCode ? `?uid=${data.referralCode}` : ''}`;
+  const offerText = data.offerValue ? `Get ${data.offerValue} at ${data.merchantName}!` : `Check out this deal at ${data.merchantName}!`;
 
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
@@ -75,33 +81,34 @@ export async function sendT0Confirmation(data: {
       <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
       
       <p style="font-size: 16px; margin-bottom: 15px;">Love this deal? <strong>Share it with your friends!</strong> 👯‍♀️</p>
+      <p style="font-size: 14px; color: #666; margin-bottom: 15px;">Share your unique link. When they redeem, you get rewards!</p>
       
       <div style="margin-bottom: 20px;">
         <!-- Facebook -->
-        <a href="https://www.facebook.com/sharer/sharer.php?u=https://hiraccoon.com/${data.merchantSlug}" 
+        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}" 
            style="display: inline-block; background: #1877F2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 5px; font-size: 14px;">
            Facebook
         </a>
         
-        <!-- Instagram -->
+        <!-- Instagram (Note: Direct sharing via web link is limited, usually points to profile or app) -->
         <a href="https://www.instagram.com/" 
            style="display: inline-block; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 5px; font-size: 14px;">
            Instagram
         </a>
 
         <!-- SMS (Mobile) -->
-        <a href="sms:?body=${encodeURIComponent(`Check out this deal at ${data.merchantName}! https://hiraccoon.com/${data.merchantSlug}`)}" 
+        <a href="sms:?body=${encodeURIComponent(`${offerText} ${shareUrl}`)}" 
            style="display: inline-block; background: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 5px; font-size: 14px;">
-           Text a Friend
+           Message
         </a>
       </div>
 
-      <p style="font-size: 12px; color: #888; margin-top: 10px;">
-        Or copy link: 
-        <a href="https://hiraccoon.com/${data.merchantSlug}" style="color: #666; text-decoration: underline;">
-          https://hiraccoon.com/${data.merchantSlug}
+      <div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-top: 20px;">
+        <p style="font-size: 12px; color: #888; margin: 0 0 5px 0;">Your Referral Link:</p>
+        <a href="${shareUrl}" style="color: #666; text-decoration: none; font-family: monospace; font-size: 14px; word-break: break-all;">
+          ${shareUrl}
         </a>
-      </p>
+      </div>
     </div>
   `;
 
