@@ -107,7 +107,7 @@ export default function CustomerTableNew({ data, total, page, limit, selectedMer
                                 </div>
 
                                 {/* 主要信息 */}
-                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                                     {/* 电话 */}
                                     <div className="flex items-center gap-2">
                                         <Phone className="h-4 w-4 text-gray-400" />
@@ -160,6 +160,17 @@ export default function CustomerTableNew({ data, total, page, limit, selectedMer
                                         <span className="text-sm text-gray-500">
                                             {customer.claimed_at}
                                         </span>
+                                    </div>
+
+                                    {/* 预计到店 */}
+                                    <div className="flex items-center gap-2">
+                                        <Calendar className="h-4 w-4 text-orange-400" />
+                                        <div className="flex flex-col">
+                                            <span className="text-xs text-gray-400">预计到店</span>
+                                            <span className={`text-sm ${customer.expected_visit_date === '未填写' ? 'text-gray-400' : 'text-orange-600 font-medium'}`}>
+                                                {customer.expected_visit_date}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 
