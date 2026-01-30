@@ -30,10 +30,6 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "UpDeal",
   description: "Best local deals",
-  icons: {
-    icon: '/raccoon-3d-premium.png',
-    apple: '/raccoon-3d-premium.png',
-  },
 };
 
 import { Suspense } from 'react';
