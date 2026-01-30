@@ -198,7 +198,9 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
         phone: verifiedPhone || '',
         name: '',
         email: '',
+        email: '',
         expectedVisitDate: '',
+        expectedVisitTime: '',
     });
 
     const [loading, setLoading] = useState(false);
@@ -221,7 +223,11 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                     phone: formData.phone,
                     name: formData.name || undefined,
                     email: formData.email || undefined,
-                    expectedVisitDate: formData.expectedVisitDate || undefined,
+                    // Merge Date and Time if both provided, otherwise use just date (which defaults to 00:00 UTC usually, or local)
+                    // If time is provided, we construct a full local date string
+                    expectedVisitDate: formData.expectedVisitTime
+                        ? `${formData.expectedVisitDate}T${formData.expectedVisitTime}`
+                        : formData.expectedVisitDate || undefined,
                 }),
             });
 
@@ -606,13 +612,21 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     <Calendar className="w-4 h-4" />
                                     When do you plan to visit?
                                 </label>
-                                <input
-                                    type="date"
-                                    min={new Date().toISOString().split('T')[0]}
-                                    value={formData.expectedVisitDate}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, expectedVisitDate: e.target.value }))}
-                                    className="w-full h-12 px-4 rounded-xl border border-orange-200 bg-white text-slate-800 outline-none focus:ring-2 focus:ring-orange-500/20 font-medium"
-                                />
+                                <div className="flex gap-2">
+                                    <input
+                                        type="date"
+                                        min={new Date().toISOString().split('T')[0]}
+                                        value={formData.expectedVisitDate}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, expectedVisitDate: e.target.value }))}
+                                        className="flex-1 h-12 px-4 rounded-xl border border-orange-200 bg-white text-slate-800 outline-none focus:ring-2 focus:ring-orange-500/20 font-medium min-w-[60%]"
+                                    />
+                                    <input
+                                        type="time"
+                                        value={formData.expectedVisitTime}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, expectedVisitTime: e.target.value }))}
+                                        className="flex-1 h-12 px-2 text-center rounded-xl border border-orange-200 bg-white text-slate-800 outline-none focus:ring-2 focus:ring-orange-500/20 font-medium"
+                                    />
+                                </div>
                                 <p className="text-[10px] text-orange-600/70 mt-2 ml-1 italic">
                                     * We'll send a calendar invite and a reminder!
                                 </p>
