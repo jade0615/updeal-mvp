@@ -589,10 +589,11 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
 
                             {/* Email Input (Always show for Calendar Sync if possible) */}
                             <div>
-                                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Email <span className="text-slate-300 font-normal normal-case">(For Calendar Invite)</span></label>
+                                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Email <span className="text-orange-500">*</span></label>
                                 <input
                                     type="email"
                                     placeholder="john@example.com"
+                                    required
                                     value={formData.email}
                                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                                     className="w-full h-12 px-4 rounded-xl input-field text-slate-800 placeholder:text-slate-400 outline-none transition-all font-medium"
@@ -619,7 +620,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
 
                             <button
                                 onClick={handleClaim}
-                                disabled={loading || !formData.phone || formData.phone.length < 10 || !formData.name}
+                                disabled={loading || !formData.phone || formData.phone.length < 10 || !formData.name || !formData.email}
                                 className="mt-2 w-full btn-orange py-4 rounded-xl text-white font-bold text-[16px] flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-70 disabled:grayscale"
                                 style={{ textShadow: '0px 2px 4px rgba(0,0,0,0.3)' }}
                             >
@@ -841,7 +842,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             {/* Footer */}
             <div className="text-center py-8">
                 <p className="text-slate-400 text-xs">
-                    Powered by <span className="text-slate-500 font-semibold">UpDeal</span>
+                    Powered by <span className="text-slate-500 font-semibold">Hiraccoon</span>
                 </p>
             </div>
 
