@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CustomerData } from '@/actions/customers'
-import { ChevronLeft, ChevronRight, Phone, User, Tag, Calendar, Copy, Check, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Phone, User, Tag, Calendar, Copy, Check, Search, Mail } from 'lucide-react'
 import { useState } from 'react'
 
 interface Props {
@@ -125,6 +125,14 @@ export default function CustomerTableNew({ data, total, page, limit, selectedMer
                                                 <Copy className="h-3 w-3 text-gray-400" />
                                             )}
                                         </button>
+                                    </div>
+
+                                    {/* 邮箱 */}
+                                    <div className="flex items-center gap-2">
+                                        <Mail className="h-4 w-4 text-gray-400" />
+                                        <span className="text-gray-600 truncate max-w-[150px]" title={customer.email || ''}>
+                                            {customer.email || '-'}
+                                        </span>
                                     </div>
 
                                     {/* 姓名 */}

@@ -6,6 +6,7 @@ export interface CustomerData {
     id: string
     user_id: string
     phone: string
+    email: string | null
     name: string | null
     internal_id: string | null
     auto_id: string // 自动生成的编号 CUS-0001
@@ -208,6 +209,7 @@ export async function getCustomers(query: CustomerQuery) {
                 id: item.id,
                 user_id: item.user_id || item.users?.id,
                 phone: item.users?.phone || 'Unknown',
+                email: item.users?.email || '-',
                 name: item.users?.name || '-',
                 internal_id: item.users?.internal_id || null,
                 auto_id: autoId,
