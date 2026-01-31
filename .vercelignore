@@ -1,0 +1,15 @@
+# Ignore scripts directory during Vercel build
+scripts/
+
+# Ignore test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Ignore local development files
+.env.local
+.env*.local
+
+# Ignore backups
+backups/
