@@ -3,14 +3,16 @@ import { generateICS, generateCalendarLinks } from './calendar';
 
 // Email Service Configuration
 // For Production: Swap these with SendGrid or AWS SES credentials
-const port = Number(process.env.EMAIL_SMTP_PORT) || Number(process.env.ALIYUN_SMTP_PORT) || 465;
+// For Production: Swap these with SendGrid or AWS SES credentials
+// FORCE HARDCODED CONFIG To Fix Vercel Env Issues
+const port = 465;
 const smtpConfig = {
-  host: process.env.EMAIL_SMTP_HOST || process.env.ALIYUN_SMTP_HOST,
+  host: 'smtpdm.aliyun.com', // Must be smtpdm for Direct Mail
   port: port,
-  secure: port === 465, // Use SSL for port 465, otherwise use STARTTLS
+  secure: true, // SSL
   auth: {
-    user: process.env.EMAIL_SMTP_USER || process.env.ALIYUN_SMTP_USER,
-    pass: process.env.EMAIL_SMTP_PASS || process.env.ALIYUN_SMTP_PASS,
+    user: 'info@hiraccoon.com',
+    pass: 'Z2CrZ9punU97RaA',
   },
 };
 
