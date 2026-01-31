@@ -1,0 +1,8 @@
+# Ignore scripts directory - not needed for deployment
+scripts/
+
+# Other files not needed for production
+*.md
+!README.md
+.env.local
+.env.development
