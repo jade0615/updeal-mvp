@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-dotenv.config({ path: path.join(__dirname, '../.env.local') });
+dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -15,48 +15,57 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function checkUserContactInfo(limit = 10) {
-    console.log(`Checking contact info for last ${limit} users...`);
+async function checkUserEmail() {
+    console.log('Checking CUS-0001 data...');
 
-    // We need to join coupons with users properly
-    const { data: coupons, error } = await supabase
+    // 1. Get the coupon
+    const { data: coupon, error } = await supabase
         .from('coupons')
         .select(`
-      id,
-      code,
-      created_at,
-      email_sent_stage,
-      user_id,
-      users!inner (
-        id,
-        phone,
-        email,
-        name
-      )
-    `)
+            *,
+            users (*),
+            merchants (name)
+        `)
+        // Try to find the one from screenshot if possible, or just latest
         .order('created_at', { ascending: false })
-        .limit(limit);
+        .limit(1)
+        .single();
 
     if (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching coupon:', error);
         return;
     }
 
-    console.log('Recent Claims Data:');
-    console.log('------------------------------------------------------------------------------------------------');
-    console.log('| Code        | Phone          | Email                          | Name             | Sent? | Time                |');
-    console.log('------------------------------------------------------------------------------------------------');
+    console.log('Coupon Code:', coupon.code);
+    console.log('User ID:', coupon.user_id);
+    console.log('User Data:', coupon.users);
 
-    coupons.forEach((c: any) => {
-        const email = c.users?.email || 'MISSING';
-        const phone = c.users?.phone || 'MISSING';
-        const name = c.users?.name || '-';
-        const sent = c.email_sent_stage === 1 ? 'YES' : 'NO';
-        const time = new Date(c.created_at).toLocaleString();
+    if (!coupon.users) {
+        console.error('User join failed or user missing');
+        return;
+    }
 
-        console.log(`| ${c.code.padEnd(11)} | ${phone.padEnd(14)} | ${email.padEnd(30)} | ${name.padEnd(16)} | ${sent.padEnd(5)} | ${time} |`);
-    });
-    console.log('------------------------------------------------------------------------------------------------');
+    if (coupon.users.email === undefined) {
+        console.error('❌ "email" field is MISSING from the returned user object. The column might not execute in the SELECT or does not exist on the table schema?');
+    } else {
+        console.log(`✅ "email" field exists. Value: "${coupon.users.email}"`);
+    }
+
+    // Double check database schema by listing column names via SQL injection trick or just failing
+    // Actually, let's try to update it to see if it works
+    if (!coupon.users.email) {
+        console.log('Attempting to patch email for this user...');
+        const { error: updateError } = await supabase
+            .from('users')
+            .update({ email: 'test_patch@example.com' })
+            .eq('id', coupon.user_id);
+
+        if (updateError) {
+            console.error('❌ Failed to update email column:', updateError);
+        } else {
+            console.log('✅ Successfully updated email column! The column exists.');
+        }
+    }
 }
 
-checkUserContactInfo();
+checkUserEmail();

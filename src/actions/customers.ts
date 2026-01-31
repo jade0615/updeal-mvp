@@ -93,6 +93,7 @@ export async function getCustomers(query: CustomerQuery) {
         users!inner (
           id,
           phone,
+          email,
           name,
           internal_id
         ),
