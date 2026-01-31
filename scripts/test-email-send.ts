@@ -2,19 +2,27 @@ import * as dotenv from 'dotenv'
 import * as path from 'path'
 
 // 加载环境变量
-dotenv.config({ path: path.join(__dirname, '../.env.local') })
+// 加载环境变量
+dotenv.config({ path: path.join(process.cwd(), '.env.local') })
+
+// FORCE OVERRIDE for debugging
+process.env.ALIYUN_SMTP_USER = 'info@hiraccoon.com';
+process.env.ALIYUN_SMTP_PASS = 'Z2CrZ9punU97RaA';
+process.env.ALIYUN_SMTP_HOST = 'smtp.qiye.aliyun.com'; // Standard Aliyun SMTP
+process.env.ALIYUN_SMTP_PORT = '465';
 
 // 确保环境变量已加载
-console.log('检查环境变量:')
-console.log('  SMTP_HOST:', process.env.ALIYUN_SMTP_HOST || '未设置')
-console.log('  SMTP_USER:', process.env.ALIYUN_SMTP_USER || '未设置')
+console.log('检查环境变量 (Testing Context):')
+console.log('  SMTP_HOST:', process.env.ALIYUN_SMTP_HOST)
+console.log('  SMTP_USER:', process.env.ALIYUN_SMTP_USER)
+console.log('  SMTP_PASS:', '******' + process.env.ALIYUN_SMTP_PASS?.slice(-3))
 console.log('')
 
 // import { sendT0Confirmation } from '../src/lib/email'
 
 async function testEmail() {
   // Dynamically import to ensure env vars are loaded first
-  const { sendT0Confirmation } = await import('../src/lib/email')
+  const { sendT0Confirmation } = await import('../src/lib/email.ts')
   console.log('📧 测试邮件发送到: wisdomjadefeng@gmail.com')
   console.log('发送方: Hiraccoon <info@hiraccoon.com>')
   console.log('')

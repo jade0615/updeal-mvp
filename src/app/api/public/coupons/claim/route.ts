@@ -74,6 +74,39 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (existingCoupon) {
+        // 补发邮件逻辑：如果是老用户重新领取，且之前没发过邮件（stage=0），且现在有时间了
+        let t0Success = false;
+        if (userEmail && expectedVisitDate && existingCoupon.email_sent_stage === 0) {
+          console.log('[Claim API] Existing coupon found, processing missing T0 email...');
+
+          // 1. 更新预约时间
+          await supabase
+            .from('coupons')
+            .update({ expected_visit_date: new Date(expectedVisitDate).toISOString() })
+            .eq('id', existingCoupon.id);
+
+          // 2. 发送邮件
+          const { sendT0Confirmation } = await import('@/lib/email');
+          const referralCode = `REF-${userId.substring(0, 6).toUpperCase()}`;
+
+          const emailRes = await sendT0Confirmation({
+            email: userEmail,
+            merchantName: merchant.name,
+            couponCode: existingCoupon.code,
+            expectedDate: new Date(expectedVisitDate),
+            address: merchant.content?.address?.fullAddress,
+            merchantSlug: merchant.slug,
+            referralCode: referralCode,
+            offerValue: merchant.content?.offer?.value || 'Special Offer',
+            offerDescription: merchant.content?.offer?.description || ''
+          });
+
+          if (emailRes.success) {
+            t0Success = true;
+            await supabase.from('coupons').update({ email_sent_stage: 1 }).eq('id', existingCoupon.id);
+          }
+        }
+
         // Return existing coupon
         return NextResponse.json({
           success: true,
@@ -84,7 +117,8 @@ export async function POST(request: NextRequest) {
             offerValue: merchant.content?.offer?.value || 'Special Offer'
           },
           isExisting: true,
-          verifyUrl: `/verify/${existingCoupon.code}`
+          verifyUrl: `/verify/${existingCoupon.code}`,
+          emailSent: t0Success
         });
       }
 
