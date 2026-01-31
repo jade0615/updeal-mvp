@@ -719,9 +719,75 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 </div>
                             </div>
 
-                            <button onClick={handleSaveToPhotos} className="mt-6 w-full bg-slate-100 text-slate-600 font-semibold py-3.5 rounded-xl hover:bg-slate-200 transition-colors">
+                            <button onClick={handleSaveToPhotos} className="mt-4 w-full bg-slate-100 text-slate-600 font-semibold py-3.5 rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2">
+                                <Save className="w-4 h-4" />
                                 Save to Photos
                             </button>
+
+                            {/* Social Share Section */}
+                            <div className="mt-8 border-t border-dashed border-slate-200 pt-6">
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-4">
+                                    Share & Get Rewards
+                                </p>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {/* Facebook */}
+                                    <button
+                                        onClick={() => {
+                                            const url = encodeURIComponent(window.location.href);
+                                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+                                        }}
+                                        className="flex flex-col items-center gap-1"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-[#1877F2] text-white flex items-center justify-center shadow-sm hover:scale-105 transition-transform">
+                                            <Share className="w-5 h-5 fill-current" />
+                                        </div>
+                                        <span className="text-[10px] text-slate-500 font-medium">Facebook</span>
+                                    </button>
+
+                                    {/* SMS / Text */}
+                                    <button
+                                        onClick={() => {
+                                            const text = `Get ${displayValue} ${displayUnit} at ${merchant.name}! ${window.location.href}`;
+                                            window.location.href = `sms:?body=${encodeURIComponent(text)}`;
+                                        }}
+                                        className="flex flex-col items-center gap-1"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-[#4CAF50] text-white flex items-center justify-center shadow-sm hover:scale-105 transition-transform">
+                                            <Phone className="w-5 h-5 fill-current" />
+                                        </div>
+                                        <span className="text-[10px] text-slate-500 font-medium">Message</span>
+                                    </button>
+
+                                    {/* Email */}
+                                    <button
+                                        onClick={() => {
+                                            const subject = `Check out this deal at ${merchant.name}`;
+                                            const body = `I got ${displayValue} ${displayUnit} at ${merchant.name}! Get yours here: ${window.location.href}`;
+                                            window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                                        }}
+                                        className="flex flex-col items-center gap-1"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-slate-600 text-white flex items-center justify-center shadow-sm hover:scale-105 transition-transform">
+                                            <div className="w-5 h-5 flex items-center justify-center font-bold text-xs">@</div>
+                                        </div>
+                                        <span className="text-[10px] text-slate-500 font-medium">Email</span>
+                                    </button>
+
+                                    {/* Copy Link */}
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(window.location.href);
+                                            alert('Link copied!');
+                                        }}
+                                        className="flex flex-col items-center gap-1"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center shadow-sm hover:bg-slate-200 hover:scale-105 transition-transform">
+                                            <Tag className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-[10px] text-slate-500 font-medium">Copy</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
