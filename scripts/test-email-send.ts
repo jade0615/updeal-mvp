@@ -22,7 +22,7 @@ console.log('')
 
 async function testEmail() {
   // Dynamically import to ensure env vars are loaded first
-  const { sendT0Confirmation } = await import('../src/lib/email.ts')
+  const { sendT0Confirmation } = await import('../src/lib/email')
   console.log('📧 测试邮件发送到: wisdomjadefeng@gmail.com')
   console.log('发送方: Hiraccoon <info@hiraccoon.com>')
   console.log('')
