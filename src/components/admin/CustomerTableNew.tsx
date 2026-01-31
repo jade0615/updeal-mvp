@@ -107,7 +107,7 @@ export default function CustomerTableNew({ data, total, page, limit, selectedMer
                                 </div>
 
                                 {/* 主要信息 */}
-                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
                                     {/* 电话 */}
                                     <div className="flex items-center gap-2">
                                         <Phone className="h-4 w-4 text-gray-400" />
