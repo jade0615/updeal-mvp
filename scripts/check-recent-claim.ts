@@ -49,14 +49,19 @@ async function checkRecentClaim() {
         return;
     }
 
-    const coupon = coupons[0];
+    const coupon = coupons[0] as any;
     console.log('Latest Coupon Claim:');
     console.log('-----------------------------------');
     console.log(`Code: ${coupon.code}`);
     console.log(`Created At: ${new Date(coupon.created_at).toLocaleString()}`);
-    console.log(`User Phone: ${coupon.users?.phone}`);
-    console.log(`User Email: ${coupon.users?.email}`);
-    console.log(`Merchant: ${coupon.merchants?.name}`);
+
+    // Handle array or object structure for joins
+    const user = Array.isArray(coupon.users) ? coupon.users[0] : coupon.users;
+    const merchant = Array.isArray(coupon.merchants) ? coupon.merchants[0] : coupon.merchants;
+
+    console.log(`User Phone: ${user?.phone}`);
+    console.log(`User Email: ${user?.email}`);
+    console.log(`Merchant: ${merchant?.name}`);
     console.log(`Email Sent Stage: ${coupon.email_sent_stage} (0=Not Sent, 1=Sent T0)`);
     console.log(`Referral Code (Referred By): ${coupon.referred_by || 'None'}`);
     console.log('-----------------------------------');
