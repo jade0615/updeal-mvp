@@ -6,12 +6,15 @@ import { useRouter } from 'next/navigation'
 interface RedeemButtonProps {
   couponId: string
   couponCode: string
+  merchantSlug?: string
+  merchantName?: string
 }
 
-export default function RedeemButton({ couponId, couponCode }: RedeemButtonProps) {
+export default function RedeemButton({ couponId, couponCode, merchantSlug, merchantName }: RedeemButtonProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPinDialog, setShowPinDialog] = useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [pin, setPin] = useState('')
   const router = useRouter()
 
@@ -49,13 +52,19 @@ export default function RedeemButton({ couponId, couponCode }: RedeemButtonProps
         throw new Error(data.error || 'Failed to redeem coupon')
       }
 
-      // Success - close dialog and refresh page to show updated status
+      // Success - close PIN dialog and show success dialog
       setShowPinDialog(false)
-      router.refresh()
+      setShowSuccessDialog(true)
+      setLoading(false)
     } catch (err: any) {
       setError(err.message)
       setLoading(false)
     }
+  }
+
+  const handleCloseSuccess = () => {
+    setShowSuccessDialog(false)
+    router.refresh()
   }
 
   return (
@@ -165,6 +174,88 @@ export default function RedeemButton({ couponId, couponCode }: RedeemButtonProps
             <p className="text-xs text-gray-500 text-center">
               Press Enter to confirm or Esc to cancel
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Success Dialog Modal */}
+      {showSuccessDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-6">
+            {/* Success Header */}
+            <div className="text-center">
+              <div className="text-6xl mb-4">🎉</div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Congratulations!
+              </h3>
+              <p className="text-gray-600">
+                Coupon redeemed successfully
+              </p>
+            </div>
+
+            {/* Incentives */}
+            <div className="space-y-3">
+              {/* Next Visit Discount */}
+              <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🎁</span>
+                  <div>
+                    <h4 className="font-bold text-gray-900 mb-1">Get 20% OFF your next visit!</h4>
+                    <p className="text-sm text-gray-600">Use code: NEXT20 on your next reservation</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Share Incentive */}
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">👥</span>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-gray-900 mb-1">Share with 3 friends & unlock exclusive rewards!</h4>
+                    <p className="text-sm text-gray-600 mb-3">Help your friends discover great deals</p>
+                    {merchantSlug && (
+                      <button
+                        onClick={() => {
+                          const shareUrl = `https://hiraccoon.com/${merchantSlug}`;
+                          if (navigator.share) {
+                            navigator.share({
+                              title: `Check out ${merchantName || 'this amazing deal'}!`,
+                              text: 'I just used this coupon and got a great deal!',
+                              url: shareUrl
+                            });
+                          } else {
+                            navigator.clipboard.writeText(shareUrl);
+                            alert('Link copied to clipboard!');
+                          }
+                        }}
+                        className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                      >
+                        📤 Share Now
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Review Incentive */}
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">⭐</span>
+                  <div>
+                    <h4 className="font-bold text-gray-900 mb-1">Write a review & earn extra benefits!</h4>
+                    <p className="text-sm text-gray-600">Share your experience and get bonus rewards</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Close Button */}
+            <button
+              onClick={handleCloseSuccess}
+              className="w-full bg-gradient-to-r from-orange-400/90 to-amber-500/90 hover:from-orange-500 hover:to-amber-600 text-white font-bold py-3 rounded-lg transition-all transform active:scale-95"
+            >
+              Got it!
+            </button>
           </div>
         </div>
       )}

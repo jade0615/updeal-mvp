@@ -153,9 +153,9 @@ export async function POST(request: NextRequest) {
     const prefix = merchant.name.replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase();
     const code = `${prefix}-${generateSuffix()}`;
 
-    // Expiration: 30 days from now default
+    // Expiration: 7 days from now default
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 30);
+    expiresAt.setDate(expiresAt.getDate() + 7);
 
     // 4. Create Coupon
     const { error: couponError } = await supabase

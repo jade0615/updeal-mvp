@@ -42,23 +42,35 @@ export class WalletService {
             wwdr = fs.readFileSync(wwdrPath);
         }
 
-        // 2. Load Signer Certificate (.p12)
+        // 2. Load Signer Certificate (PEM)
         let signerCert: Buffer;
         if (process.env.APPLE_SIGNER_CERT) {
             signerCert = Buffer.from(process.env.APPLE_SIGNER_CERT, "base64");
         } else {
-            const p12Path = path.join(this.certsDir, "Certificates.p12");
-            if (!fs.existsSync(p12Path)) {
+            const certPath = path.join(this.certsDir, "signerCert.pem");
+            if (!fs.existsSync(certPath)) {
                 throw new Error("Missing Apple Signer certificate (env or file)");
             }
-            signerCert = fs.readFileSync(p12Path);
+            signerCert = fs.readFileSync(certPath);
+        }
+
+        // 3. Load Signer Key (PEM)
+        let signerKey: Buffer;
+        if (process.env.APPLE_SIGNER_KEY) {
+            signerKey = Buffer.from(process.env.APPLE_SIGNER_KEY, "base64");
+        } else {
+            const keyPath = path.join(this.certsDir, "signerKey.pem");
+            if (!fs.existsSync(keyPath)) {
+                throw new Error("Missing Apple Signer key (env or file)");
+            }
+            signerKey = fs.readFileSync(keyPath);
         }
 
         return {
             wwdr,
             signerCert,
-            signerKey: signerCert, // For .p12, the key is usually in the same buffer
-            signerKeyPassword
+            signerKey,
+            signerKeyPassphrase: signerKeyPassword
         };
     }
 
