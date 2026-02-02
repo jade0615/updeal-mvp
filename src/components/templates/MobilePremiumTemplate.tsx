@@ -671,7 +671,17 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 <div className="flex gap-2">
                                     <input
                                         type="date"
-                                        min={new Date().toISOString().split('T')[0]}
+                                        min={(() => {
+                                            const d = new Date();
+                                            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                                            return d.toISOString().split('T')[0];
+                                        })()}
+                                        max={(() => {
+                                            const d = new Date();
+                                            d.setDate(d.getDate() + 7);
+                                            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                                            return d.toISOString().split('T')[0];
+                                        })()}
                                         value={formData.expectedVisitDate}
                                         onChange={(e) => setFormData(prev => ({ ...prev, expectedVisitDate: e.target.value }))}
                                         className="flex-1 h-12 px-4 rounded-xl border border-orange-200 bg-white text-slate-800 outline-none focus:ring-2 focus:ring-orange-500/20 font-medium min-w-[60%]"
@@ -684,7 +694,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     />
                                 </div>
                                 <p className="text-[10px] text-orange-600/70 mt-2 ml-1 italic">
-                                    * We'll send a calendar invite and a reminder!
+                                    * Valid for 7 days only. We'll send a calendar invite!
                                 </p>
                             </div>
 
