@@ -305,22 +305,74 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
     }, [searchParams, canEdit]);
 
     const handleSaveToPhotos = async () => {
-        if (!couponRef.current) return;
+        if (!couponRef.current) {
+            alert('Coupon element not found. Please try again.');
+            return;
+        }
+
         try {
             // Dynamic import to avoid SSR issues
             const html2canvas = (await import('html2canvas')).default;
+
             const canvas = await html2canvas(couponRef.current, {
                 useCORS: true,
-                backgroundColor: null, // Transparent background if possible, or force white
-                scale: 2 // High resolution
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                scale: 3, // Higher resolution
+                logging: false,
+                windowWidth: couponRef.current.scrollWidth,
+                windowHeight: couponRef.current.scrollHeight,
             });
-            const link = document.createElement('a');
-            link.download = `UpDeal-${content.businessName || 'Coupon'}-Coupon.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+
+            // Convert to blob for better mobile support
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    throw new Error('Failed to generate image');
+                }
+
+                // Try native share API first (better for mobile)
+                if (navigator.share && navigator.canShare) {
+                    const file = new File([blob], `Coupon-${couponCode}.png`, { type: 'image/png' });
+                    if (navigator.canShare({ files: [file] })) {
+                        navigator.share({
+                            files: [file],
+                            title: 'My Coupon',
+                            text: `${content.businessName || 'Coupon'} - ${couponCode}`
+                        }).catch(() => {
+                            // Fallback to download if share is cancelled
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.download = `Coupon-${couponCode}.png`;
+                            link.href = url;
+                            link.click();
+                            URL.revokeObjectURL(url);
+                        });
+                        return;
+                    }
+                }
+
+                // Fallback: Download link
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = `Coupon-${couponCode}.png`;
+                link.href = url;
+                link.click();
+                URL.revokeObjectURL(url);
+
+                // Show success message
+                setTimeout(() => alert('✅ Coupon saved! Check your Downloads folder.'), 100);
+            }, 'image/png');
+
         } catch (err) {
             console.error('Failed to save image:', err);
-            alert('Sorry, could not save image automatically. Please take a screenshot!');
+
+            // More helpful error message
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+                alert('📸 Please take a screenshot to save your coupon!\n\niPhone: Side Button + Volume Up\nAndroid: Power + Volume Down');
+            } else {
+                alert('Could not save automatically. Please screenshot:\n\nMac: Cmd+Shift+4\nWindows: Win+Shift+S');
+            }
         }
     };
 
