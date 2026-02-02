@@ -205,6 +205,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
     const [loading, setLoading] = useState(false);
     const [successOpen, setSuccessOpen] = useState(false);
     const [couponCode, setCouponCode] = useState('');
+    const [shareUrl, setShareUrl] = useState('');
     const couponRef = React.useRef<HTMLDivElement>(null);
 
     const handleClaim = async () => {
@@ -241,6 +242,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             setLoading(false);
             setSuccessOpen(true);
             setCouponCode(result.coupon.code);
+            setShareUrl(result.shareUrl || window.location.href);
 
             // Track Lead Event - 使用原生 window.fbq (更可靠)
             if (typeof window !== 'undefined' && (window as any).fbq) {
@@ -726,14 +728,17 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
 
                             {/* Social Share Section */}
                             <div className="mt-8 border-t border-dashed border-slate-200 pt-6">
-                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-4">
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">
                                     Share & Get Rewards
+                                </p>
+                                <p className="text-[11px] text-slate-500 mb-4">
+                                    Share your unique link and earn rewards when friends claim!
                                 </p>
                                 <div className="grid grid-cols-4 gap-2">
                                     {/* Facebook */}
                                     <button
                                         onClick={() => {
-                                            const url = encodeURIComponent(window.location.href);
+                                            const url = encodeURIComponent(shareUrl);
                                             window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
                                         }}
                                         className="flex flex-col items-center gap-1"
@@ -747,7 +752,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     {/* SMS / Text */}
                                     <button
                                         onClick={() => {
-                                            const text = `Get ${displayValue} ${displayUnit} at ${merchant.name}! ${window.location.href}`;
+                                            const text = `Get ${displayValue} ${displayUnit} at ${merchant.name}! ${shareUrl}`;
                                             window.location.href = `sms:?body=${encodeURIComponent(text)}`;
                                         }}
                                         className="flex flex-col items-center gap-1"
@@ -762,7 +767,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     <button
                                         onClick={() => {
                                             const subject = `Check out this deal at ${merchant.name}`;
-                                            const body = `I got ${displayValue} ${displayUnit} at ${merchant.name}! Get yours here: ${window.location.href}`;
+                                            const body = `I got ${displayValue} ${displayUnit} at ${merchant.name}! Get yours here: ${shareUrl}`;
                                             window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
                                         }}
                                         className="flex flex-col items-center gap-1"
@@ -776,8 +781,8 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     {/* Copy Link */}
                                     <button
                                         onClick={() => {
-                                            navigator.clipboard.writeText(window.location.href);
-                                            alert('Link copied!');
+                                            navigator.clipboard.writeText(shareUrl);
+                                            alert('Referral link copied!');
                                         }}
                                         className="flex flex-col items-center gap-1"
                                     >

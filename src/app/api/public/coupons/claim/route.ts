@@ -107,6 +107,9 @@ export async function POST(request: NextRequest) {
           }
         }
 
+        // Generate referral code for sharing
+        const userReferralCode = `REF-${userId.substring(0, 6).toUpperCase()}`;
+
         // Return existing coupon
         return NextResponse.json({
           success: true,
@@ -118,7 +121,10 @@ export async function POST(request: NextRequest) {
           },
           isExisting: true,
           verifyUrl: `/verify/${existingCoupon.code}`,
-          emailSent: t0Success
+          emailSent: t0Success,
+          referralCode: userReferralCode,
+          merchantSlug: merchant.slug,
+          shareUrl: `https://hiraccoon.com/${merchant.slug}?uid=${userReferralCode}`
         });
       }
 
@@ -227,6 +233,9 @@ export async function POST(request: NextRequest) {
 
     await trackCouponClaim(merchantId, userId, code);
 
+    // Generate referral code for sharing
+    const userReferralCode = `REF-${userId.substring(0, 6).toUpperCase()}`;
+
     return NextResponse.json({
       success: true,
       coupon: {
@@ -237,7 +246,10 @@ export async function POST(request: NextRequest) {
       },
       isExisting: false,
       verifyUrl: `/verify/${code}`,
-      emailSent: t0Success
+      emailSent: t0Success,
+      referralCode: userReferralCode,
+      merchantSlug: merchant.slug,
+      shareUrl: `https://hiraccoon.com/${merchant.slug}?uid=${userReferralCode}`
     });
 
 
