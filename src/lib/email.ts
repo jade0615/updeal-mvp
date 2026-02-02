@@ -1,15 +1,11 @@
 import nodemailer from 'nodemailer';
 import { generateICS, generateCalendarLinks } from './calendar';
 
-// Email Service Configuration
-// For Production: Swap these with SendGrid or AWS SES credentials
-// For Production: Swap these with SendGrid or AWS SES credentials
-// FORCE HARDCODED CONFIG To Fix Vercel Env Issues
-const port = 465;
+// Email Service Configuration - Aliyun Direct Mail
 const smtpConfig = {
-  host: 'smtpdm.aliyun.com', // Must be smtpdm for Direct Mail
-  port: port,
-  secure: true, // SSL
+  host: 'smtpdm.aliyun.com',
+  port: 465,
+  secure: true,
   auth: {
     user: 'info@hiraccoon.com',
     pass: 'Z2CrZ9punU97RaA',
@@ -22,21 +18,27 @@ interface SendEmailParams {
   to: string;
   subject: string;
   html: string;
-  attachments?: any[];
+  attachments?: Array<{
+    filename: string;
+    content: string | Buffer;
+    contentType?: string;
+  }>;
 }
 
 export async function sendEmail({ to, subject, html, attachments }: SendEmailParams) {
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_SENDER || `"Hiraccoon" <info@hiraccoon.com>`,
+    const result = await transporter.sendMail({
+      from: process.env.EMAIL_SENDER || 'Hiraccoon <info@hiraccoon.com>',
       to,
       subject,
       html,
       attachments,
     });
-    return { success: true };
+
+    console.log('[Aliyun] Email sent successfully:', result.messageId);
+    return { success: true, messageId: result.messageId };
   } catch (error) {
-    console.error('Email sending failed:', error);
+    console.error('[Aliyun] Email sending failed:', error);
     return { success: false, error };
   }
 }
@@ -56,71 +58,47 @@ export async function sendT0Confirmation(data: {
   offerDescription?: string;
 }) {
   const icsContent = generateICS(data);
-  const shareUrl = `https://hiraccoon.com/${data.merchantSlug}${data.referralCode ? `?uid=${data.referralCode}` : ''}`;
-  const offerText = data.offerValue ? `Get ${data.offerValue} at ${data.merchantName}!` : `Check out this deal at ${data.merchantName}!`;
 
   const html = `
-    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
-      <h1 style="color: #FF5722;">You're In! 🎉</h1>
-      <p>Your visit to <strong>${data.merchantName}</strong> is confirmed.</p>
-      
-      <div style="background: #FFF3E0; padding: 15px; border-radius: 8px; margin: 20px 0;">
-        <p style="margin: 0; color: #E65100; font-size: 14px;">YOUR COUPON CODE</p>
-        <h2 style="margin: 5px 0; letter-spacing: 2px;">${data.couponCode}</h2>
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #333; font-size: 24px; margin-bottom: 20px;">Reservation Confirmed</h2>
+      <p style="color: #555; font-size: 16px; line-height: 1.5;">
+        Thank you for your reservation at <strong>${data.merchantName}</strong>.
+      </p>
+
+      <div style="background: #f8f9fa; border-left: 4px solid #4285f4; padding: 16px; margin: 24px 0;">
+        <p style="margin: 0 0 8px 0; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Confirmation Code</p>
+        <p style="margin: 0; color: #333; font-size: 20px; font-weight: 600; letter-spacing: 1px;">${data.couponCode}</p>
       </div>
 
-      <p>Save this to your calendar so you don't miss out on your special offer!</p>
-      
-      <div style="margin: 30px 0;">
-        <a href="${generateCalendarLinks(data).google}" 
-           style="background: #FF5722; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-           Add to Google Calendar
-        </a>
-      </div>
+      <p style="color: #555; font-size: 14px; line-height: 1.5;">
+        Please present this code when you visit. Add this reservation to your calendar:
+      </p>
 
-      <p style="color: #666; font-size: 12px;">Restaurant Address: ${data.address || 'Check in store'}</p>
-      
-      <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-      
-      <p style="font-size: 16px; margin-bottom: 15px;">Love this deal? <strong>Share it with your friends!</strong> 👯‍♀️</p>
-      <p style="font-size: 14px; color: #666; margin-bottom: 15px;">Share your unique link. When they redeem, you get rewards!</p>
-      
-      <div style="margin-bottom: 20px;">
-        <!-- Facebook -->
-        <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}" 
-           style="display: inline-block; background: #1877F2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 5px; font-size: 14px;">
-           Facebook
-        </a>
-        
-        <!-- Instagram (Note: Direct sharing via web link is limited, usually points to profile or app) -->
-        <a href="https://www.instagram.com/" 
-           style="display: inline-block; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 5px; font-size: 14px;">
-           Instagram
-        </a>
-
-        <!-- SMS (Mobile) -->
-        <a href="sms:?body=${encodeURIComponent(`${offerText} ${shareUrl}`)}" 
-           style="display: inline-block; background: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 5px; font-size: 14px;">
-           Message
+      <div style="margin: 20px 0;">
+        <a href="${generateCalendarLinks(data).google}"
+           style="display: inline-block; background: #4285f4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-size: 14px;">
+           Add to Calendar
         </a>
       </div>
 
-      <div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-top: 20px;">
-        <p style="font-size: 12px; color: #888; margin: 0 0 5px 0;">Your Referral Link:</p>
-        <a href="${shareUrl}" style="color: #666; text-decoration: none; font-family: monospace; font-size: 14px; word-break: break-all;">
-          ${shareUrl}
-        </a>
-      </div>
+      ${data.address ? `<p style="color: #666; font-size: 13px; margin: 20px 0;">Location: ${data.address}</p>` : ''}
+
+      <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;" />
+
+      <p style="color: #888; font-size: 12px; line-height: 1.5;">
+        This is an automated confirmation. Please keep this email for your records.
+      </p>
     </div>
   `;
 
   return sendEmail({
     to: data.email,
-    subject: `You're in! 🎟️ Save your visit to ${data.merchantName} inside`,
+    subject: `Reservation Confirmation - ${data.merchantName}`,
     html,
     attachments: [
       {
-        filename: 'invite.ics',
+        filename: 'reservation.ics',
         content: icsContent,
         contentType: 'application/ics',
       },
