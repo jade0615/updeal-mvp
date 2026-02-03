@@ -1,56 +1,10 @@
 {
     "formatVersion": 1,
-    "passTypeIdentifier": "pass.com.hiraccoon.coupon",
-    "serialNumber": "000000",
-    "teamIdentifier": "ULZM5FW53S",
-    "webServiceURL": "https://hiraccoon.com/api/wallet",
-    "authenticationToken": "static_token_for_now",
-    "barcode": {
-        "message": "https://hiraccoon.com",
-        "format": "PKBarcodeFormatQR",
-        "messageEncoding": "iso-8859-1"
-    },
-    "organizationName": "HiRaccoon",
-    "description": "HiRaccoon Coupon",
-    "logoText": "HiRaccoon",
-    "foregroundColor": "rgb(0, 0, 0)",
-    "backgroundColor": "rgb(255, 255, 255)",
-    "labelColor": "rgb(100, 100, 100)",
+    "suppressStripShine": true,
     "coupon": {
-        "primaryFields": [
-            {
-                "key": "offer",
-                "label": "OFFER",
-                "value": "Loading..."
-            }
-        ],
-        "secondaryFields": [
-            {
-                "key": "merchant",
-                "label": "MERCHANT",
-                "value": "HiRaccoon Partner"
-            }
-        ],
-        "auxiliaryFields": [
-            {
-                "key": "expires",
-                "label": "EXPIRES",
-                "value": "Valid"
-            }
-        ],
-        "backFields": [
-            {
-                "key": "terms",
-                "label": "TERMS & CONDITIONS",
-                "value": "Redeem this coupon at the merchant location. Subject to terms and conditions."
-            }
-        ]
-    },
-    "locations": [
-        {
-            "longitude": 0,
-            "latitude": 0,
-            "relevantText": "You are near the merchant! Use your coupon now."
-        }
-    ]
+        "primaryFields": [],
+        "secondaryFields": [],
+        "auxiliaryFields": [],
+        "backFields": []
+    }
 }

@@ -6,11 +6,11 @@ export async function GET(req: NextRequest) {
         const merchantData: MerchantData = {
             merchantId: "test-merchant-001",
             name: "HiRaccoon Test Store",
-            offerText: "FREE COFFEE",
-            latitude: 1.287953,
-            longitude: 103.851784,
-            expirationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            primaryColor: "rgb(212, 175, 55)", // Metallic Gold
+            offerText: "🎁 FREE COFFEE ☕",
+            latitude: 40.7589,  // Flushing, NY
+            longitude: -73.8297,
+            expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+            primaryColor: "rgb(255, 184, 0)", // HiRaccoon Gold
             logoText: "HiRaccoon",
         };
 

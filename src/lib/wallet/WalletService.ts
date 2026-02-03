@@ -79,81 +79,98 @@ export class WalletService {
      */
     static async generatePass(merchantData: MerchantData, userData: UserData, authenticationToken?: string): Promise<Buffer> {
         try {
-            const absoluteTemplateDir = path.resolve(this.templateDir);
+            console.log("🔧 Starting pass generation...");
 
             // 1. Prepare certificates
+            console.log("📜 Loading certificates...");
             const certificates = await this.getCertificates();
+            console.log("✅ Certificates loaded");
 
             // 2. Generate Unique Serial Number
             const serialNumber = `${merchantData.merchantId}-${userData.userId}-${Date.now()}`;
+            console.log("🔑 Serial number:", serialNumber);
 
-            // 3. Prepare Pass Properties
-            const props = {
-                serialNumber: merchantData.merchantId ? `${merchantData.merchantId}-${userData.userId}` : serialNumber, // More stable serial number for updates
-                passTypeIdentifier: process.env.APPLE_PASS_TYPE_ID || "pass.com.hiraccoon.coupon",
+            // 3. Create pass from template with all properties
+            console.log("📦 Creating pass from template...");
+            const pass = await PKPass.from({
+                model: this.templateDir,
+                certificates
+            }, {
+                serialNumber: merchantData.merchantId ? `${merchantData.merchantId}-${userData.userId}` : serialNumber,
+                passTypeIdentifier: process.env.APPLE_PASS_TYPE_ID || "pass.hiraccoon.app.coupon",
                 teamIdentifier: process.env.APPLE_TEAM_ID || "ULZM5FW53S",
+                organizationName: "HiRaccoon",
+                description: "HiRaccoon Coupon",
                 backgroundColor: merchantData.primaryColor || "rgb(255, 184, 0)",
+                foregroundColor: "rgb(0, 0, 0)",
+                labelColor: "rgb(100, 100, 100)",
                 logoText: merchantData.logoText || "HiRaccoon",
-                expirationDate: merchantData.expirationDate.toISOString(),
-                // Apple Wallet Web Service Integration
-                webServiceURL: process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/api/wallet` : undefined,
-                authenticationToken: authenticationToken,
-                barcodes: [
-                    {
-                        message: JSON.stringify({
-                            m: merchantData.merchantId,
-                            u: userData.userId,
-                            s: serialNumber,
-                        }),
-                        format: "PKBarcodeFormatQR",
-                        messageEncoding: "iso-8859-1",
-                    },
-                ],
-            };
+            });
+            console.log("✅ Pass created from template");
 
-            // 4. Initialize the pass structure
-            const pass = new PKPass({}, certificates, props);
+            // 4. Add coupon primary field (offer)
+            console.log("➕ Adding primary fields...");
+            pass.primaryFields.push({
+                key: "offer",
+                label: "OFFER",
+                value: merchantData.offerText,
+            });
 
-            // 5. Force-inject assets from the folder
-            if (fs.existsSync(absoluteTemplateDir)) {
-                const files = fs.readdirSync(absoluteTemplateDir);
-                for (const file of files) {
-                    if (file === "pass.json" || file.toLowerCase().endsWith(".png")) {
-                        const content = fs.readFileSync(path.join(absoluteTemplateDir, file));
-                        pass.addBuffer(file, content);
-                    }
-                }
-            }
+            // 5. Add secondary field (merchant)
+            console.log("➕ Adding secondary fields...");
+            pass.secondaryFields.push({
+                key: "merchant",
+                label: "MERCHANT",
+                value: merchantData.name,
+            });
 
-            // 6. Add coupon fields
-            if (pass.primaryFields) {
-                pass.primaryFields.push({
-                    key: "offer",
-                    label: "OFFER",
-                    value: merchantData.offerText,
-                });
-            }
+            // 6. Add auxiliary field (expires)
+            console.log("➕ Adding auxiliary fields...");
+            pass.auxiliaryFields.push({
+                key: "expires",
+                label: "EXPIRES",
+                value: new Date(merchantData.expirationDate).toLocaleDateString(),
+            });
 
-            // 7. Add Geofencing (Merchant Coordinates)
-            // If merchant has coordinates, add them to the pass
+            // 7. Add back fields (terms)
+            console.log("➕ Adding back fields...");
+            pass.backFields.push({
+                key: "terms",
+                label: "TERMS & CONDITIONS",
+                value: "Redeem this coupon at the merchant location. Subject to terms and conditions.",
+            });
+
+            // 8. Add Geofencing (Merchant Coordinates)
             if (merchantData.latitude && merchantData.longitude) {
+                console.log("📍 Adding geofencing...");
                 pass.setLocations({
                     latitude: merchantData.latitude,
                     longitude: merchantData.longitude,
                     relevantText: merchantData.logoText ? `${merchantData.logoText}：您已到达商家附近，进店展示卡券！` : "您已到达商家附近，进店展示卡券！",
                 });
-            } else {
-                // Default to Flushing coordinate if none provided (for HiRaccoon MVP context)
-                pass.setLocations({
-                    latitude: 40.7429,
-                    longitude: -73.8184,
-                    relevantText: `HiRaccoon：您已到达合作商家附近，进店展示优惠！`,
-                });
             }
 
-            // 8. Generate and return the buffer
+            // 9. Set expiration
+            console.log("⏰ Setting expiration...");
+            pass.setExpirationDate(merchantData.expirationDate);
+
+            // 10. Set barcode
+            console.log("🔲 Adding barcode...");
+            pass.setBarcodes({
+                message: JSON.stringify({
+                    m: merchantData.merchantId,
+                    u: userData.userId,
+                    s: serialNumber,
+                }),
+                format: "PKBarcodeFormatQR",
+                messageEncoding: "iso-8859-1",
+            });
+
+            // 11. Generate and return the buffer
+            console.log("💾 Generating buffer...");
+            const buffer = pass.getAsBuffer();
             console.log("✅ Pass generated successfully for merchant:", merchantData.name);
-            return pass.getAsBuffer();
+            return buffer;
 
         } catch (error) {
             console.error("❌ WalletService Error:", error);
