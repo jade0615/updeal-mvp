@@ -9,6 +9,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import type { Merchant } from '@/types/merchant';
 import { updateMerchant } from '@/actions/merchants';
 import confetti from 'canvas-confetti';
+import { AppleWalletButton } from '@/components/ui/AppleWalletButton';
 
 interface Props {
     merchant: Merchant;
@@ -789,6 +790,10 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 <Save className="w-4 h-4" />
                                 Save to Photos
                             </button>
+
+                            <div className="mt-3">
+                                <AppleWalletButton couponCode={couponCode} className="w-full" />
+                            </div>
 
                             {/* Referral Incentive Card */}
                             <div className="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-5">

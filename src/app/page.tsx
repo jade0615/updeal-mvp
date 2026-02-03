@@ -4,7 +4,7 @@ import { Merchant } from '@/types/merchant';
 
 // Mock data for the Gold-Blue Theme Demo
 const DEMO_MERCHANT: Merchant = {
-  id: 'demo-merchant-id',
+  id: '127a429d-6122-46e0-9d44-70bf09f6d3a0',
   name: 'Golden Palace Demo',
   slug: 'golden-palace-demo',
   template_type: 'mobile_premium',
