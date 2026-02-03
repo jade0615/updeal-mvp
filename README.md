@@ -44,3 +44,5 @@ This branch contains the full Apple Wallet integration. To test, ensure the requ
 <!-- Deployment re-trigger: 2026-02-03 15:00:34 -->
 
 <!-- Forced Deployment Trigger: 2026-02-03 15:01:08 -->
+
+<!-- Final Deployment Trigger: 2026-02-03 15:01:25 -->
