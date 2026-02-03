@@ -8,6 +8,7 @@ export interface MerchantData {
     offerText: string;
     latitude?: number;
     longitude?: number;
+    address?: string;
     expirationDate: Date;
     primaryColor?: string;
     secondaryColor?: string;
@@ -140,13 +141,24 @@ export class WalletService {
                 value: "Redeem this coupon at the merchant location. Subject to terms and conditions.",
             });
 
-            // 8. Add Geofencing (Merchant Coordinates)
-            if (merchantData.latitude && merchantData.longitude) {
-                console.log("📍 Adding geofencing...");
+            // 7.5 Add Location to back fields for UI visibility
+            if (merchantData.address) {
+                console.log("➕ Adding address to back fields...");
+                pass.backFields.push({
+                    key: "store_location",
+                    label: "STORE LOCATION",
+                    value: merchantData.address,
+                });
+            }
+
+            if (merchantData.latitude !== undefined && merchantData.longitude !== undefined) {
+                console.log("📍 Adding geofencing coordinates:", merchantData.latitude, merchantData.longitude);
                 pass.setLocations({
-                    latitude: merchantData.latitude,
-                    longitude: merchantData.longitude,
-                    relevantText: merchantData.logoText ? `${merchantData.logoText}：您已到达商家附近，进店展示卡券！` : "您已到达商家附近，进店展示卡券！",
+                    latitude: Number(merchantData.latitude),
+                    longitude: Number(merchantData.longitude),
+                    relevantText: merchantData.logoText
+                        ? `${merchantData.logoText}：您已到达商家附近，进店展示卡券！`
+                        : "您已到达商家附近，进店展示卡券！",
                 });
             }
 

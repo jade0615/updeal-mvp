@@ -66,6 +66,7 @@ export async function POST(req: NextRequest) {
             offerText: offerText,
             latitude: lat ? parseFloat(lat) : undefined,
             longitude: lng ? parseFloat(lng) : undefined,
+            address: merchant.content?.address?.fullAddress || merchant.content?.address || "",
             expirationDate: new Date(coupon.expires_at),
             primaryColor: merchant.content?.brand?.primaryColor || "rgb(255, 184, 0)", // Default Gold
             logoText: merchant.name,
