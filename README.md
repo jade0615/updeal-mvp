@@ -40,3 +40,5 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 This branch contains the full Apple Wallet integration. To test, ensure the required environment variables (certs and keys) are configured in Vercel.
 
 <!-- Deployment trigger timestamp: 2026-02-03 14:47:20 -->
+
+<!-- Deployment re-trigger: 2026-02-03 15:00:34 -->
