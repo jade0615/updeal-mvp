@@ -102,9 +102,9 @@ export class WalletService {
                 teamIdentifier: process.env.APPLE_TEAM_ID || "ULZM5FW53S",
                 organizationName: "HiRaccoon",
                 description: "HiRaccoon Coupon",
-                backgroundColor: merchantData.primaryColor || "rgb(255, 184, 0)",
-                foregroundColor: "rgb(0, 0, 0)",
-                labelColor: "rgb(100, 100, 100)",
+                backgroundColor: merchantData.primaryColor || "rgb(99, 0, 0)",
+                foregroundColor: "rgb(255, 248, 230)",
+                labelColor: "rgb(199, 171, 118)",
                 logoText: merchantData.logoText || "HiRaccoon",
             });
             console.log("✅ Pass created from template");

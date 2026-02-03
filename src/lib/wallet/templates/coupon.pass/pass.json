@@ -1,6 +1,9 @@
 {
     "formatVersion": 1,
     "suppressStripShine": true,
+    "backgroundColor": "rgb(99, 0, 0)",
+    "foregroundColor": "rgb(255, 248, 230)",
+    "labelColor": "rgb(199, 171, 118)",
     "coupon": {
         "primaryFields": [],
         "secondaryFields": [],
