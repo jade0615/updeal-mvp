@@ -87,7 +87,7 @@ export class WalletService {
             const certificates = await this.getCertificates();
             console.log("✅ Certificates loaded");
 
-            // 2. Generate Unique Serial Number
+            // 2. Generate Unique Serial Number (includes timestamp for uniqueness)
             const serialNumber = `${merchantData.merchantId}-${userData.userId}-${Date.now()}`;
             console.log("🔑 Serial number:", serialNumber);
 
@@ -97,9 +97,9 @@ export class WalletService {
                 model: this.templateDir,
                 certificates
             }, {
-                serialNumber: merchantData.merchantId ? `${merchantData.merchantId}-${userData.userId}` : serialNumber,
-                passTypeIdentifier: process.env.APPLE_PASS_TYPE_ID || "pass.hiraccoon.app.coupon",
-                teamIdentifier: process.env.APPLE_TEAM_ID || "ULZM5FW53S",
+                serialNumber: serialNumber,
+                passTypeIdentifier: (process.env.APPLE_PASS_TYPE_ID || "pass.hiraccoon.app.coupon").trim(),
+                teamIdentifier: (process.env.APPLE_TEAM_ID || "ULZM5FW53S").trim(),
                 organizationName: "HiRaccoon",
                 description: "HiRaccoon Coupon",
                 backgroundColor: merchantData.primaryColor || "rgb(99, 0, 0)",
@@ -166,14 +166,10 @@ export class WalletService {
             console.log("⏰ Setting expiration...");
             pass.setExpirationDate(merchantData.expirationDate);
 
-            // 10. Set barcode
+            // 10. Set barcode (using serial number as coupon code)
             console.log("🔲 Adding barcode...");
             pass.setBarcodes({
-                message: JSON.stringify({
-                    m: merchantData.merchantId,
-                    u: userData.userId,
-                    s: serialNumber,
-                }),
+                message: serialNumber,
                 format: "PKBarcodeFormatQR",
                 messageEncoding: "iso-8859-1",
             });
