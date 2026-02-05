@@ -1,0 +1,20 @@
+{
+    "formatVersion": 1,
+    "suppressStripShine": true,
+    "backgroundColor": "rgb(99, 0, 0)",
+    "foregroundColor": "rgb(255, 248, 230)",
+    "labelColor": "rgb(199, 171, 118)",
+    "coupon": {
+        "primaryFields": [],
+        "secondaryFields": [],
+        "auxiliaryFields": [],
+        "backFields": []
+    },
+    "locations": [
+        {
+            "latitude": 31.088380,
+            "longitude": 121.503500,
+            "relevantText": "上海办公室折扣：您已到达商家附近，进店展示卡券！"
+        }
+    ]
+}

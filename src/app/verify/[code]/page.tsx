@@ -23,6 +23,7 @@ export default async function VerifyCouponPage({ params }: PageProps) {
       merchants (
         id,
         name,
+        slug,
         content
       ),
       users (
@@ -194,7 +195,12 @@ export default async function VerifyCouponPage({ params }: PageProps) {
 
           {/* Redeem Button - Only show if valid */}
           {isValid && (
-            <RedeemButton couponId={coupon.id} couponCode={coupon.code} />
+            <RedeemButton
+              couponId={coupon.id}
+              couponCode={coupon.code}
+              merchantSlug={merchant?.slug}
+              merchantName={merchant?.name}
+            />
           )}
 
           {/* Error Messages */}

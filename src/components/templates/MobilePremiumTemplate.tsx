@@ -9,6 +9,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import type { Merchant } from '@/types/merchant';
 import { updateMerchant } from '@/actions/merchants';
 import confetti from 'canvas-confetti';
+import { AppleWalletButton } from '@/components/ui/AppleWalletButton';
 
 interface Props {
     merchant: Merchant;
@@ -206,6 +207,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
     const [successOpen, setSuccessOpen] = useState(false);
     const [couponCode, setCouponCode] = useState('');
     const [shareUrl, setShareUrl] = useState('');
+    const [referralCode, setReferralCode] = useState('');
     const couponRef = React.useRef<HTMLDivElement>(null);
 
     const handleClaim = async () => {
@@ -243,6 +245,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             setSuccessOpen(true);
             setCouponCode(result.coupon.code);
             setShareUrl(result.shareUrl || window.location.href);
+            setReferralCode(result.referralCode || '');
 
             // Track Lead Event - 使用原生 window.fbq (更可靠)
             if (typeof window !== 'undefined' && (window as any).fbq) {
@@ -787,6 +790,56 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 <Save className="w-4 h-4" />
                                 Save to Photos
                             </button>
+
+                            <div className="mt-3">
+                                <AppleWalletButton couponCode={couponCode} className="w-full" />
+                            </div>
+
+                            {/* Referral Incentive Card */}
+                            <div className="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-5">
+                                <div className="flex items-start gap-3 mb-3">
+                                    <span className="text-3xl">🎁</span>
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-slate-900 text-base mb-1">
+                                            Share with friends, both get extra rewards!
+                                        </h4>
+                                        <p className="text-xs text-slate-600 leading-relaxed">
+                                            Your friends get amazing deals, and you earn rewards for each referral
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white/80 rounded-lg p-3 mb-3">
+                                    <p className="text-xs text-slate-500 font-medium mb-1.5">Your Exclusive Link:</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-xs text-blue-600 font-mono flex-1 truncate">{shareUrl}</p>
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(shareUrl);
+                                                alert('✓ Link copied to clipboard!');
+                                            }}
+                                            className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-md transition-colors"
+                                        >
+                                            Copy
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {referralCode && (
+                                    <div className="bg-gradient-to-r from-orange-100 to-amber-100 rounded-lg p-3 border border-orange-200">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-xs text-slate-600 font-medium">Your Referral Code:</p>
+                                                <p className="text-sm font-bold text-orange-700 font-mono">{referralCode}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xs text-slate-500">Referrals</p>
+                                                <p className="text-xl font-bold text-orange-600">0</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Social Share Section */}
                             <div className="mt-8 border-t border-dashed border-slate-200 pt-6">

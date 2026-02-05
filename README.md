@@ -34,3 +34,15 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+---
+### 📱 Apple Wallet Integration (apple-wallet branch)
+This branch contains the full Apple Wallet integration. To test, ensure the required environment variables (certs and keys) are configured in Vercel.
+
+<!-- Deployment trigger timestamp: 2026-02-03 14:47:20 -->
+
+<!-- Deployment re-trigger: 2026-02-03 15:00:34 -->
+
+<!-- Forced Deployment Trigger: 2026-02-03 15:01:08 -->
+
+<!-- Final Deployment Trigger: 2026-02-03 15:01:25 -->

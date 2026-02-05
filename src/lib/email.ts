@@ -113,13 +113,31 @@ export async function sendT1Reminder(data: {
   email: string;
   merchantName: string;
   couponCode: string;
+  offerValue?: string;
+  offerDescription?: string;
+  address?: string;
+  shareUrl?: string;
+  heroImage?: string;
 }) {
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #333; font-size: 22px; margin-bottom: 20px;">Reservation Reminder</h2>
+      <h2 style="color: #333; font-size: 24px; margin-bottom: 20px;">⏰ Tomorrow is your appointment at ${data.merchantName}!</h2>
+
+      ${data.heroImage ? `
+        <img src="${data.heroImage}" alt="${data.merchantName}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;" />
+      ` : ''}
+
       <p style="color: #555; font-size: 16px; line-height: 1.5;">
         Your reservation at <strong>${data.merchantName}</strong> is tomorrow.
       </p>
+
+      ${data.offerValue ? `
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+          <p style="margin: 0 0 8px 0; font-size: 16px; opacity: 0.9;">Your Special Offer</p>
+          <p style="margin: 0; font-size: 28px; font-weight: 700;">${data.offerValue}</p>
+          ${data.offerDescription ? `<p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">${data.offerDescription}</p>` : ''}
+        </div>
+      ` : ''}
 
       <div style="background: #f8f9fa; border-left: 4px solid #4285f4; padding: 16px; margin: 24px 0;">
         <p style="margin: 0 0 8px 0; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Confirmation Code</p>
@@ -129,6 +147,28 @@ export async function sendT1Reminder(data: {
       <p style="color: #555; font-size: 14px; line-height: 1.5;">
         Please present this code when you arrive.
       </p>
+
+      ${data.address ? `
+        <div style="margin: 20px 0;">
+          <p style="margin: 0 0 8px 0; color: #666; font-size: 13px;">Location:</p>
+          <p style="margin: 0 0 12px 0; color: #333; font-size: 14px;">${data.address}</p>
+          <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address)}"
+             style="display: inline-block; background: #34a853; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-size: 14px;">
+             📍 Get Directions
+          </a>
+        </div>
+      ` : ''}
+
+      <div style="background: #f0f7ff; border: 1px solid #2196f3; border-radius: 8px; padding: 16px; margin: 24px 0;">
+        <p style="margin: 0 0 8px 0; color: #333; font-size: 14px; font-weight: 600;">💡 Bring a friend and earn extra rewards!</p>
+        <p style="margin: 0 0 12px 0; color: #666; font-size: 13px;">Share this experience with friends and both of you get benefits.</p>
+        ${data.shareUrl ? `
+          <a href="${data.shareUrl}"
+             style="display: inline-block; background: #2196f3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-size: 14px;">
+             🎁 Share & Earn Rewards
+          </a>
+        ` : ''}
+      </div>
 
       <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;" />
 
@@ -140,7 +180,7 @@ export async function sendT1Reminder(data: {
 
   return sendEmail({
     to: data.email,
-    subject: `Reminder: ${data.merchantName} reservation tomorrow`,
+    subject: `⏰ Tomorrow: Your appointment at ${data.merchantName}`,
     html,
   });
 }
@@ -152,25 +192,37 @@ export async function sendT3NoShow(data: {
   email: string;
   merchantName: string;
   couponCode: string;
+  address?: string;
 }) {
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #333; font-size: 22px; margin-bottom: 20px;">Reservation Follow-up</h2>
+      <h2 style="color: #333; font-size: 22px; margin-bottom: 20px;">Missed you yesterday!</h2>
       <p style="color: #555; font-size: 16px; line-height: 1.5;">
-        We noticed you were unable to make your reservation at <strong>${data.merchantName}</strong>.
+        Was it a busy day? No worries!
       </p>
 
       <p style="color: #555; font-size: 16px; line-height: 1.5;">
-        Your confirmation code is still valid and can be used anytime this week.
+        Your offer for <strong>${data.merchantName}</strong> is <strong>still valid</strong> all week.
       </p>
 
-      <div style="background: #f8f9fa; border-left: 4px solid #4285f4; padding: 16px; margin: 24px 0;">
-        <p style="margin: 0 0 8px 0; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Confirmation Code</p>
+      <div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 16px; margin: 24px 0;">
+        <p style="margin: 0 0 8px 0; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Active Coupon</p>
         <p style="margin: 0; color: #333; font-size: 20px; font-weight: 600; letter-spacing: 1px;">${data.couponCode}</p>
       </div>
 
-      <p style="color: #555; font-size: 14px; line-height: 1.5;">
-        Please present this code when you visit.
+      ${data.address ? `
+        <div style="background: #f0f7ff; border: 1px solid #4285f4; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="margin: 0 0 8px 0; color: #666; font-size: 13px; font-weight: 600;">📍 Location:</p>
+          <p style="margin: 0 0 12px 0; color: #333; font-size: 14px;">${data.address}</p>
+          <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address)}"
+             style="display: inline-block; background: #34a853; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-size: 14px;">
+             Get Directions
+          </a>
+        </div>
+      ` : ''}
+
+      <p style="color: #555; font-size: 14px; line-height: 1.5; margin-top: 20px;">
+        Come by whenever you're hungry!
       </p>
 
       <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;" />
@@ -183,7 +235,7 @@ export async function sendT3NoShow(data: {
 
   return sendEmail({
     to: data.email,
-    subject: `${data.merchantName} - Reservation still valid`,
+    subject: `Your ${data.merchantName} coupon is still waiting for you! 🎁`,
     html,
   });
 }
@@ -196,6 +248,7 @@ export async function sendT2FinalCall(data: {
   merchantName: string;
   couponCode: string;
   heroImage?: string;
+  address?: string;
 }) {
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -213,6 +266,17 @@ export async function sendT2FinalCall(data: {
         Please present this code when you arrive.
       </p>
 
+      ${data.address ? `
+        <div style="background: #f0f7ff; border: 1px solid #4285f4; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="margin: 0 0 8px 0; color: #666; font-size: 13px; font-weight: 600;">📍 Location:</p>
+          <p style="margin: 0 0 12px 0; color: #333; font-size: 14px;">${data.address}</p>
+          <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address)}"
+             style="display: inline-block; background: #34a853; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-size: 14px;">
+             Get Directions
+          </a>
+        </div>
+      ` : ''}
+
       <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;" />
 
       <p style="color: #888; font-size: 12px; line-height: 1.5;">
@@ -224,6 +288,72 @@ export async function sendT2FinalCall(data: {
   return sendEmail({
     to: data.email,
     subject: `Today: ${data.merchantName} reservation`,
+    html,
+  });
+}
+
+/**
+ * T4: Expiration Warning (3 Days Before Expiry)
+ */
+export async function sendT4ExpirationWarning(data: {
+  email: string;
+  merchantName: string;
+  couponCode: string;
+  expiresAt: Date;
+  shareUrl?: string;
+  address?: string;
+}) {
+  const daysLeft = Math.ceil((data.expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #d32f2f; font-size: 22px; margin-bottom: 20px;">⏰ Your Coupon Expires in ${daysLeft} Days</h2>
+      <p style="color: #555; font-size: 16px; line-height: 1.5;">
+        Your reservation coupon for <strong>${data.merchantName}</strong> will expire soon.
+      </p>
+
+      <div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 16px; margin: 24px 0;">
+        <p style="margin: 0 0 8px 0; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Confirmation Code</p>
+        <p style="margin: 0; color: #333; font-size: 20px; font-weight: 600; letter-spacing: 1px;">${data.couponCode}</p>
+      </div>
+
+      <p style="color: #555; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+        Don't miss out! Visit soon to enjoy your reservation.
+      </p>
+
+      ${data.address ? `
+        <div style="background: #f0f7ff; border: 1px solid #4285f4; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="margin: 0 0 8px 0; color: #666; font-size: 13px; font-weight: 600;">📍 Location:</p>
+          <p style="margin: 0 0 12px 0; color: #333; font-size: 14px;">${data.address}</p>
+          <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address)}"
+             style="display: inline-block; background: #34a853; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-size: 14px;">
+             Get Directions
+          </a>
+        </div>
+      ` : ''}
+
+      ${data.shareUrl ? `
+      <div style="background: #fff9e6; border: 1px solid #ffc107; border-radius: 8px; padding: 16px; margin: 24px 0;">
+        <p style="margin: 0 0 8px 0; color: #333; font-size: 14px; font-weight: 600;">🎁 Can't use it? Share with friends!</p>
+        <p style="margin: 0 0 12px 0; color: #666; font-size: 13px;">Your friends get a great deal, and you earn rewards.</p>
+        <a href="${data.shareUrl}"
+           style="display: inline-block; background: #ff9800; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-size: 14px;">
+           Share Now
+        </a>
+      </div>
+      ` : ''}
+
+      <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;" />
+
+      <p style="color: #888; font-size: 12px; line-height: 1.5;">
+        This is an automated reminder about your expiring coupon.
+      </p>
+    </div>
+  `;
+
+  return sendEmail({
+    to: data.email,
+    subject: `⏰ ${data.merchantName} - Coupon expires in ${daysLeft} days`,
     html,
   });
 }

@@ -1,0 +1,10 @@
+# 忽略所有证书文件（敏感信息）
+*.p12
+*.pem
+*.key
+*.cer
+*.certSigningRequest
+*.mobileprovision
+
+# 但保留 README
+!README.md

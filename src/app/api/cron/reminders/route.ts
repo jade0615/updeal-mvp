@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { sendT1Reminder, sendT2FinalCall, sendT3NoShow } from '@/lib/email';
+import { sendT1Reminder, sendT2FinalCall, sendT3NoShow, sendT4ExpirationWarning } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     // Simple auth check for cron (e.g., CRON_SECRET)
     const authHeader = request.headers.get('authorization');
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-        // return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const supabase = createAdminClient();
@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
         t1_sent: 0,
         t2_sent: 0,
         t3_sent: 0,
+        t4_sent: 0,
         errors: [] as string[]
     };
 
@@ -38,8 +39,8 @@ export async function GET(request: NextRequest) {
             .from('coupons')
             .select(`
         *,
-        users!inner(email, name),
-        merchants!inner(name, content)
+        users!inner(id, email, name),
+        merchants!inner(name, slug, content)
       `)
             .eq('email_sent_stage', 1) // Finished T0
             .lt('expected_visit_date', t1Limit.toISOString())
@@ -49,10 +50,19 @@ export async function GET(request: NextRequest) {
         if (t1Coupons) {
             for (const coupon of t1Coupons) {
                 if (coupon.users?.email) {
+                    // Generate share URL for this user
+                    const userReferralCode = `REF-${coupon.users.id.substring(0, 6).toUpperCase()}`;
+                    const shareUrl = `https://hiraccoon.com/${coupon.merchants.slug}?uid=${userReferralCode}`;
+
                     const res = await sendT1Reminder({
                         email: coupon.users.email,
                         merchantName: coupon.merchants.name,
-                        couponCode: coupon.code
+                        couponCode: coupon.code,
+                        offerValue: coupon.merchants.content?.offer?.value,
+                        offerDescription: coupon.merchants.content?.offer?.description,
+                        address: coupon.merchants.content?.address?.fullAddress,
+                        shareUrl: shareUrl,
+                        heroImage: coupon.merchants.content?.hero_image
                     });
                     if (res.success) {
                         await supabase.from('coupons').update({ email_sent_stage: 2 }).eq('id', coupon.id);
@@ -88,7 +98,8 @@ export async function GET(request: NextRequest) {
                         email: coupon.users.email,
                         merchantName: coupon.merchants.name,
                         couponCode: coupon.code,
-                        heroImage: coupon.merchants.content?.hero_image
+                        heroImage: coupon.merchants.content?.hero_image,
+                        address: coupon.merchants.content?.address?.fullAddress
                     });
                     if (res.success) {
                         await supabase.from('coupons').update({ email_sent_stage: 3 }).eq('id', coupon.id);
@@ -125,10 +136,55 @@ export async function GET(request: NextRequest) {
                         email: coupon.users.email,
                         merchantName: coupon.merchants.name,
                         couponCode: coupon.code,
+                        address: coupon.merchants.content?.address?.fullAddress
                     });
                     if (res.success) {
                         await supabase.from('coupons').update({ email_sent_stage: 4 }).eq('id', coupon.id);
                         results.t3_sent++;
+                    }
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // 4. Process T4 Expiration Warnings (3 Days Before Expiry)
+        // -------------------------------------------------------------------------
+        // Target: Coupons expiring in 3-4 days, active status
+        // IMPORTANT: Only for coupons WITHOUT expected_visit_date to avoid conflicts with T1/T2/T3
+        const t4ExpiryStart = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000); // 3 days from now
+        const t4ExpiryEnd = new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000); // 4 days from now
+
+        const { data: t4Coupons } = await supabase
+            .from('coupons')
+            .select(`
+                *,
+                users!inner(id, email, name),
+                merchants!inner(name, slug, content)
+            `)
+            .eq('status', 'active')
+            .lt('email_sent_stage', 5) // Only if not sent T4 yet
+            .is('expected_visit_date', null) // Only coupons without scheduled visit
+            .gt('expires_at', t4ExpiryStart.toISOString())
+            .lt('expires_at', t4ExpiryEnd.toISOString());
+
+        if (t4Coupons) {
+            for (const coupon of t4Coupons) {
+                if (coupon.users?.email) {
+                    // Generate share URL for this user
+                    const userReferralCode = `REF-${coupon.users.id.substring(0, 6).toUpperCase()}`;
+                    const shareUrl = `https://hiraccoon.com/${coupon.merchants.slug}?uid=${userReferralCode}`;
+
+                    const res = await sendT4ExpirationWarning({
+                        email: coupon.users.email,
+                        merchantName: coupon.merchants.name,
+                        couponCode: coupon.code,
+                        expiresAt: new Date(coupon.expires_at),
+                        shareUrl: shareUrl,
+                        address: coupon.merchants.content?.address?.fullAddress
+                    });
+                    if (res.success) {
+                        await supabase.from('coupons').update({ email_sent_stage: 5 }).eq('id', coupon.id);
+                        results.t4_sent++;
                     }
                 }
             }
