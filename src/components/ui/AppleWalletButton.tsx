@@ -12,13 +12,13 @@ export const AppleWalletButton: React.FC<AppleWalletButtonProps> = ({
     className = "",
 }) => {
     const [loading, setLoading] = useState(false);
-    const [imageError, setImageError] = useState(false);
-    const [mounted, setMounted] = useState(false);
+    // FORCE FALLBACK TO TRUE FOR DEBUGGING
+    const [imageError, setImageError] = useState(true);
 
-    useEffect(() => {
-        setMounted(true);
-        // Preload image to check for errors early? Not strictly necessary if we handle onError
-    }, []);
+    // Remove hydration check to force render
+    // const [mounted, setMounted] = useState(false);
+    // useEffect(() => { setMounted(true); }, []);
+    // if (!mounted) return null;
 
     const handleAddToWallet = async () => {
         if (!couponCode) {
@@ -65,8 +65,6 @@ export const AppleWalletButton: React.FC<AppleWalletButtonProps> = ({
         }
     };
 
-    if (!mounted) return null; // Avoid hydration mismatch
-
     return (
         <button
             onClick={handleAddToWallet}
@@ -81,9 +79,9 @@ export const AppleWalletButton: React.FC<AppleWalletButtonProps> = ({
                 </div>
             ) : imageError ? (
                 // Fallback UI if SVG fails to load
-                <div className="bg-black text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 text-sm w-full justify-center shadow-lg hover:bg-gray-900 transition-colors">
+                <div className="bg-black text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 text-sm w-full justify-center shadow-lg hover:bg-gray-900 transition-colors border-2 border-green-500">
                     <Wallet className="w-5 h-5" />
-                    <span>Add to Apple Wallet</span>
+                    <span>Add to Apple Wallet (DEBUG MODE)</span>
                 </div>
             ) : (
                 <img
