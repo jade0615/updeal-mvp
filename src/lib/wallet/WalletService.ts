@@ -114,15 +114,15 @@ export class WalletService {
             }
             // --------------------------------------
 
-            // --- Redemption Code (Centerpiece) ---
-            // In the absence of a barcode, the primary field is the most prominent visual element.
-            pass.primaryFields.push({
+            // --- Redemption Code (Secondary to avoid overlap) ---
+            // Moved to secondaryFields because primaryFields often overlap with the strip image (banner).
+            pass.secondaryFields.push({
                 key: "redemption_code",
                 label: "REDEMPTION CODE",
                 value: authenticationToken || "COUPON-1234"
             });
 
-            pass.secondaryFields.push({
+            pass.primaryFields.push({
                 key: "offer",
                 label: "OFFER",
                 value: merchantData.offerText

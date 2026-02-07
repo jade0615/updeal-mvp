@@ -90,7 +90,7 @@ async function handlePassGeneration(couponCode: string | null) {
             userName: user.name || "Customer",
         };
 
-        const passBuffer = await WalletService.generatePass(merchantData, userData, authenticationToken);
+        const passBuffer = await WalletService.generatePass(merchantData, userData, coupon.code);
 
         return new NextResponse(passBuffer as any, {
             status: 200,
