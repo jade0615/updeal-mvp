@@ -265,11 +265,24 @@ export default function ReferralDashboardTemplate({ merchant, userId = 'mock-use
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">{merchant.name}</h2>
                     <p className="text-lg text-gray-600 mb-8">Invite you to join & get <span className="text-red-500">$20 Off</span></p>
 
-                    <div className="bg-white p-4 rounded-xl shadow-lg mb-8 min-h-[160px] flex items-center justify-center border-2 border-dashed border-cyan-100">
-                        <div className="text-4xl font-black text-cyan-500 tracking-widest">{referralCode}</div>
+                    <div className="bg-white p-10 rounded-[2.5rem] shadow-xl mb-10 min-h-[200px] flex flex-col items-center justify-center border-2 border-dashed border-cyan-200 relative">
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-cyan-500 text-white text-[10px] font-black px-5 py-1.5 rounded-full uppercase tracking-[0.3em] whitespace-nowrap shadow-sm">
+                            Referral Code
+                        </div>
+
+                        <div className="py-6">
+                            <div className="text-5xl font-black text-cyan-600 tracking-[0.1em] leading-none font-mono">{referralCode}</div>
+                        </div>
+
+                        <div className="mt-4 pt-6 border-t border-gray-100 w-full text-center">
+                            <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed">
+                                SHARE THIS CODE<br />
+                                WITH YOUR FRIENDS
+                            </p>
+                        </div>
                     </div>
 
-                    <p className="text-sm text-gray-400">Share this code to accept invitation</p>
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Enjoy your rewards!</p>
                     <div className="mt-8 text-xs text-gray-300">Powered by Hiraccoon</div>
                 </div>
             </div>

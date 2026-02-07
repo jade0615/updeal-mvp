@@ -114,10 +114,47 @@ export class WalletService {
             }
             // --------------------------------------
 
-            pass.primaryFields.push({ key: "offer", label: "OFFER", value: merchantData.offerText });
-            pass.secondaryFields.push({ key: "merchant", label: "MERCHANT", value: merchantData.name });
-            pass.auxiliaryFields.push({ key: "expires", label: "EXPIRES", value: new Date(merchantData.expirationDate).toLocaleDateString() });
-            pass.backFields.push({ key: "terms", label: "TERMS & CONDITIONS", value: "Redeem this coupon at the merchant location." });
+            // --- Redemption Code (Centerpiece) ---
+            // In the absence of a barcode, the primary field is the most prominent visual element.
+            pass.primaryFields.push({
+                key: "redemption_code",
+                label: "REDEMPTION CODE",
+                value: authenticationToken || "COUPON-1234"
+            });
+
+            pass.secondaryFields.push({
+                key: "offer",
+                label: "OFFER",
+                value: merchantData.offerText
+            });
+
+            pass.secondaryFields.push({
+                key: "merchant",
+                label: "MERCHANT",
+                value: merchantData.name
+            });
+
+            pass.auxiliaryFields.push({
+                key: "expires",
+                label: "EXPIRES",
+                value: new Date(merchantData.expirationDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                })
+            });
+
+            pass.backFields.push({
+                key: "instructions",
+                label: "HOW TO REDEEM",
+                value: "Show the redemption code on the front of this pass to the staff at the time of checkout."
+            });
+
+            pass.backFields.push({
+                key: "terms",
+                label: "TERMS & CONDITIONS",
+                value: "1. Valid for one-time use only.\n2. Cannot be combined with other offers.\n3. Valid only at participating locations."
+            });
 
             if (merchantData.address) {
                 pass.backFields.push({ key: "store_location", label: "STORE LOCATION", value: merchantData.address });
@@ -127,18 +164,11 @@ export class WalletService {
                 pass.setLocations({
                     latitude: Number(merchantData.latitude),
                     longitude: Number(merchantData.longitude),
-                    relevantText: merchantData.relevantText || "You are near the store!"
+                    relevantText: merchantData.relevantText || "You are near the store! Show your code to redeem."
                 });
             }
 
             pass.setExpirationDate(merchantData.expirationDate);
-
-            // Debug field to verify deployment version on the pass itself
-            pass.backFields.push({
-                key: "deployment_id",
-                label: "DEPLOYMENT VERSION",
-                value: `v7-locked-properties-${Date.now()}`
-            });
 
             const buffer = pass.getAsBuffer();
             console.log("✅ Pass generated successfully (Minimalist)");

@@ -194,18 +194,32 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
                             </div>
 
                             {success ? (
-                                // Success State
-                                <div className="text-center py-6">
-                                    <h3 className="text-xl font-bold text-theme-primary mb-1">Claimed Successfully!</h3>
-                                    <p className="text-theme-secondary text-sm">Present this code at checkout</p>
-                                    <div className="mt-4 p-5 bg-stone-50 rounded-xl border-2 border-theme-accent/20 shadow-inner">
-                                        <p className="text-[10px] text-theme-tertiary uppercase tracking-widest mb-2 font-bold">Redemption Code</p>
-                                        <code className="text-4xl font-mono font-black text-theme-accent tracking-[0.2em]">{couponData?.code}</code>
+                                // Success State - Redesigned prominent card
+                                <div className="text-center py-8">
+                                    <h3 className="text-2xl font-bold text-theme-primary mb-2">Claimed Successfully!</h3>
+
+                                    <div className="mt-6 p-8 bg-stone-50 rounded-[2rem] border-2 border-dashed border-theme-accent/30 shadow-inner relative group">
+                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-theme-accent text-white text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-[0.3em]">
+                                            Redemption Code
+                                        </div>
+
+                                        <div className="py-6">
+                                            <code className="text-5xl font-mono font-black text-theme-primary tracking-[0.15em] drop-shadow-sm">
+                                                {couponData?.code}
+                                            </code>
+                                        </div>
+
+                                        <div className="mt-4 pt-6 border-t border-stone-200/60">
+                                            <p className="text-theme-secondary text-[11px] font-black uppercase tracking-widest leading-relaxed">
+                                                Show this code to staff<br />
+                                                to redeem your offer
+                                            </p>
+                                        </div>
                                     </div>
-                                    <p className="mt-4 text-theme-secondary text-xs font-bold leading-relaxed px-4">
-                                        到店时将此兑换码告知店员即可使用<br />
-                                        Show this code to staff to redeem
-                                    </p>
+
+                                    <div className="mt-8 flex flex-col items-center gap-2">
+                                        <p className="text-theme-tertiary text-xs">Valid for 30 days from today</p>
+                                    </div>
                                 </div>
                             ) : (
                                 // Offer State

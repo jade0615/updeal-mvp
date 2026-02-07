@@ -249,77 +249,64 @@ export default function SushiTemplate({ merchant }: TemplateProps) {
                 </p>
               </div>
 
-              {/* 表单或成功消息 */}
+              {/* Success Message */}
               {success && couponData ? (
-                <div className="bg-white dark:bg-gray-900 rounded-xl md:rounded-2xl p-6 md:p-8 text-center space-y-6">
-                  {/* Success Icon */}
-                  <div className="text-5xl md:text-6xl">🎉</div>
+                <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 text-center space-y-8 animate-in zoom-in duration-300">
+                  <div className="text-6xl">🎉</div>
 
-                  {/* Instructions */}
                   <div className="space-y-2">
-                    <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
-                      领取成功！
+                    <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                      Claimed Successfully!
                     </h3>
-                    <p className="text-sm md:text-base text-red-600 dark:text-red-400 font-bold px-4">
-                      到店时将此兑换码告知店员即可使用<br />
-                      Show this code to staff to redeem
-                    </p>
                   </div>
 
-                  {/* Coupon Code */}
-                  <div className="space-y-2 bg-gray-50 dark:bg-gray-800 p-6 rounded-2xl border-2 border-dashed border-red-200">
-                    <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest font-bold">
+                  <div className="bg-gray-50 dark:bg-gray-800/50 p-8 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-gray-700 relative">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-[0.2em]">
                       Redemption Code
-                    </p>
-                    <div className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-[0.2em] font-mono">
-                      {couponData.code}
                     </div>
-                    <p className="text-xs md:text-sm text-orange-600 dark:text-orange-400 font-semibold">
-                      ✓ {couponData.offerDiscount}
-                    </p>
+
+                    <div className="py-6">
+                      <code className="text-5xl font-black text-gray-900 dark:text-white tracking-[0.2em] font-mono">
+                        {couponData.code}
+                      </code>
+                    </div>
+
+                    <div className="mt-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <p className="text-gray-600 dark:text-gray-400 text-xs font-bold uppercase tracking-widest leading-relaxed">
+                        Show this code to staff<br />
+                        to redeem your offer
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Merchant Info */}
-                  {(couponData.merchantAddress || couponData.merchantPhone) && (
-                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-3">
+                  <div className="space-y-4 pt-2">
+                    <p className="text-xs text-gray-400 uppercase tracking-widest font-bold">
+                      Valid for 30 days • Save this page
+                    </p>
+
+                    {/* Action Buttons */}
+                    <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto pt-4">
                       {couponData.merchantAddress && (
-                        <div className="flex items-center justify-center gap-2 text-gray-700 dark:text-gray-300 text-sm md:text-base">
-                          <span>📍</span>
-                          <span>{couponData.merchantAddress}</span>
-                        </div>
+                        <a
+                          href={`https://maps.google.com/?q=${encodeURIComponent(couponData.merchantAddress)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 text-sm"
+                        >
+                          <span>Navigate</span>
+                        </a>
                       )}
 
-                      {/* Action Buttons */}
-                      <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
-                        {couponData.merchantAddress && (
-                          <a
-                            href={`https://maps.google.com/?q=${encodeURIComponent(couponData.merchantAddress)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
-                          >
-                            <span>🗺️</span>
-                            <span>Navigate</span>
-                          </a>
-                        )}
-
-                        {couponData.merchantPhone && (
-                          <a
-                            href={`tel:${couponData.merchantPhone}`}
-                            className="bg-orange-400/90 hover:bg-orange-500 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
-                          >
-                            <span>📞</span>
-                            <span>Call</span>
-                          </a>
-                        )}
-                      </div>
+                      {couponData.merchantPhone && (
+                        <a
+                          href={`tel:${couponData.merchantPhone}`}
+                          className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 text-sm"
+                        >
+                          <span>Call Store</span>
+                        </a>
+                      )}
                     </div>
-                  )}
-
-                  {/* Fine Print */}
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    有效期30天 · 请保存此页面
-                  </p>
+                  </div>
                 </div>
               ) : (
                 <form onSubmit={handleClaim} className="space-y-3 md:space-y-4">

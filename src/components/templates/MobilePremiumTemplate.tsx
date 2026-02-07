@@ -755,42 +755,43 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                             <div className="w-16 h-16 mx-auto rounded-full bg-orange-100/80 text-orange-500 flex items-center justify-center mb-4">
                                 <Check className="w-8 h-8" />
                             </div>
-                            <h3 className="text-xl font-bold text-slate-800 mb-1">
+                            <h3 className="text-xl font-bold text-slate-800 mb-6">
                                 <EditableLabel
                                     path="customLabels.success_title"
                                     value={content.customLabels?.success_title}
-                                    fallback="Coupon Claimed!"
+                                    fallback="Claimed Successfully!"
                                 />
                             </h3>
-                            <p className="text-slate-500 text-sm mb-6 font-bold leading-relaxed px-4">
-                                到店时将此兑换码告知店员即可使用<br />
-                                Show this code to staff to redeem
-                            </p>
 
-                            <div className="bg-slate-50 rounded-xl p-4 border border-dashed border-slate-300 relative group cursor-pointer active:bg-slate-100 transition-colors" onClick={() => {
-                                navigator.clipboard.writeText(couponCode);
-                            }}>
-                                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">
-                                    <EditableLabel
-                                        path="customLabels.success_code_label"
-                                        value={content.customLabels?.success_code_label}
-                                        fallback="Redemption Code"
-                                    />
-                                </p>
-                                <p className="text-2xl font-mono font-bold text-slate-800 tracking-widest">{couponCode}</p>
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span className="text-[10px] bg-slate-800 text-white px-2 py-1 rounded">Copy</span>
+                            <div className="bg-slate-50/50 rounded-[2rem] p-8 border-2 border-dashed border-slate-200 relative mb-6 shadow-inner">
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-orange-500 text-white text-[10px] font-black px-4 py-1 rounded-full uppercase tracking-[0.2em] whitespace-nowrap">
+                                    Redemption Code
+                                </div>
+                                <div className="py-2">
+                                    <p className="text-4xl font-mono font-black text-slate-800 tracking-widest leading-none">{couponCode}</p>
+                                </div>
+                                <div className="mt-4 pt-4 border-t border-slate-200/60">
+                                    <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest leading-relaxed">
+                                        Show this code to staff<br />
+                                        to redeem your offer
+                                    </p>
                                 </div>
                             </div>
 
-                            <button onClick={handleSaveToPhotos} className="mt-4 w-full bg-slate-100 text-slate-600 font-semibold py-3.5 rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2">
-                                <Save className="w-4 h-4" />
-                                Save to Photos
-                            </button>
+                            <div className="flex flex-col gap-3">
+                                <button onClick={handleSaveToPhotos} className="w-full bg-slate-100 text-slate-600 font-bold py-3.5 rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 text-sm shadow-sm active:scale-[0.98]">
+                                    <Save className="w-4 h-4" />
+                                    Save to Photos
+                                </button>
 
-                            <div className="mt-3">
-                                <AppleWalletButton couponCode={couponCode} className="w-full" />
+                                <div className="w-full">
+                                    <AppleWalletButton couponCode={couponCode} className="w-full" />
+                                </div>
                             </div>
+
+                            <p className="text-[10px] text-zinc-400 mt-8 uppercase tracking-[0.2em] font-black">
+                                Valid for 30 days • Save this page
+                            </p>
 
                             {/* Referral Incentive Card */}
                             <div className="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-5">
