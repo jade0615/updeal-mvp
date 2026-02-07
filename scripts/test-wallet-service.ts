@@ -9,6 +9,8 @@ process.env.APPLE_SIGNER_KEY_PASSWORD = "123456";
 
 async function test() {
     console.log("🚀 Running WalletService local test...");
+    console.log("📝 WalletService.generatePass exists:", typeof WalletService.generatePass === 'function');
+    // console.log("📝 WalletService.generatePass content:", WalletService.generatePass.toString().slice(0, 100));
 
     const merchantData: MerchantData = {
         merchantId: "test-ny-001",

@@ -107,7 +107,8 @@ export class WalletService {
                 foregroundColor: "rgb(255, 248, 230)",
                 labelColor: "rgb(199, 171, 118)",
                 logoText: merchantData.logoText || "HiRaccoon",
-            });
+                barcodes: []
+            } as any);
             console.log("✅ Pass created from template");
             console.log("🔍 Initial pass.json content:", JSON.stringify((pass as any)._fields, null, 2));
 
@@ -171,26 +172,33 @@ export class WalletService {
             console.log("⏰ Setting expiration...");
             pass.setExpirationDate(merchantData.expirationDate);
 
-            // 10. Explicitly clear both barcodes and legacy barcode field
-            console.log("🔲 Clearing barcodes forcefully...");
+            // 10. Aggressively clear barcodes one last time before signing
+            console.log("🔲 Final aggressive clearing of barcodes...");
             try {
-                // passkit-generator uses setBarcodes for the plural barcodes array
-                pass.setBarcodes(null as any);
-                // Also explicitly clear the structure if we can access it
+                // Try multiple library methods
+                if (typeof (pass as any).setBarcodes === 'function') (pass as any).setBarcodes(null);
+                if (typeof (pass as any).setBarcode === 'function') (pass as any).setBarcode(null);
+
+                // Directly manipulate internal state if possible
                 (pass as any)._barcodes = [];
-                (pass as any)._barcode = null;
+                (pass as any)._barcode = undefined;
+                delete (pass as any)._fields.barcodes;
+                delete (pass as any)._fields.barcode;
             } catch (e) {
-                console.log("⚠️ Failed to clear barcodes manually, but setBarcodes was called");
+                console.log("⚠️ Error during aggressive barcode clearing:", e);
             }
 
-            // Log final pass structure for debugging
-            console.log("🔍 Final pass fields before buffer generation:", JSON.stringify((pass as any)._fields, (key, value) => {
-                if (key === "_barcodes" || key === "barcodes" || key === "barcode") return value;
-                return value;
-            }, 2));
+            // Log exactly what's in _fields.barcodes
+            console.log("🔍 INSPECTION - pass._fields.barcodes:", (pass as any)._fields.barcodes);
+            console.log("🔍 INSPECTION - pass._barcodes:", (pass as any)._barcodes);
 
             // 11. Generate and return the buffer
             console.log("💾 Generating buffer...");
+            // Final check of the internal structure
+            console.log("🔍 FINAL INTERNAL STATE BEFORE SIGNING:");
+            console.log("   - _barcodes:", (pass as any)._barcodes);
+            console.log("   - barcodes Property:", (pass as any).barcodes);
+
             const buffer = pass.getAsBuffer();
             console.log("✅ Pass generated successfully for merchant:", merchantData.name);
             return buffer;
