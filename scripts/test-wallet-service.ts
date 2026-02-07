@@ -20,8 +20,8 @@ async function test() {
         longitude: -73.8165652,
         address: "147-40 41st Ave, Flushing, NY 11355",
         expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        primaryColor: "rgb(255, 184, 0)",
-        logoText: "NY Store",
+        primaryColor: "rgb(99, 0, 0)",
+        logoText: " ",
         relevantText: "You're near the store! Show your coupon for $10 OFF 🎉"
     };
 
@@ -30,12 +30,14 @@ async function test() {
         userName: "Test User",
     };
 
-    const passBuffer = await WalletService.generatePass(merchantData, userData);
-
-    // We can't easily use passkit-generator to unzip a buffer here without dependencies, 
-    // but we can look at the raw state if we modify WalletService to return the pass object or add logs.
-
-    console.log("✅ Pass generated. Buffer size:", passBuffer.length);
+    try {
+        const passBuffer = await WalletService.generatePass(merchantData, userData, "TEST-CODE");
+        console.log("✅ Pass generated. Buffer size:", passBuffer.length);
+    } catch (err: any) {
+        console.error("❌ Generation failed in WalletService:", err);
+        if (err.stack) console.error(err.stack);
+        throw err;
+    }
 }
 
 test().catch(error => {
