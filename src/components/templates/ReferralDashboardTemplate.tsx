@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect } from 'react'
 import { Check, Clipboard, Download, X, User, Heart, Share2, Info, ArrowRight } from 'lucide-react'
-import { QRCodeSVG } from 'qrcode.react'
 import html2canvas from 'html2canvas'
 import { toast } from 'sonner' // Using sonner for toasts as seen in package.json
 import Image from 'next/image'
@@ -266,11 +265,11 @@ export default function ReferralDashboardTemplate({ merchant, userId = 'mock-use
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">{merchant.name}</h2>
                     <p className="text-lg text-gray-600 mb-8">Invite you to join & get <span className="text-red-500">$20 Off</span></p>
 
-                    <div className="bg-white p-4 rounded-xl shadow-lg mb-8">
-                        <QRCodeSVG value={referralLink} size={160} fgColor={THEME.primary} />
+                    <div className="bg-white p-4 rounded-xl shadow-lg mb-8 min-h-[160px] flex items-center justify-center border-2 border-dashed border-cyan-100">
+                        <div className="text-4xl font-black text-cyan-500 tracking-widest">{referralCode}</div>
                     </div>
 
-                    <p className="text-sm text-gray-400">Scan code to accept invitation</p>
+                    <p className="text-sm text-gray-400">Share this code to accept invitation</p>
                     <div className="mt-8 text-xs text-gray-300">Powered by Hiraccoon</div>
                 </div>
             </div>
