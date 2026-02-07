@@ -65,6 +65,7 @@ export class WalletService {
 
     static async generatePass(merchantData: MerchantData, userData: UserData, authenticationToken?: string): Promise<Buffer> {
         try {
+            console.log("🔧 Starting pass generation (Aggressive Removal Mode)");
             const certificates = await this.getCertificates();
             const serialNumber = `${merchantData.merchantId}-${userData.userId}-${Date.now()}`;
 
@@ -81,8 +82,37 @@ export class WalletService {
                 foregroundColor: "rgb(255, 248, 230)",
                 labelColor: "rgb(199, 171, 118)",
                 logoText: merchantData.logoText || "HiRaccoon",
-                barcodes: [] // Start empty
+                // Explicitly provide empty array to start
+                barcodes: []
             } as any);
+
+            // --- ULTIMATE BARCODE REMOVAL HACK ---
+            // We use Object.defineProperty to lock 'barcodes' and 'barcode' to null.
+            // This prevents the library from re-adding them later (e.g. during getAsBuffer).
+            try {
+                const lockProperty = (obj: any, prop: string) => {
+                    Object.defineProperty(obj, prop, {
+                        get: () => null,
+                        set: () => { /* ignore */ },
+                        configurable: false,
+                        enumerable: true
+                    });
+                };
+
+                lockProperty(pass, 'barcodes');
+                lockProperty((pass as any)._fields, 'barcodes');
+                lockProperty(pass, 'barcode');
+                lockProperty((pass as any)._fields, 'barcode');
+
+                // Clear internal private caches if they exist
+                (pass as any)._barcodes = null;
+                (pass as any)._barcode = null;
+
+                console.log("🔐 Barcode properties locked to null");
+            } catch (e) {
+                console.log("⚠️ Warning: Properties could not be locked:", e);
+            }
+            // --------------------------------------
 
             pass.primaryFields.push({ key: "offer", label: "OFFER", value: merchantData.offerText });
             pass.secondaryFields.push({ key: "merchant", label: "MERCHANT", value: merchantData.name });
@@ -103,21 +133,16 @@ export class WalletService {
 
             pass.setExpirationDate(merchantData.expirationDate);
 
-            // VERIFICATION BARCODE - This will tell us if this code is running.
-            pass.setBarcodes([{
-                message: "QR_CODE_MUST_BE_DELETED_V6",
-                format: "PKBarcodeFormatQR",
-                messageEncoding: "iso-8859-1"
-            }]);
-
-            // Add debug info to back fields
+            // Debug field to verify deployment version on the pass itself
             pass.backFields.push({
-                key: "debug_info",
-                label: "DEBUG INFO",
-                value: `Built at: ${new Date().toISOString()}`
+                key: "deployment_id",
+                label: "DEPLOYMENT VERSION",
+                value: `v7-locked-properties-${Date.now()}`
             });
 
-            return pass.getAsBuffer();
+            const buffer = pass.getAsBuffer();
+            console.log("✅ Pass generated successfully (Minimalist)");
+            return buffer;
 
         } catch (error) {
             console.error("❌ WalletService Error:", error);

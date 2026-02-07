@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
             headers: {
                 "Content-Type": "application/vnd.apple.pkpass",
                 "Content-Disposition": 'attachment; filename="test-coupon.pkpass"',
-                "X-Debug-Version": "lock-v6-direct-push",
+                "X-Debug-Version": "lock-v7-final",
                 "X-Debug-Time": new Date().toISOString()
             },
         });
