@@ -81,8 +81,8 @@ async function handlePassGeneration(couponCode: string | null) {
             longitude: lng ? parseFloat(lng) : undefined,
             address: merchant.content?.address?.fullAddress || merchant.content?.address || "",
             expirationDate: new Date(coupon.expires_at),
-            primaryColor: merchant.content?.brand?.primaryColor || "rgb(255, 184, 0)", // Default Gold
-            logoText: merchant.name,
+            primaryColor: merchant.content?.brand?.primaryColor || "rgb(99, 0, 0)", // Wine Red
+            logoText: "", // Removed text next to logo
         };
 
         const userData: UserData = {

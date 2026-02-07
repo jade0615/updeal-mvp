@@ -79,8 +79,8 @@ export class WalletService {
                 organizationName: "HiRaccoon",
                 description: "HiRaccoon Coupon",
                 backgroundColor: merchantData.primaryColor || "rgb(99, 0, 0)",
-                foregroundColor: "rgb(255, 248, 230)",
-                labelColor: "rgb(199, 171, 118)",
+                foregroundColor: "rgb(255, 255, 255)",
+                labelColor: "rgb(218, 165, 32)",
                 logoText: merchantData.logoText || "HiRaccoon",
                 // Explicitly provide empty array to start
                 barcodes: []
