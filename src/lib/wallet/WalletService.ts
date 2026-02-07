@@ -114,11 +114,11 @@ export class WalletService {
             }
             // --------------------------------------
 
-            // --- Redemption Code (Secondary to avoid overlap) ---
-            // Moved to secondaryFields because primaryFields often overlap with the strip image (banner).
-            pass.secondaryFields.push({
+            // --- Redemption Code (Header for Max Visibility) ---
+            // Moved to headerFields to appear in the top-right corner with a shorter label.
+            pass.headerFields.push({
                 key: "redemption_code",
-                label: "REDEMPTION CODE",
+                label: "CODE",
                 value: authenticationToken || "COUPON-1234"
             });
 

@@ -5,6 +5,7 @@
     "foregroundColor": "rgb(255, 248, 230)",
     "labelColor": "rgb(199, 171, 118)",
     "coupon": {
+        "headerFields": [],
         "primaryFields": [],
         "secondaryFields": [],
         "auxiliaryFields": [],
