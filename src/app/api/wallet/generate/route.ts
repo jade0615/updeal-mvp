@@ -99,8 +99,12 @@ async function handlePassGeneration(couponCode: string | null) {
                 "Content-Disposition": `attachment; filename=coupon-${couponCode}.pkpass`,
             },
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error("API Error:", error);
-        return NextResponse.json({ error: "Failed to generate pass" }, { status: 500 });
+        return NextResponse.json({
+            error: "Failed to generate pass",
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        }, { status: 500 });
     }
 }

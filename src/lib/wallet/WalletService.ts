@@ -82,37 +82,11 @@ export class WalletService {
                 foregroundColor: "rgb(255, 255, 255)",
                 labelColor: "rgb(218, 165, 32)",
                 logoText: (merchantData.logoText === "" ? " " : merchantData.logoText) || " ",
-                // Explicitly provide empty array to start
+                // Provide empty array to prevent any default barcodes from the template
                 barcodes: []
             } as any);
 
-            // --- ULTIMATE BARCODE REMOVAL HACK ---
-            // We use Object.defineProperty to lock 'barcodes' and 'barcode' to null.
-            // This prevents the library from re-adding them later (e.g. during getAsBuffer).
-            try {
-                const lockProperty = (obj: any, prop: string) => {
-                    Object.defineProperty(obj, prop, {
-                        get: () => null,
-                        set: () => { /* ignore */ },
-                        configurable: false,
-                        enumerable: true
-                    });
-                };
-
-                lockProperty(pass, 'barcodes');
-                lockProperty((pass as any)._fields, 'barcodes');
-                lockProperty(pass, 'barcode');
-                lockProperty((pass as any)._fields, 'barcode');
-
-                // Clear internal private caches if they exist
-                (pass as any)._barcodes = null;
-                (pass as any)._barcode = null;
-
-                console.log("🔐 Barcode properties locked to null");
-            } catch (e) {
-                console.log("⚠️ Warning: Properties could not be locked:", e);
-            }
-            // --------------------------------------
+            console.log("✅ PKPass instance created");
 
             // --- Redemption Code (Header for Max Visibility) ---
             pass.headerFields.push({
