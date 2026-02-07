@@ -791,9 +791,6 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 Save to Photos
                             </button>
 
-                            <div className="mt-3 bg-red-600 text-white p-4 rounded-xl font-bold text-center border-4 border-yellow-400 z-50">
-                                NUCLEAR DEBUG: IF YOU SEE THIS, DEPLOYMENT IS GOOD.
-                            </div>
                             <div className="mt-3">
                                 <AppleWalletButton couponCode={couponCode} className="w-full" />
                             </div>
