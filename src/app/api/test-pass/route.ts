@@ -4,16 +4,16 @@ import { WalletService, MerchantData, UserData } from "@/lib/wallet/WalletServic
 export async function GET(req: NextRequest) {
     try {
         const merchantData: MerchantData = {
-            merchantId: "test-ny-001",
-            name: "Live Crawfish & Seafood",
-            offerText: "🎁 NY Store Coupon ☕",
-            latitude: 40.7616455,
-            longitude: -73.8165652,
-            address: "147-40 41st Ave, Flushing, NY 11355",
-            expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            merchantId: "test-boston-001",
+            name: "Coupon Test",
+            offerText: "$10 OFF",
+            latitude: 42.3398067,
+            longitude: -71.0891717,
+            address: "456 College Ave, Boston, MA",
+            expirationDate: new Date("2026-02-14"),
             primaryColor: "rgb(99, 0, 0)",
             logoText: " ",
-            relevantText: "You're near the store! Show your coupon for $10 OFF 🎉"
+            relevantText: "You're near Coupon Test! Use your $10 OFF 🎉"
         };
 
         const userData: UserData = {

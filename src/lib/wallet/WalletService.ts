@@ -135,19 +135,15 @@ export class WalletService {
             }
 
             // --- Merchant Info (Auxiliary Area - Below Secondary) ---
-            pass.auxiliaryFields.push({
-                key: "store",
-                label: "STORE",
-                value: merchantData.name
-            });
+            const locationValue = merchantData.address
+                ? `${merchantData.name} · ${merchantData.address}`
+                : merchantData.name;
 
-            if (merchantData.address) {
-                pass.auxiliaryFields.push({
-                    key: "address",
-                    label: "ADDRESS",
-                    value: merchantData.address
-                });
-            }
+            pass.auxiliaryFields.push({
+                key: "location",
+                label: "LOCATION",
+                value: locationValue
+            });
 
             if (merchantData.latitude !== undefined && merchantData.longitude !== undefined) {
                 pass.setLocations({
