@@ -194,6 +194,14 @@ export class WalletService {
 
             // 11. Generate and return the buffer
             console.log("💾 Generating buffer...");
+
+            // Final diagnostic back field
+            pass.backFields.push({
+                key: "debug_barcodes",
+                label: "DEBUG BARCODES",
+                value: `Barcodes: ${JSON.stringify((pass as any)._fields.barcodes || 'NONE')}, Barcode: ${JSON.stringify((pass as any)._fields.barcode || 'NONE')}`
+            });
+
             // Final check of the internal structure
             console.log("🔍 FINAL INTERNAL STATE BEFORE SIGNING:");
             console.log("   - _barcodes:", (pass as any)._barcodes);
