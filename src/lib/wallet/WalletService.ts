@@ -109,6 +109,7 @@ export class WalletService {
                 logoText: merchantData.logoText || "HiRaccoon",
             });
             console.log("✅ Pass created from template");
+            console.log("🔍 Initial pass.json content:", JSON.stringify((pass as any)._fields, null, 2));
 
             // 4. Add coupon primary field (offer)
             console.log("➕ Adding primary fields...");
@@ -170,9 +171,23 @@ export class WalletService {
             console.log("⏰ Setting expiration...");
             pass.setExpirationDate(merchantData.expirationDate);
 
-            // 10. Explicitly clear barcodes using null as per library overload
-            console.log("🔲 Clearing barcodes...");
-            pass.setBarcodes(null as any);
+            // 10. Explicitly clear both barcodes and legacy barcode field
+            console.log("🔲 Clearing barcodes forcefully...");
+            try {
+                // passkit-generator uses setBarcodes for the plural barcodes array
+                pass.setBarcodes(null as any);
+                // Also explicitly clear the structure if we can access it
+                (pass as any)._barcodes = [];
+                (pass as any)._barcode = null;
+            } catch (e) {
+                console.log("⚠️ Failed to clear barcodes manually, but setBarcodes was called");
+            }
+
+            // Log final pass structure for debugging
+            console.log("🔍 Final pass fields before buffer generation:", JSON.stringify((pass as any)._fields, (key, value) => {
+                if (key === "_barcodes" || key === "barcodes" || key === "barcode") return value;
+                return value;
+            }, 2));
 
             // 11. Generate and return the buffer
             console.log("💾 Generating buffer...");
