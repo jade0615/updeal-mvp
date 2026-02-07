@@ -172,35 +172,42 @@ export class WalletService {
             console.log("⏰ Setting expiration...");
             pass.setExpirationDate(merchantData.expirationDate);
 
-            // 10. Aggressively clear barcodes one last time before signing
-            console.log("🔲 Final aggressive clearing of barcodes...");
+            // 10. Ultimate aggressive clearing: lock the properties
+            console.log("🔐 Locking barcodes to null...");
             try {
-                // Try multiple library methods
-                if (typeof (pass as any).setBarcodes === 'function') (pass as any).setBarcodes(null);
-                if (typeof (pass as any).setBarcode === 'function') (pass as any).setBarcode(null);
+                // Lock plural field
+                Object.defineProperty(pass, 'barcodes', { value: null, writable: false });
+                Object.defineProperty((pass as any)._fields, 'barcodes', { value: null, writable: false });
 
-                // Directly manipulate internal state if possible
-                (pass as any)._barcodes = [];
-                (pass as any)._barcode = undefined;
-                delete (pass as any)._fields.barcodes;
-                delete (pass as any)._fields.barcode;
+                // Lock singular field
+                Object.defineProperty(pass, 'barcode', { value: null, writable: false });
+                Object.defineProperty((pass as any)._fields, 'barcode', { value: null, writable: false });
+
+                // Direct internal properties
+                (pass as any)._barcodes = null;
+                (pass as any)._barcode = null;
             } catch (e) {
-                console.log("⚠️ Error during aggressive barcode clearing:", e);
+                console.log("⚠️ Failed to lock properties (already locked?), proceeding...");
             }
 
-            // Log exactly what's in _fields.barcodes
-            console.log("🔍 INSPECTION - pass._fields.barcodes:", (pass as any)._fields.barcodes);
-            console.log("🔍 INSPECTION - pass._barcodes:", (pass as any)._barcodes);
+            // Log final pass structure for debugging (this might fail due to the locks, but we'll see)
+            try {
+                console.log("🔍 INSPECTION - pass._fields.barcodes:", (pass as any)._fields.barcodes);
+            } catch (e) { }
 
             // 11. Generate and return the buffer
             console.log("💾 Generating buffer...");
 
             // Final diagnostic back field
-            pass.backFields.push({
-                key: "debug_barcodes",
-                label: "DEBUG BARCODES",
-                value: `Barcodes: ${JSON.stringify((pass as any)._fields.barcodes || 'NONE')}, Barcode: ${JSON.stringify((pass as any)._fields.barcode || 'NONE')}`
-            });
+            try {
+                pass.backFields.push({
+                    key: "debug_barcodes",
+                    label: "DEBUG BARCODES",
+                    value: `Locked: Barcodes=${JSON.stringify((pass as any)._fields.barcodes)}, Barcode=${JSON.stringify((pass as any)._fields.barcode)}`
+                });
+            } catch (e) {
+                console.log("⚠️ Could not add debug field after lock");
+            }
 
             // Final check of the internal structure
             console.log("🔍 FINAL INTERNAL STATE BEFORE SIGNING:");
