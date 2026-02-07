@@ -5,7 +5,7 @@ export async function GET(req: NextRequest) {
     try {
         const merchantData: MerchantData = {
             merchantId: "test-ny-001",
-            name: "New York Store Test",
+            name: "Live Crawfish & Seafood",
             offerText: "🎁 NY Store Coupon ☕",
             latitude: 40.7616455,
             longitude: -73.8165652,
