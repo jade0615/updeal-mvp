@@ -13,6 +13,7 @@ export interface MerchantData {
     primaryColor?: string;
     secondaryColor?: string;
     logoText?: string;
+    relevantText?: string;
 }
 
 export interface UserData {
@@ -153,12 +154,15 @@ export class WalletService {
 
             if (merchantData.latitude !== undefined && merchantData.longitude !== undefined) {
                 console.log("📍 Adding geofencing coordinates:", merchantData.latitude, merchantData.longitude);
+
+                const relevantText = merchantData.relevantText || (merchantData.logoText
+                    ? `${merchantData.logoText}：您已到达商家附近，进店展示卡券！`
+                    : "您已到达商家附近，进店展示卡券！");
+
                 pass.setLocations({
                     latitude: Number(merchantData.latitude),
                     longitude: Number(merchantData.longitude),
-                    relevantText: merchantData.logoText
-                        ? `${merchantData.logoText}：您已到达商家附近，进店展示卡券！`
-                        : "您已到达商家附近，进店展示卡券！",
+                    relevantText: relevantText,
                 });
             }
 
