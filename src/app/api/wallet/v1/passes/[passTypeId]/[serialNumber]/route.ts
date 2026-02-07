@@ -75,8 +75,8 @@ export async function GET(
             latitude: lat ? parseFloat(lat) : undefined,
             longitude: lng ? parseFloat(lng) : undefined,
             expirationDate: new Date(coupon.expires_at),
-            primaryColor: merchant.content?.brand?.primaryColor || "rgb(255, 184, 0)",
-            logoText: merchant.name,
+            primaryColor: merchant.content?.brand?.primaryColor || "rgb(99, 0, 0)",
+            logoText: " ",
         };
 
         const userData: UserData = {

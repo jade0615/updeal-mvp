@@ -78,10 +78,10 @@ export class WalletService {
                 teamIdentifier: (process.env.APPLE_TEAM_ID || "ULZM5FW53S").trim(),
                 organizationName: "HiRaccoon",
                 description: "HiRaccoon Coupon",
-                backgroundColor: merchantData.primaryColor || "rgb(99, 0, 0)",
+                backgroundColor: "rgb(99, 0, 0)", // Hardcoded as per user request to override DB
                 foregroundColor: "rgb(255, 255, 255)",
                 labelColor: "rgb(218, 165, 32)",
-                logoText: merchantData.logoText || "HiRaccoon",
+                logoText: (merchantData.logoText === "" ? " " : merchantData.logoText) || " ",
                 // Explicitly provide empty array to start
                 barcodes: []
             } as any);

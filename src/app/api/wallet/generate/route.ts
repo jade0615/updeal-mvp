@@ -82,7 +82,7 @@ async function handlePassGeneration(couponCode: string | null) {
             address: merchant.content?.address?.fullAddress || merchant.content?.address || "",
             expirationDate: new Date(coupon.expires_at),
             primaryColor: merchant.content?.brand?.primaryColor || "rgb(99, 0, 0)", // Wine Red
-            logoText: "", // Removed text next to logo
+            logoText: " ", // Use a single space to effectively hide it safely
         };
 
         const userData: UserData = {

@@ -11,8 +11,8 @@ export async function GET(req: NextRequest) {
             longitude: -73.8165652,
             address: "147-40 41st Ave, Flushing, NY 11355",
             expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            primaryColor: "rgb(255, 184, 0)",
-            logoText: "NY Store",
+            primaryColor: "rgb(99, 0, 0)",
+            logoText: " ",
             relevantText: "You're near the store! Show your coupon for $10 OFF 🎉"
         };
 
