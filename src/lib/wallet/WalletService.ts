@@ -115,26 +115,29 @@ export class WalletService {
             // --------------------------------------
 
             // --- Redemption Code (Header for Max Visibility) ---
-            // Moved to headerFields to appear in the top-right corner with a shorter label.
             pass.headerFields.push({
                 key: "redemption_code",
                 label: "CODE",
                 value: authenticationToken || "COUPON-1234"
             });
 
+            // --- Merchant Name (Primary Area) ---
+            // Using an empty label for a cleaner, bolder look on the primary area.
             pass.primaryFields.push({
+                key: "merchant",
+                label: "",
+                value: merchantData.name
+            });
+
+            // --- Offer & Expiry (Secondary Area - Below Banner) ---
+            // Moving these here ensures they don't overlap with the strip image.
+            pass.secondaryFields.push({
                 key: "offer",
                 label: "OFFER",
                 value: merchantData.offerText
             });
 
             pass.secondaryFields.push({
-                key: "merchant",
-                label: "MERCHANT",
-                value: merchantData.name
-            });
-
-            pass.auxiliaryFields.push({
                 key: "expires",
                 label: "EXPIRES",
                 value: new Date(merchantData.expirationDate).toLocaleDateString('en-US', {
