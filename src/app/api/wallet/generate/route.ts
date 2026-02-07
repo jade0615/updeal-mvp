@@ -2,10 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { WalletService, MerchantData, UserData } from "@/lib/wallet/WalletService";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+export async function GET(req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+    const couponCode = searchParams.get('code');
+    return handlePassGeneration(couponCode);
+}
+
 export async function POST(req: NextRequest) {
     try {
-        const { couponCode } = await req.json();
+        const body = await req.json();
+        return handlePassGeneration(body.couponCode);
+    } catch (e) {
+        return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    }
+}
 
+async function handlePassGeneration(couponCode: string | null) {
+    try {
         if (!couponCode) {
             return NextResponse.json({ error: "Missing coupon code" }, { status: 400 });
         }

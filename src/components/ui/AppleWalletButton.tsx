@@ -29,38 +29,21 @@ export const AppleWalletButton: React.FC<AppleWalletButtonProps> = ({
 
         try {
             setLoading(true);
-            const response = await fetch("/api/wallet/generate", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    couponCode,
-                }),
-            });
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                console.error("Wallet API Error:", errorData);
-                throw new Error(errorData.error || "Failed to generate pass");
-            }
+            // Direct navigation is required for iOS Safari to handle .pkpass files correctly
+            // Fetch/Blob method often fails to trigger the Wallet preview
+            window.location.href = `/api/wallet/generate?code=${couponCode}`;
 
-            // Create a blob from the response and trigger download
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", `coupon-${couponCode}.pkpass`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
+            // We can't easily know when the download starts/finishes with this method,
+            // but we can reset the loading state after a delay.
+            setTimeout(() => {
+                setLoading(false);
+                toast.success("Pass generated! Check your downloads or Wallet app.");
+            }, 3000);
 
-            toast.success("Pass generated! Check your downloads.");
         } catch (error: any) {
             console.error("Wallet Error:", error);
             toast.error(error.message || "Failed to add to Apple Wallet.");
-        } finally {
             setLoading(false);
         }
     };
