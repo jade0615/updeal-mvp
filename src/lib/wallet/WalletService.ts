@@ -119,30 +119,22 @@ export class WalletService {
             });
 
             pass.backFields.push({
-                key: "instructions",
-                label: "HOW TO REDEEM",
-                value: "Show the redemption code on the front of this pass to the staff at the time of checkout."
+                key: "address",
+                label: "ADDRESS",
+                value: merchantData.address || " "
             });
 
             pass.backFields.push({
                 key: "terms",
                 label: "TERMS & CONDITIONS",
-                value: "1. Valid for one-time use only.\n2. Cannot be combined with other offers.\n3. Valid only at participating locations."
+                value: "Present this coupon at the store to redeem. One per customer. Cannot be combined with other offers."
             });
 
-            if (merchantData.address) {
-                pass.backFields.push({ key: "store_location", label: "STORE LOCATION", value: merchantData.address });
-            }
-
             // --- Merchant Info (Auxiliary Area - Below Secondary) ---
-            const locationValue = merchantData.address
-                ? `${merchantData.name} · ${merchantData.address}`
-                : merchantData.name;
-
             pass.auxiliaryFields.push({
-                key: "location",
-                label: "LOCATION",
-                value: locationValue
+                key: "store",
+                label: "STORE",
+                value: merchantData.name
             });
 
             if (merchantData.latitude !== undefined && merchantData.longitude !== undefined) {
