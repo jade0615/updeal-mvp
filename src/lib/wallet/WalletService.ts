@@ -122,12 +122,9 @@ export class WalletService {
             });
 
             // --- Merchant Name (Primary Area) ---
-            // Using an empty label for a cleaner, bolder look on the primary area.
-            pass.primaryFields.push({
-                key: "merchant",
-                label: "",
-                value: merchantData.name
-            });
+            // User requested to keep primaryFields empty to avoid covering the strip image.
+            // Merchant name is already shown in the logo area.
+            pass.primaryFields.length = 0;
 
             // --- Offer & Expiry (Secondary Area - Below Banner) ---
             // Moving these here ensures they don't overlap with the strip image.
