@@ -105,7 +105,10 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
         return (
             <div className="rounded-xl border border-orange-200/70 bg-orange-50/80 p-6 text-center animate-in zoom-in duration-500 backdrop-blur-sm">
                 <h3 className="mb-2 text-xl font-bold text-orange-800">Coupon Claimed!</h3>
-                <p className="mb-4 text-sm text-orange-700">Check your phone for the coupon code.</p>
+                <p className="mb-4 text-sm font-bold text-orange-700 leading-relaxed">
+                    到店时将此兑换码告知店员即可使用<br />
+                    Show this code to staff to redeem
+                </p>
                 <div className="mx-auto mb-2 w-max rounded-lg bg-white px-4 py-2 font-mono text-xl font-bold tracking-widest text-orange-600 shadow-sm border border-orange-200/70">
                     {successData.coupon.code}
                 </div>

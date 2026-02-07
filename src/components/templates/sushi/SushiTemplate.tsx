@@ -2,7 +2,7 @@
 
 import { TemplateProps, OfferType } from '../index'
 import { useState } from 'react'
-import { QRCodeSVG } from 'qrcode.react'
+
 import OfferBadge from '../../offers/OfferBadge'
 
 interface CouponData {
@@ -260,29 +260,18 @@ export default function SushiTemplate({ merchant }: TemplateProps) {
                     <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                       领取成功！
                     </h3>
-                    <p className="text-sm md:text-base text-red-600 dark:text-red-400 font-semibold">
-                      📱 出示此二维码给店员
+                    <p className="text-sm md:text-base text-red-600 dark:text-red-400 font-bold px-4">
+                      到店时将此兑换码告知店员即可使用<br />
+                      Show this code to staff to redeem
                     </p>
-                  </div>
-
-                  {/* QR Code */}
-                  <div className="flex justify-center">
-                    <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg">
-                      <QRCodeSVG
-                        value={couponData.verifyUrl}
-                        size={200}
-                        level="H"
-                        includeMargin={true}
-                      />
-                    </div>
                   </div>
 
                   {/* Coupon Code */}
-                  <div className="space-y-2">
-                    <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Coupon Code
+                  <div className="space-y-2 bg-gray-50 dark:bg-gray-800 p-6 rounded-2xl border-2 border-dashed border-red-200">
+                    <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest font-bold">
+                      Redemption Code
                     </p>
-                    <div className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-wider font-mono">
+                    <div className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-[0.2em] font-mono">
                       {couponData.code}
                     </div>
                     <p className="text-xs md:text-sm text-orange-600 dark:text-orange-400 font-semibold">

@@ -170,13 +170,8 @@ export class WalletService {
             console.log("⏰ Setting expiration...");
             pass.setExpirationDate(merchantData.expirationDate);
 
-            // 10. Set barcode (using serial number as coupon code)
-            console.log("🔲 Adding barcode...");
-            pass.setBarcodes({
-                message: serialNumber,
-                format: "PKBarcodeFormatQR",
-                messageEncoding: "iso-8859-1",
-            });
+            // 10. Barcode removed as per requirement
+            console.log("🔲 Skipping barcode generation...");
 
             // 11. Generate and return the buffer
             console.log("💾 Generating buffer...");

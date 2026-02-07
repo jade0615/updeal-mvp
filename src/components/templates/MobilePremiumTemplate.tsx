@@ -762,12 +762,9 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     fallback="Coupon Claimed!"
                                 />
                             </h3>
-                            <p className="text-slate-500 text-sm mb-6">
-                                <EditableLabel
-                                    path="customLabels.success_subtitle"
-                                    value={content.customLabels?.success_subtitle}
-                                    fallback="Show this code to the staff."
-                                />
+                            <p className="text-slate-500 text-sm mb-6 font-bold leading-relaxed px-4">
+                                到店时将此兑换码告知店员即可使用<br />
+                                Show this code to staff to redeem
                             </p>
 
                             <div className="bg-slate-50 rounded-xl p-4 border border-dashed border-slate-300 relative group cursor-pointer active:bg-slate-100 transition-colors" onClick={() => {

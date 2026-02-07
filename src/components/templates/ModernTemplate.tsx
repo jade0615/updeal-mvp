@@ -2,7 +2,7 @@
 
 import { TemplateProps } from './index'
 import { useState, useEffect } from 'react'
-import { QRCodeSVG } from 'qrcode.react'
+
 
 // Helper: Generate colorful avatar
 function generateAvatar(name: string, size = 100) {
@@ -196,14 +196,16 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
                             {success ? (
                                 // Success State
                                 <div className="text-center py-6">
-                                    <div className="flex justify-center mb-4">
-                                        <QRCodeSVG value={couponData?.verifyUrl || ''} size={150} />
-                                    </div>
                                     <h3 className="text-xl font-bold text-theme-primary mb-1">Claimed Successfully!</h3>
                                     <p className="text-theme-secondary text-sm">Present this code at checkout</p>
-                                    <div className="mt-4 p-3 bg-stone-50 rounded-lg border border-stone-200">
-                                        <code className="text-2xl font-mono font-bold text-theme-accent">{couponData?.code}</code>
+                                    <div className="mt-4 p-5 bg-stone-50 rounded-xl border-2 border-theme-accent/20 shadow-inner">
+                                        <p className="text-[10px] text-theme-tertiary uppercase tracking-widest mb-2 font-bold">Redemption Code</p>
+                                        <code className="text-4xl font-mono font-black text-theme-accent tracking-[0.2em]">{couponData?.code}</code>
                                     </div>
+                                    <p className="mt-4 text-theme-secondary text-xs font-bold leading-relaxed px-4">
+                                        到店时将此兑换码告知店员即可使用<br />
+                                        Show this code to staff to redeem
+                                    </p>
                                 </div>
                             ) : (
                                 // Offer State

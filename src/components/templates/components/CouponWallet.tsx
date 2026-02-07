@@ -14,8 +14,8 @@ export default function CouponWallet({
     expiresAt,
     offerTitle,
     redemptionInstructions = [
-        "Show this code to the attendant",
-        "Wait for verification",
+        "到店时将此兑换码告知店员即可使用",
+        "Show this code to staff to redeem",
         "Enjoy your reward!"
     ]
 }: CouponWalletProps) {
@@ -55,6 +55,11 @@ export default function CouponWallet({
 
             {/* The Green Status Box */}
             <div className="mx-6 mb-8 rounded-xl overflow-hidden border border-[#A3E635]/50 bg-[#f7fee7]">
+                <h3 className="mb-2 text-xl font-bold text-orange-800 text-center pt-4">Coupon Claimed!</h3>
+                <p className="mb-4 text-sm font-bold text-orange-700 leading-relaxed text-center px-4">
+                    到店时将此兑换码告知店员即可使用<br />
+                    Show this code to staff to redeem
+                </p>
                 {/* Expires In */}
                 <div className="py-4 text-center">
                     <p className="text-xs font-bold text-orange-800 uppercase tracking-wider mb-1">
