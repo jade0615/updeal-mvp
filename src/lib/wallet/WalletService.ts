@@ -170,8 +170,9 @@ export class WalletService {
             console.log("⏰ Setting expiration...");
             pass.setExpirationDate(merchantData.expirationDate);
 
-            // 10. Barcode removed as per requirement
-            console.log("🔲 Skipping barcode generation...");
+            // 10. Explicitly clear barcodes using null as per library overload
+            console.log("🔲 Clearing barcodes...");
+            pass.setBarcodes(null as any);
 
             // 11. Generate and return the buffer
             console.log("💾 Generating buffer...");
