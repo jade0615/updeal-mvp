@@ -23,9 +23,9 @@ export function generateICS(data: CalendarEventData): string {
     calendar.createEvent({
         start: startTime,
         end: endTime,
-        summary: `🍽️ Dine at ${data.merchantName}`,
-        description: `Don't forget to show your coupon code: ${data.couponCode} to the staff.\n\nVerify Link: https://hiraccoon.com/verify/${data.couponCode}`,
-        location: data.address || 'Reserved Restaurant',
+        summary: `📅 Appointment at ${data.merchantName}`,
+        description: `Confirmation code: ${data.couponCode}\n\nPlease present this code when you arrive.\n\nVerify: https://hiraccoon.com/verify/${data.couponCode}`,
+        location: data.address || data.merchantName,
         busystatus: ICalEventBusyStatus.BUSY,
         url: `https://hiraccoon.com/verify/${data.couponCode}`
     });
@@ -43,8 +43,8 @@ export function generateCalendarLinks(data: CalendarEventData) {
         .toISOString()
         .replace(/-|:|\.\d\d\d/g, '');
 
-    const title = encodeURIComponent(`🍽️ Dine at ${data.merchantName}`);
-    const details = encodeURIComponent(`Coupon Code: ${data.couponCode}\nShow this to staff for your discount.`);
+    const title = encodeURIComponent(`📅 Appointment at ${data.merchantName}`);
+    const details = encodeURIComponent(`Confirmation code: ${data.couponCode}\n\nPlease present this code when you arrive.`);
     const location = encodeURIComponent(data.address || '');
 
     return {

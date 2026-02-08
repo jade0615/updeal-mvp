@@ -252,3 +252,53 @@ create trigger update_ad_campaigns_updated_at before update on ad_campaigns
 
 -- Add redeem_pin for store redemption terminal
 alter table merchants add column if not exists redeem_pin text;
+
+
+-- ==========================================
+-- Apple Wallet 集成字段
+-- ==========================================
+
+-- 为商家添加地理位置信息（用于 Apple Wallet 地理围栏提醒）
+alter table merchants add column if not exists latitude DECIMAL(9,6);
+alter table merchants add column if not exists longitude DECIMAL(10,6);
+alter table merchants add column if not exists address TEXT;
+
+-- 为地理位置查询添加索引
+create index if not exists idx_merchants_location on merchants(latitude, longitude);
+
+-- 为优惠券添加 Apple Wallet 相关字段
+alter table coupons add column if not exists apple_push_token TEXT;
+alter table coupons add column if not exists apple_pass_type_id TEXT;
+alter table coupons add column if not exists apple_serial_number TEXT UNIQUE;
+alter table coupons add column if not exists apple_pass_url TEXT;  -- 存储生成的 .pkpass 文件 URL
+
+-- 为 Apple Wallet 字段添加索引
+create index if not exists idx_coupons_apple_serial on coupons(apple_serial_number);
+create index if not exists idx_coupons_apple_token on coupons(apple_push_token);
+
+-- 为优惠券添加验证令牌（用于 Apple Wallet Web Service 鉴权）
+alter table coupons add column if not exists authentication_token TEXT;
+
+
+-- ==========================================
+-- Apple Wallet Web Service (WWS) 设备注册表
+-- ==========================================
+
+-- 创建钱包注册表（记录设备与卡券的绑定关系及推送令牌）
+create table if not exists wallet_registrations (
+    id uuid primary key default gen_random_uuid(),
+    device_id text not null,
+    push_token text not null,
+    pass_type_id text not null,
+    serial_number text not null,
+    coupon_id uuid references coupons(id) on delete cascade,
+    created_at timestamptz default now(),
+    unique(device_id, pass_type_id, serial_number)
+);
+
+-- 为更新查询添加索引
+create index if not exists idx_wallet_reg_lookup on wallet_registrations(device_id, pass_type_id);
+create index if not exists idx_wallet_reg_serial on wallet_registrations(serial_number);
+
+-- RLS 策略
+alter table wallet_registrations enable row level security;

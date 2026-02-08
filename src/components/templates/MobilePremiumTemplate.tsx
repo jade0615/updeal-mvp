@@ -9,6 +9,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import type { Merchant } from '@/types/merchant';
 import { updateMerchant } from '@/actions/merchants';
 import confetti from 'canvas-confetti';
+import { AppleWalletButton } from '@/components/ui/AppleWalletButton';
 
 interface Props {
     merchant: Merchant;
@@ -205,6 +206,8 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
     const [loading, setLoading] = useState(false);
     const [successOpen, setSuccessOpen] = useState(false);
     const [couponCode, setCouponCode] = useState('');
+    const [shareUrl, setShareUrl] = useState('');
+    const [referralCode, setReferralCode] = useState('');
     const couponRef = React.useRef<HTMLDivElement>(null);
 
     const handleClaim = async () => {
@@ -241,6 +244,8 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             setLoading(false);
             setSuccessOpen(true);
             setCouponCode(result.coupon.code);
+            setShareUrl(result.shareUrl || window.location.href);
+            setReferralCode(result.referralCode || '');
 
             // Track Lead Event - 使用原生 window.fbq (更可靠)
             if (typeof window !== 'undefined' && (window as any).fbq) {
@@ -303,22 +308,74 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
     }, [searchParams, canEdit]);
 
     const handleSaveToPhotos = async () => {
-        if (!couponRef.current) return;
+        if (!couponRef.current) {
+            alert('Coupon element not found. Please try again.');
+            return;
+        }
+
         try {
             // Dynamic import to avoid SSR issues
             const html2canvas = (await import('html2canvas')).default;
+
             const canvas = await html2canvas(couponRef.current, {
                 useCORS: true,
-                backgroundColor: null, // Transparent background if possible, or force white
-                scale: 2 // High resolution
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                scale: 3, // Higher resolution
+                logging: false,
+                windowWidth: couponRef.current.scrollWidth,
+                windowHeight: couponRef.current.scrollHeight,
             });
-            const link = document.createElement('a');
-            link.download = `UpDeal-${content.businessName || 'Coupon'}-Coupon.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+
+            // Convert to blob for better mobile support
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    throw new Error('Failed to generate image');
+                }
+
+                // Try native share API first (better for mobile)
+                if (navigator.share && navigator.canShare) {
+                    const file = new File([blob], `Coupon-${couponCode}.png`, { type: 'image/png' });
+                    if (navigator.canShare({ files: [file] })) {
+                        navigator.share({
+                            files: [file],
+                            title: 'My Coupon',
+                            text: `${content.businessName || 'Coupon'} - ${couponCode}`
+                        }).catch(() => {
+                            // Fallback to download if share is cancelled
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.download = `Coupon-${couponCode}.png`;
+                            link.href = url;
+                            link.click();
+                            URL.revokeObjectURL(url);
+                        });
+                        return;
+                    }
+                }
+
+                // Fallback: Download link
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = `Coupon-${couponCode}.png`;
+                link.href = url;
+                link.click();
+                URL.revokeObjectURL(url);
+
+                // Show success message
+                setTimeout(() => alert('✅ Coupon saved! Check your Downloads folder.'), 100);
+            }, 'image/png');
+
         } catch (err) {
             console.error('Failed to save image:', err);
-            alert('Sorry, could not save image automatically. Please take a screenshot!');
+
+            // More helpful error message
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+                alert('📸 Please take a screenshot to save your coupon!\n\niPhone: Side Button + Volume Up\nAndroid: Power + Volume Down');
+            } else {
+                alert('Could not save automatically. Please screenshot:\n\nMac: Cmd+Shift+4\nWindows: Win+Shift+S');
+            }
         }
     };
 
@@ -615,7 +672,17 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 <div className="flex gap-2">
                                     <input
                                         type="date"
-                                        min={new Date().toISOString().split('T')[0]}
+                                        min={(() => {
+                                            const d = new Date();
+                                            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                                            return d.toISOString().split('T')[0];
+                                        })()}
+                                        max={(() => {
+                                            const d = new Date();
+                                            d.setDate(d.getDate() + 7);
+                                            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                                            return d.toISOString().split('T')[0];
+                                        })()}
                                         value={formData.expectedVisitDate}
                                         onChange={(e) => setFormData(prev => ({ ...prev, expectedVisitDate: e.target.value }))}
                                         className="flex-1 h-12 px-4 rounded-xl border border-orange-200 bg-white text-slate-800 outline-none focus:ring-2 focus:ring-orange-500/20 font-medium min-w-[60%]"
@@ -628,7 +695,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     />
                                 </div>
                                 <p className="text-[10px] text-orange-600/70 mt-2 ml-1 italic">
-                                    * We'll send a calendar invite and a reminder!
+                                    * Valid for 7 days only. We'll send a calendar invite!
                                 </p>
                             </div>
 
@@ -724,16 +791,69 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 Save to Photos
                             </button>
 
+                            <div className="mt-3">
+                                <AppleWalletButton couponCode={couponCode} className="w-full" />
+                            </div>
+
+                            {/* Referral Incentive Card */}
+                            <div className="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-5">
+                                <div className="flex items-start gap-3 mb-3">
+                                    <span className="text-3xl">🎁</span>
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-slate-900 text-base mb-1">
+                                            Share with friends, both get extra rewards!
+                                        </h4>
+                                        <p className="text-xs text-slate-600 leading-relaxed">
+                                            Your friends get amazing deals, and you earn rewards for each referral
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white/80 rounded-lg p-3 mb-3">
+                                    <p className="text-xs text-slate-500 font-medium mb-1.5">Your Exclusive Link:</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-xs text-blue-600 font-mono flex-1 truncate">{shareUrl}</p>
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(shareUrl);
+                                                alert('✓ Link copied to clipboard!');
+                                            }}
+                                            className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-md transition-colors"
+                                        >
+                                            Copy
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {referralCode && (
+                                    <div className="bg-gradient-to-r from-orange-100 to-amber-100 rounded-lg p-3 border border-orange-200">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-xs text-slate-600 font-medium">Your Referral Code:</p>
+                                                <p className="text-sm font-bold text-orange-700 font-mono">{referralCode}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xs text-slate-500">Referrals</p>
+                                                <p className="text-xl font-bold text-orange-600">0</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
                             {/* Social Share Section */}
                             <div className="mt-8 border-t border-dashed border-slate-200 pt-6">
-                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-4">
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">
                                     Share & Get Rewards
+                                </p>
+                                <p className="text-[11px] text-slate-500 mb-4">
+                                    Share your unique link and earn rewards when friends claim!
                                 </p>
                                 <div className="grid grid-cols-4 gap-2">
                                     {/* Facebook */}
                                     <button
                                         onClick={() => {
-                                            const url = encodeURIComponent(window.location.href);
+                                            const url = encodeURIComponent(shareUrl);
                                             window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
                                         }}
                                         className="flex flex-col items-center gap-1"
@@ -747,7 +867,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     {/* SMS / Text */}
                                     <button
                                         onClick={() => {
-                                            const text = `Get ${displayValue} ${displayUnit} at ${merchant.name}! ${window.location.href}`;
+                                            const text = `Get ${displayValue} ${displayUnit} at ${merchant.name}! ${shareUrl}`;
                                             window.location.href = `sms:?body=${encodeURIComponent(text)}`;
                                         }}
                                         className="flex flex-col items-center gap-1"
@@ -762,7 +882,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     <button
                                         onClick={() => {
                                             const subject = `Check out this deal at ${merchant.name}`;
-                                            const body = `I got ${displayValue} ${displayUnit} at ${merchant.name}! Get yours here: ${window.location.href}`;
+                                            const body = `I got ${displayValue} ${displayUnit} at ${merchant.name}! Get yours here: ${shareUrl}`;
                                             window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
                                         }}
                                         className="flex flex-col items-center gap-1"
@@ -776,8 +896,8 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     {/* Copy Link */}
                                     <button
                                         onClick={() => {
-                                            navigator.clipboard.writeText(window.location.href);
-                                            alert('Link copied!');
+                                            navigator.clipboard.writeText(shareUrl);
+                                            alert('Referral link copied!');
                                         }}
                                         className="flex flex-col items-center gap-1"
                                     >

@@ -1,8 +1,20 @@
 # Ignore scripts directory - not needed for deployment
 scripts/
 
+# Ignore test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
 # Other files not needed for production
 *.md
 !README.md
+
+# Ignore local development files
 .env.local
 .env.development
+.env*.local
+
+# Ignore backups
+backups/

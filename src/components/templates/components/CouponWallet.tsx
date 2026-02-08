@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-
+import { AppleWalletButton } from '@/components/ui/AppleWalletButton';
 
 interface CouponWalletProps {
     couponCode: string;
@@ -71,6 +70,14 @@ export default function CouponWallet({
                         Activated: {redeemDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                 </div>
+            </div>
+
+            {/* Wallet Integration Section */}
+            <div className="px-8 mb-8 flex flex-col items-center gap-3">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                    Digital Wallet
+                </p>
+                <AppleWalletButton couponCode={couponCode} />
             </div>
 
             {/* Instructions */}
