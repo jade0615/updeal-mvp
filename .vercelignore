@@ -1,4 +1,4 @@
-# Ignore scripts directory during Vercel build
+# Ignore scripts directory - not needed for deployment
 scripts/
 
 # Ignore test files
@@ -7,8 +7,13 @@ scripts/
 **/*.spec.ts
 **/*.spec.tsx
 
+# Other files not needed for production
+*.md
+!README.md
+
 # Ignore local development files
 .env.local
+.env.development
 .env*.local
 
 # Ignore backups

@@ -65,6 +65,11 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
   const [fullHistory, setFullHistory] = useState<any[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
 
+  // Customer List State
+  const [showCustomerList, setShowCustomerList] = useState(false)
+  const [customers, setCustomers] = useState<any[]>([])
+  const [customersLoading, setCustomersLoading] = useState(false)
+
   const fetchHistory = async () => {
     setHistoryLoading(true)
     try {
@@ -78,6 +83,26 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
     } finally {
       setHistoryLoading(false)
     }
+  }
+
+  const fetchCustomers = async () => {
+    setCustomersLoading(true)
+    try {
+      const res = await fetch(`/api/store/customers?slug=${merchantSlug}`)
+      const data = await res.json()
+      if (data.success) {
+        setCustomers(data.customers)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setCustomersLoading(false)
+    }
+  }
+
+  const handleOpenCustomerList = () => {
+    setShowCustomerList(true)
+    fetchCustomers()
   }
 
   const handleOpenHistory = () => {
@@ -426,6 +451,21 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
               </div>
               <p className="text-[10px] mt-1.5 opacity-70 text-right">核销率: {stats.totalClaims > 0 ? ((stats.totalRedemptions / stats.totalClaims) * 100).toFixed(1) : 0}%</p>
             </div>
+
+            {/* Customer List Button */}
+            <button
+              onClick={handleOpenCustomerList}
+              className="w-full bg-white rounded-2xl shadow-lg p-4 text-left hover:shadow-xl transition-shadow flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">👥</span>
+                <div>
+                  <p className="font-bold text-gray-900">客户列表</p>
+                  <p className="text-sm text-gray-500">查看所有领券客户信息</p>
+                </div>
+              </div>
+              <span className="text-gray-400">→</span>
+            </button>
           </div>
         )}
 
@@ -633,6 +673,96 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
             <div className="p-4 border-t border-gray-100 text-center">
               <button
                 onClick={() => setShowHistoryModal(false)}
+                className="px-6 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 font-medium transition-colors"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Customer List Modal */}
+      {showCustomerList && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <span>👥</span> 客户列表
+                {!customersLoading && <span className="text-sm font-normal text-gray-500">({customers.length}人)</span>}
+              </h3>
+              <button
+                onClick={() => setShowCustomerList(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {customersLoading ? (
+                <div className="p-12 text-center text-gray-500">
+                  加载中...
+                </div>
+              ) : customers.length === 0 ? (
+                <div className="p-12 text-center text-gray-500">
+                  暂无客户数据
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50 sticky top-0">
+                      <tr>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">姓名</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">电话</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">邮箱</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">领券时间</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">状态</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 bg-white">
+                      {customers.map((customer, idx) => (
+                        <tr key={customer.id || idx} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">{customer.phone}</div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="text-sm text-gray-600 max-w-[200px] truncate">{customer.email}</div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(customer.claimedAt).toLocaleString('zh-CN', {
+                              month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+                            })}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {customer.status === 'redeemed' ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                ✓ 已核销
+                              </span>
+                            ) : customer.status === 'expired' ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                已过期
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                待核销
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-gray-100 text-center">
+              <button
+                onClick={() => setShowCustomerList(false)}
                 className="px-6 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 font-medium transition-colors"
               >
                 关闭
