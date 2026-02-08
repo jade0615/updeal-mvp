@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-    const envs = [
+    const allAppleEnvs = Object.keys(process.env).filter(k => k.startsWith('APPLE_'));
+    const checkedEnvs = [
         "APPLE_TEAM_ID",
         "APPLE_PASS_TYPE_ID",
         "APPLE_SIGNER_KEY_PASSWORD",
@@ -11,7 +12,7 @@ export async function GET(req: NextRequest) {
         "APPLE_WWDR_CERT"
     ];
 
-    const results = envs.map(key => {
+    const results = checkedEnvs.map(key => {
         const val = process.env[key];
         return {
             key,
@@ -29,6 +30,7 @@ export async function GET(req: NextRequest) {
         timestamp: new Date().toISOString(),
         node_env: process.env.NODE_ENV,
         vercel_env: process.env.VERCEL_ENV,
+        discovered_apple_envs: allAppleEnvs,
         variables: results
     });
 }
