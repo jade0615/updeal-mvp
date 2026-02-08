@@ -30,6 +30,8 @@ export async function GET(req: NextRequest) {
         timestamp: new Date().toISOString(),
         node_env: process.env.NODE_ENV,
         vercel_env: process.env.VERCEL_ENV,
+        vercel_project_id: process.env.VERCEL_PROJECT_ID,
+        vercel_url: process.env.VERCEL_URL,
         discovered_apple_envs: allAppleEnvs,
         variables: results
     });
