@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         // 1. Get Merchant ID
         const { data: merchant, error: merchantError } = await supabase
             .from('merchants')
-            .select('id')
+            .select('id, content')
             .eq('slug', slug)
             .single()
 
@@ -29,10 +29,22 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'Merchant not found' }, { status: 404 })
         }
 
-        // 2. Get all coupons (customers) for this merchant
+        // 2. Get all coupons with user data (JOIN users table)
         const { data: coupons, error: couponsError } = await supabase
             .from('coupons')
-            .select('id, code, customer_phone, customer_email, customer_name, offer_discount, status, created_at, redeemed_at, expires_at')
+            .select(`
+                id,
+                code,
+                status,
+                created_at,
+                redeemed_at,
+                expires_at,
+                users!inner (
+                    phone,
+                    email,
+                    name
+                )
+            `)
             .eq('merchant_id', merchant.id)
             .order('created_at', { ascending: false })
             .limit(200)
@@ -44,7 +56,7 @@ export async function GET(request: NextRequest) {
 
         // 3. Process status for display
         const now = new Date()
-        const customers = coupons?.map(coupon => {
+        const customers = coupons?.map((coupon: any) => {
             let displayStatus = coupon.status
 
             // Check if expired (for active coupons)
@@ -58,10 +70,9 @@ export async function GET(request: NextRequest) {
             return {
                 id: coupon.id,
                 code: coupon.code,
-                name: coupon.customer_name || '-',
-                phone: coupon.customer_phone || '-',
-                email: coupon.customer_email || '-',
-                offer: coupon.offer_discount,
+                name: coupon.users?.name || '-',
+                phone: coupon.users?.phone || '-',
+                email: coupon.users?.email || '-',
                 status: displayStatus,
                 claimedAt: coupon.created_at,
                 redeemedAt: coupon.redeemed_at
