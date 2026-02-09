@@ -75,7 +75,12 @@ export default function CouponWallet({
 
                 <div className="w-full flex flex-col items-center gap-4">
                     <div className="w-full bg-zinc-100/50 rounded-2xl p-1 text-center">
-                        <AppleWalletButton couponCode={couponCode} className="w-full" />
+                        <AppleWalletButton
+                            couponCode={couponCode}
+                            className="w-full"
+                            autoTrigger
+                            autoTriggerDelayMs={200}
+                        />
                     </div>
                 </div>
             </div>

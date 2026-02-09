@@ -10,6 +10,7 @@ import type { Merchant } from '@/types/merchant';
 import { updateMerchant } from '@/actions/merchants';
 import confetti from 'canvas-confetti';
 import { AppleWalletButton } from '@/components/ui/AppleWalletButton';
+import { trackGoogleAdsConversion } from '@/lib/analytics/googleAds';
 
 interface Props {
     merchant: Merchant;
@@ -283,6 +284,12 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                 });
                 console.log('GTM Event Pushed: generate_lead');
             }
+
+            trackGoogleAdsConversion({
+                value: 10.00,
+                currency: 'USD',
+                transactionId: result.coupon.code
+            });
 
             confetti({
                 particleCount: 150,
@@ -785,7 +792,12 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 </button>
 
                                 <div className="w-full">
-                                    <AppleWalletButton couponCode={couponCode} className="w-full" />
+                                    <AppleWalletButton
+                                        couponCode={couponCode}
+                                        className="w-full"
+                                        autoTrigger
+                                        autoTriggerDelayMs={200}
+                                    />
                                 </div>
                             </div>
 

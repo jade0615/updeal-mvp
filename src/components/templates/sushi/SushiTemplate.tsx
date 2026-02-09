@@ -4,6 +4,8 @@ import { TemplateProps, OfferType } from '../index'
 import { useState } from 'react'
 
 import OfferBadge from '../../offers/OfferBadge'
+import { AppleWalletButton } from '@/components/ui/AppleWalletButton'
+import { trackGoogleAdsConversion } from '@/lib/analytics/googleAds'
 
 interface CouponData {
   code: string
@@ -166,6 +168,27 @@ export default function SushiTemplate({ merchant }: TemplateProps) {
           offerDiscount: data.coupon.offerDiscount
         })
         setSuccess(true)
+
+        if (typeof window !== 'undefined') {
+          if ((window as any).gtag) {
+            (window as any).gtag('event', 'claim_coupon', {
+              merchant_id: merchant.id,
+              coupon_code: data.coupon.code
+            })
+          }
+          ;(window as any).dataLayer = (window as any).dataLayer || []
+          ;(window as any).dataLayer.push({
+            event: 'generate_lead',
+            value: 10.00,
+            currency: 'USD'
+          })
+        }
+
+        trackGoogleAdsConversion({
+          value: 10.00,
+          currency: 'USD',
+          transactionId: data.coupon.code
+        })
       }
     } catch (error) {
       console.error(error)
@@ -305,6 +328,15 @@ export default function SushiTemplate({ merchant }: TemplateProps) {
                           <span>Call Store</span>
                         </a>
                       )}
+                    </div>
+
+                    <div className="max-w-sm mx-auto">
+                      <AppleWalletButton
+                        couponCode={couponData.code}
+                        className="w-full"
+                        autoTrigger
+                        autoTriggerDelayMs={200}
+                      />
                     </div>
                   </div>
                 </div>
