@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Loader2, Wallet, CheckCircle2, X } from "lucide-react";
 
@@ -22,15 +22,15 @@ export const AppleWalletButton: React.FC<AppleWalletButtonProps> = ({
     const [showModal, setShowModal] = useState(false);
     const hasAutoTriggered = useRef(false);
 
-    const isAppleDevice = () => {
+    const isAppleDevice = useCallback(() => {
         if (typeof navigator === "undefined") return false;
         const ua = navigator.userAgent || "";
         const isIOS = /iPhone|iPad|iPod/i.test(ua);
         const isMacWithTouch = /Macintosh/i.test(ua) && navigator.maxTouchPoints > 1;
         return isIOS || isMacWithTouch;
-    };
+    }, []);
 
-    const handleAddToWallet = async () => {
+    const handleAddToWallet = useCallback(async () => {
         if (!couponCode) {
             console.error("Missing coupon code");
             toast.error("Error: Missing coupon code");
@@ -54,7 +54,7 @@ export const AppleWalletButton: React.FC<AppleWalletButtonProps> = ({
             toast.error(error.message || "Failed to add to Apple Wallet.");
             setLoading(false);
         }
-    };
+    }, [couponCode]);
 
     useEffect(() => {
         if (!autoTrigger || hasAutoTriggered.current) return;
@@ -67,7 +67,7 @@ export const AppleWalletButton: React.FC<AppleWalletButtonProps> = ({
         }, autoTriggerDelayMs);
 
         return () => window.clearTimeout(timer);
-    }, [autoTrigger, autoTriggerDelayMs, autoTriggerOnAppleOnly, couponCode]);
+    }, [autoTrigger, autoTriggerDelayMs, autoTriggerOnAppleOnly, couponCode, handleAddToWallet, isAppleDevice]);
 
     return (
         <>

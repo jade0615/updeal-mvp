@@ -2,17 +2,29 @@ import nodemailer from 'nodemailer';
 import { generateICS, generateCalendarLinks } from './calendar';
 
 // Email Service Configuration - Aliyun Direct Mail
-const smtpConfig = {
-  host: 'smtpdm.aliyun.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: 'info@hiraccoon.com',
-    pass: 'Z2CrZ9punU97RaA',
-  },
-};
+// Required envs: EMAIL_SMTP_USER, EMAIL_SMTP_PASS
+// Optional envs: EMAIL_SMTP_HOST, EMAIL_SMTP_PORT, EMAIL_SMTP_SECURE, EMAIL_SENDER
+function getTransporter() {
+  const host = process.env.EMAIL_SMTP_HOST || 'smtpdm.aliyun.com';
+  const port = Number(process.env.EMAIL_SMTP_PORT) || 465;
+  const secure = (process.env.EMAIL_SMTP_SECURE || 'true') === 'true';
+  const user = process.env.EMAIL_SMTP_USER;
+  const pass = process.env.EMAIL_SMTP_PASS;
 
-const transporter = nodemailer.createTransport(smtpConfig);
+  if (!user || !pass) {
+    return null;
+  }
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: {
+      user,
+      pass,
+    },
+  });
+}
 
 interface SendEmailParams {
   to: string;
@@ -27,6 +39,12 @@ interface SendEmailParams {
 
 export async function sendEmail({ to, subject, html, attachments }: SendEmailParams) {
   try {
+    const transporter = getTransporter();
+    if (!transporter) {
+      console.warn('[Aliyun] Email not configured, skipping send.');
+      return { success: false, error: 'Email not configured' };
+    }
+
     const result = await transporter.sendMail({
       from: process.env.EMAIL_SENDER || 'Hiraccoon <info@hiraccoon.com>',
       to,
