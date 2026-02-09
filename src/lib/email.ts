@@ -44,6 +44,77 @@ export async function sendEmail({ to, subject, html, attachments }: SendEmailPar
 }
 
 /**
+ * Basic Coupon Email (no calendar invite)
+ */
+export async function sendCouponEmail(data: {
+  email: string;
+  merchantName: string;
+  couponCode: string;
+  expiresAt?: Date;
+  offerValue?: string;
+  offerDescription?: string;
+  address?: string;
+  verifyUrl?: string;
+}) {
+  const expiresText = data.expiresAt
+    ? new Date(data.expiresAt).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : 'Valid for a limited time';
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #333; font-size: 24px; margin-bottom: 20px;">Your Coupon is Ready</h2>
+      <p style="color: #555; font-size: 16px; line-height: 1.5;">
+        Thanks for claiming your offer at <strong>${data.merchantName}</strong>.
+      </p>
+
+      ${data.offerValue ? `
+        <div style="background: #f5f5f5; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="margin: 0 0 6px 0; color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Offer</p>
+          <p style="margin: 0; color: #333; font-size: 20px; font-weight: 700;">${data.offerValue}</p>
+          ${data.offerDescription ? `<p style="margin: 8px 0 0 0; color: #666; font-size: 13px;">${data.offerDescription}</p>` : ''}
+        </div>
+      ` : ''}
+
+      <div style="background: #f8f9fa; border-left: 4px solid #4285f4; padding: 16px; margin: 24px 0;">
+        <p style="margin: 0 0 8px 0; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Coupon Code</p>
+        <p style="margin: 0; color: #333; font-size: 20px; font-weight: 600; letter-spacing: 1px;">${data.couponCode}</p>
+      </div>
+
+      <p style="color: #555; font-size: 14px; line-height: 1.5;">
+        Expires: <strong>${expiresText}</strong>
+      </p>
+
+      ${data.address ? `<p style="color: #666; font-size: 13px; margin: 16px 0;">Location: ${data.address}</p>` : ''}
+
+      ${data.verifyUrl ? `
+        <div style="margin: 20px 0;">
+          <a href="${data.verifyUrl}"
+             style="display: inline-block; background: #4285f4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-size: 14px;">
+            View Coupon
+          </a>
+        </div>
+      ` : ''}
+
+      <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;" />
+
+      <p style="color: #888; font-size: 12px; line-height: 1.5;">
+        This is an automated message. Please keep this email for your records.
+      </p>
+    </div>
+  `;
+
+  return sendEmail({
+    to: data.email,
+    subject: `Your ${data.merchantName} coupon`,
+    html,
+  });
+}
+
+/**
  * T0: Immediate Confirmation Email with Calendar Invite
  */
 export async function sendT0Confirmation(data: {

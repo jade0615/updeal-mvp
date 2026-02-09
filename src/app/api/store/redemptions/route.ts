@@ -30,7 +30,16 @@ export async function GET(request: NextRequest) {
         // Fetch last 100 redeemed coupons, ordered by redeemed_at desc
         const { data: coupons, error: couponsError } = await supabase
             .from('coupons')
-            .select('code, customer_phone, customer_email, customer_name, offer_discount, redeemed_at')
+            .select(`
+                code,
+                offer_discount,
+                redeemed_at,
+                users (
+                    name,
+                    phone,
+                    email
+                )
+            `)
             .eq('merchant_id', merchant.id)
             .eq('status', 'redeemed')
             .order('redeemed_at', { ascending: false })
@@ -41,9 +50,18 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'Failed to fetch redemptions' }, { status: 500 })
         }
 
+        const redemptions = (coupons || []).map((coupon: any) => ({
+            code: coupon.code,
+            offer_discount: coupon.offer_discount,
+            redeemed_at: coupon.redeemed_at,
+            customer_name: coupon.users?.name || '-',
+            customer_phone: coupon.users?.phone || null,
+            customer_email: coupon.users?.email || null
+        }))
+
         return NextResponse.json({
             success: true,
-            redemptions: coupons
+            redemptions
         })
 
     } catch (error) {

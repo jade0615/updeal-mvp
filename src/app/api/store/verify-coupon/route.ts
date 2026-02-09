@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
         ),
         users (
           phone,
-          name
+          name,
+          email
         )
       `)
             .eq('code', couponCode.trim().toUpperCase())
@@ -100,11 +101,7 @@ export async function POST(request: NextRequest) {
         // Try to find the offer title. Usually stored in content.offer.value or content.offerDiscount.
         const offerTitle = merchantData?.content?.offer?.value || merchantData?.content?.offerDiscount || merchantData?.content?.offer_value || '优惠券'
 
-        // Mask phone for privacy
-        const rawPhone = userData?.phone || ''
-        const maskedPhone = rawPhone.length > 4
-            ? `***${rawPhone.slice(-4)}`
-            : rawPhone || '未知号码'
+        const customerPhone = userData?.phone || '未知号码'
 
         return NextResponse.json({
             success: true,
@@ -112,7 +109,8 @@ export async function POST(request: NextRequest) {
                 code: coupon.code,
                 name: offerTitle,
                 customerName: userData?.name || '顾客',
-                customerPhone: maskedPhone
+                customerPhone: customerPhone,
+                customerEmail: userData?.email || null
             }
         })
 
