@@ -190,7 +190,7 @@ export async function getMerchant(id: string) {
       const totalClaims = claimsCount || 0
       const conversionRate = totalPageViews > 0 ? ((totalClaims / totalPageViews) * 100).toFixed(2) : 0
 
-      // @ts-ignore - Injecting calculated stats
+      // @ts-expect-error - Injecting calculated stats into typed response
       merchant.landing_page_stats = {
         total_page_views: totalPageViews,
         total_coupon_claims: totalClaims,

@@ -32,12 +32,27 @@ interface SortConfig {
     direction: 'asc' | 'desc'
 }
 
+function SortIcon({
+    colKey,
+    activeKey,
+    direction
+}: {
+    colKey: SortKey
+    activeKey: SortKey
+    direction: 'asc' | 'desc'
+}) {
+    if (activeKey !== colKey) return <ArrowUpDown className="w-3 h-3 text-gray-300 ml-1 inline" />
+    return direction === 'asc'
+        ? <ArrowUp className="w-3 h-3 text-blue-600 ml-1 inline" />
+        : <ArrowDown className="w-3 h-3 text-blue-600 ml-1 inline" />
+}
+
 export default function MerchantsTable({ initialMerchants }: Props) {
     const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'redemptions', direction: 'desc' });
     const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
 
     const sortedData = useMemo(() => {
-        let sortable = [...initialMerchants];
+        const sortable = [...initialMerchants];
         if (sortConfig.key) {
             sortable.sort((a, b) => {
                 let valA = 0;
@@ -47,9 +62,9 @@ export default function MerchantsTable({ initialMerchants }: Props) {
                     valA = parseFloat(a.real_stats.redemption_rate || '0');
                     valB = parseFloat(b.real_stats.redemption_rate || '0');
                 } else {
-                    // @ts-ignore - Dynamic access to real_stats keys
+                    // @ts-expect-error - Dynamic access to real_stats keys
                     valA = a.real_stats[sortConfig.key] || 0;
-                    // @ts-ignore
+                    // @ts-expect-error - Dynamic access to real_stats keys
                     valB = b.real_stats[sortConfig.key] || 0;
                 }
 
@@ -68,13 +83,6 @@ export default function MerchantsTable({ initialMerchants }: Props) {
         }));
     }
 
-    const SortIcon = ({ colKey }: { colKey: SortKey }) => {
-        if (sortConfig.key !== colKey) return <ArrowUpDown className="w-3 h-3 text-gray-300 ml-1 inline" />;
-        return sortConfig.direction === 'asc'
-            ? <ArrowUp className="w-3 h-3 text-blue-600 ml-1 inline" />
-            : <ArrowDown className="w-3 h-3 text-blue-600 ml-1 inline" />;
-    }
-
     return (
         <>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -86,25 +94,25 @@ export default function MerchantsTable({ initialMerchants }: Props) {
                                 className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-[15%]"
                                 onClick={() => handleSort('redemptions')}
                             >
-                                Redemptions <SortIcon colKey="redemptions" />
+                                Redemptions <SortIcon colKey="redemptions" activeKey={sortConfig.key} direction={sortConfig.direction} />
                             </th>
                             <th
                                 className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-[15%]"
                                 onClick={() => handleSort('claims')}
                             >
-                                Claims <SortIcon colKey="claims" />
+                                Claims <SortIcon colKey="claims" activeKey={sortConfig.key} direction={sortConfig.direction} />
                             </th>
                             <th
                                 className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-[15%]"
                                 onClick={() => handleSort('redemption_rate')}
                             >
-                                Rate <SortIcon colKey="redemption_rate" />
+                                Rate <SortIcon colKey="redemption_rate" activeKey={sortConfig.key} direction={sortConfig.direction} />
                             </th>
                             <th
                                 className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-[15%]"
                                 onClick={() => handleSort('views')}
                             >
-                                Views <SortIcon colKey="views" />
+                                Views <SortIcon colKey="views" activeKey={sortConfig.key} direction={sortConfig.direction} />
                             </th>
                             <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[15%]">Status</th>
                         </tr>

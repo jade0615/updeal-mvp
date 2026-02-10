@@ -1,15 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import Link from 'next/link';
 import { ArrowLeft, Heart, Share2, Check } from 'lucide-react';
 
 export default function LandingHeader() {
-    const [isLoved, setIsLoved] = useState(false);
-    const [isShared, setIsShared] = useState(false);
-
-    useEffect(() => {
-        // Load love state from local storage based on current URL
+    const [isLoved, setIsLoved] = useState(() => {
+        if (typeof window === 'undefined') return false;
         const key = `updeal_love_${window.location.pathname}`;
-        setIsLoved(localStorage.getItem(key) === 'true');
-    }, []);
+        return localStorage.getItem(key) === 'true';
+    });
+    const [isShared, setIsShared] = useState(false);
 
     const handleLove = () => {
         const key = `updeal_love_${window.location.pathname}`;
@@ -46,9 +45,9 @@ export default function LandingHeader() {
     return (
         <header className="absolute top-0 left-0 right-0 z-50 p-4">
             <nav className="mx-auto max-w-7xl flex items-center justify-between">
-                <a href="/" className="h-11 w-11 flex items-center justify-center rounded-full bg-white/10 border border-white/15 backdrop-blur-md text-white transition-all hover:bg-white/20 hover:scale-105 active:scale-95">
+                <Link href="/" className="h-11 w-11 flex items-center justify-center rounded-full bg-white/10 border border-white/15 backdrop-blur-md text-white transition-all hover:bg-white/20 hover:scale-105 active:scale-95">
                     <ArrowLeft className="h-5 w-5" />
-                </a>
+                </Link>
                 <div className="flex gap-3">
                     <button
                         onClick={handleLove}

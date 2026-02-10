@@ -371,8 +371,8 @@ export async function getAllMerchantsStats(period: string = 'today') {
 
     // Queries for TODAY specifically
     const todayStart = getStartOfDay(now);
-    let todayViewsQuery = supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).gte('viewed_at', todayStart);
-    let todayRedeemedQuery = supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).eq('status', 'redeemed').gte('redeemed_at', todayStart);
+    const todayViewsQuery = supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).gte('viewed_at', todayStart);
+    const todayRedeemedQuery = supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).eq('status', 'redeemed').gte('redeemed_at', todayStart);
 
     if (startDate) {
       viewsQuery = viewsQuery.gte('viewed_at', startDate);

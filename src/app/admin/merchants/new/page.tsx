@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createMerchant, generateSlug } from '@/actions/merchants'
 import type { MerchantFormData } from '@/lib/utils/validation'
@@ -13,62 +13,59 @@ export default function NewMerchantPage() {
     const [error, setError] = useState('')
 
     // Initialize with default matching the schema
-    const [formData, setFormData] = useState<MerchantFormData>({
-        name: '',
-        slug: '',
-        template_type: 'nail',
-        logo_url: '',
-        ga4_measurement_id: '',
-        meta_pixel_id: '',
-        redeem_pin: '',
-        virtual_base_count: 200,
-        is_active: true,
-        content: {
-            businessName: '',
-            businessType: 'Restaurant',
-            priceRange: '$$',
-            establishedYear: 2020,
-            logoUrl: '',
-            rating: 4.8,
-            reviewCount: '100',
-            offer: {
-                type: 'Exclusive',
-                value: '20% OFF',
-                unit: 'Off',
-                description: '',
-                totalLimit: 500,
-            },
-            address: {
-                street: '',
-                area: '',
-                fullAddress: '',
-            },
-            phone: '',
-            openingHours: {
-                isOpen: true,
-                currentStatus: 'Open Now',
-                closingTime: '10 PM',
-                specialHours: '',
-            },
-            reviews: [],
-            heroTitle: '',
-            heroSubtitle: '',
-            heroImageUrl: '',
-            features: [],
-            galleryImages: [],
-            customLabels: {},
-            requirements: {
-                collectName: true,
-                collectEmail: false
+    const [formData, setFormData] = useState<MerchantFormData>(() => {
+        const randomPin = Math.floor(1000 + Math.random() * 9000).toString()
+        return {
+            name: '',
+            slug: '',
+            template_type: 'nail',
+            logo_url: '',
+            ga4_measurement_id: '',
+            meta_pixel_id: '',
+            redeem_pin: randomPin,
+            virtual_base_count: 200,
+            is_active: true,
+            content: {
+                businessName: '',
+                businessType: 'Restaurant',
+                priceRange: '$$',
+                establishedYear: 2020,
+                logoUrl: '',
+                rating: 4.8,
+                reviewCount: '100',
+                offer: {
+                    type: 'Exclusive',
+                    value: '20% OFF',
+                    unit: 'Off',
+                    description: '',
+                    totalLimit: 500,
+                },
+                address: {
+                    street: '',
+                    area: '',
+                    fullAddress: '',
+                },
+                phone: '',
+                openingHours: {
+                    isOpen: true,
+                    currentStatus: 'Open Now',
+                    closingTime: '10 PM',
+                    specialHours: '',
+                },
+                reviews: [],
+                heroTitle: '',
+                heroSubtitle: '',
+                heroImageUrl: '',
+                features: [],
+                galleryImages: [],
+                customLabels: {},
+                requirements: {
+                    collectName: true,
+                    collectEmail: false
+                }
             }
         }
     })
-
-    // Auto-generate PIN on mount
-    useEffect(() => {
-        const randomPin = Math.floor(1000 + Math.random() * 9000).toString()
-        setFormData(prev => ({ ...prev, redeem_pin: randomPin }))
-    }, [])
 
     // Auto-generate slug when name changes
     const handleNameChange = async (name: string) => {
@@ -247,7 +244,7 @@ export default function NewMerchantPage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     💬 评论数量 <span className="text-gray-400 font-normal">(reviewCount)</span>
                                 </label>
-                                <p className="text-xs text-gray-500 mb-2">如: "1.2k"、"500" - 显示在评分旁边</p>
+                                <p className="text-xs text-gray-500 mb-2">如: &quot;1.2k&quot;、&quot;500&quot; - 显示在评分旁边</p>
                                 <input
                                     type="text"
                                     value={formData.content.reviewCount || ''}
@@ -276,7 +273,7 @@ export default function NewMerchantPage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     💰 折扣数值 * <span className="text-gray-400 font-normal">(offer.value)</span>
                                 </label>
-                                <p className="text-xs text-gray-500 mb-2">卡片上最大的数字，如 "20% OFF"、"$10 Off"</p>
+                                <p className="text-xs text-gray-500 mb-2">卡片上最大的数字，如 &quot;20% OFF&quot;、&quot;$10 Off&quot;</p>
                                 <input
                                     type="text"
                                     value={formData.content.offer?.value || ''}
@@ -332,7 +329,7 @@ export default function NewMerchantPage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     🔥 角标文字 <span className="text-gray-400 font-normal">(offer_badge_text)</span>
                                 </label>
-                                <p className="text-xs text-gray-500 mb-2">卡片右下角的小标签，如 "HOT"</p>
+                                <p className="text-xs text-gray-500 mb-2">卡片右下角的小标签，如 &quot;HOT&quot;</p>
                                 <input
                                     type="text"
                                     value={formData.content.offer_badge_text || ''}
@@ -347,7 +344,7 @@ export default function NewMerchantPage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     👥 虚拟热度基数 <span className="text-gray-400 font-normal">(virtual_base_count)</span>
                                 </label>
-                                <p className="text-xs text-gray-500 mb-2">"XX claimed this week" 的虚拟数字</p>
+                                <p className="text-xs text-gray-500 mb-2">&quot;XX claimed this week&quot; 的虚拟数字</p>
                                 <input
                                     type="number"
                                     value={formData.virtual_base_count || 200}
@@ -636,7 +633,7 @@ export default function NewMerchantPage() {
                                     placeholder="自动从店名生成"
                                     className="w-full border rounded px-3 py-2"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">落地页地址: hiraccoon.com/{formData.slug || '...'}</p>
+                                <p className="text-xs text-gray-500 mt-1">落地页地址: hiraccoon.com/{formData.slug || "..."}</p>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">状态</label>

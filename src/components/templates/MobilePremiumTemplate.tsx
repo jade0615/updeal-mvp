@@ -702,7 +702,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     />
                                 </div>
                                 <p className="text-[10px] text-orange-600/70 mt-2 ml-1 italic">
-                                    * Valid for 7 days only. We'll send a calendar invite!
+                                    * Valid for 7 days only. We&apos;ll send a calendar invite!
                                 </p>
                             </div>
 
@@ -752,7 +752,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                             </div>
 
                             <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
-                                <p className="text-purple-800 text-sm font-medium">✨ You're all set!</p>
+                                <p className="text-purple-800 text-sm font-medium">✨ You&apos;re all set!</p>
                             </div>
                         </div>
                     </div>

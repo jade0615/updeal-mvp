@@ -412,7 +412,7 @@ export default function SushiTemplate({ merchant }: TemplateProps) {
                       className="bg-gray-50 dark:bg-gray-700 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all"
                     >
                       <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base mb-2 md:mb-3 italic">
-                        "{review.title}"
+                        &ldquo;{review.title}&rdquo;
                       </p>
                       <p className="text-gray-600 dark:text-gray-400 text-xs md:text-sm font-medium">
                         — {review.description}

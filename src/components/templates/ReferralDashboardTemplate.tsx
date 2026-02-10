@@ -155,7 +155,7 @@ export default function ReferralDashboardTemplate({ merchant, userId = 'mock-use
                         <div className="bg-gray-100 p-4 rounded-full mb-3">
                             <User className="h-8 w-8 text-gray-300" />
                         </div>
-                        <p className="text-sm">You haven't invited any new users this month</p>
+                        <p className="text-sm">You haven&apos;t invited any new users this month</p>
                     </div>
                 </div>
 

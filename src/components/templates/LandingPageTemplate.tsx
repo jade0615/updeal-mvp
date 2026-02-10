@@ -15,6 +15,8 @@ import LandingFooter from './components/LandingFooter';
 import type { Merchant } from '@/types/merchant';
 import { ShieldCheck, ChevronRight } from 'lucide-react';
 
+const FALLBACK_EXPIRES_AT = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+
 interface LandingPageProps {
     merchant: Merchant;
     claimedCount: number;
@@ -28,7 +30,7 @@ export default function LandingPageTemplate({ merchant, claimedCount }: LandingP
     const { content } = merchant;
 
     // Normalize Offer Data (Handle legacy flat fields vs nested object)
-    const normalizedOffer = content.offer || {
+    const baseOffer = content.offer ? { ...content.offer } : {
         value: content.offer_value || content.offerDiscount || 'Special',
         unit: 'OFF', // Default unit
         description: content.offerDescription || 'Special Offer',
@@ -37,9 +39,12 @@ export default function LandingPageTemplate({ merchant, claimedCount }: LandingP
     };
 
     // Handle case where value might include the unit (e.g. "20% OFF")
-    if (!content.offer && (normalizedOffer.value.includes('OFF') || normalizedOffer.value.includes('Access'))) {
-        normalizedOffer.unit = '';
-    }
+    const normalizedOffer = {
+        ...baseOffer,
+        unit: (!content.offer && (baseOffer.value.includes('OFF') || baseOffer.value.includes('Access')))
+            ? ''
+            : baseOffer.unit
+    };
 
     const claimedAvatars = generateClaimedAvatars(3);
     const [isClaimed, setIsClaimed] = useState(false);
@@ -149,7 +154,7 @@ export default function LandingPageTemplate({ merchant, claimedCount }: LandingP
                             <div className="animate-in zoom-in duration-500">
                                 <CouponWallet
                                     couponCode={couponData.coupon?.code || 'CODE123'}
-                                    expiresAt={couponData.coupon?.expiresAt || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()}
+                                    expiresAt={couponData.coupon?.expiresAt || FALLBACK_EXPIRES_AT}
                                     offerTitle={normalizedOffer.value + ' ' + normalizedOffer.unit}
                                 />
                             </div>

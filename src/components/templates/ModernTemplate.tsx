@@ -429,7 +429,7 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
                                             <div className="flex text-amber-400 text-[14px] mb-3 gap-0.5">
                                                 {[1, 2, 3, 4, 5].map(s => <span key={s} className="material-symbols-outlined filled">star</span>)}
                                             </div>
-                                            <p className="text-xs text-theme-secondary leading-relaxed mb-4 line-clamp-3">"{review.description}"</p>
+                                            <p className="text-xs text-theme-secondary leading-relaxed mb-4 line-clamp-3">&ldquo;{review.description}&rdquo;</p>
                                         </div>
                                         <div className="flex items-center gap-3 pt-3 border-t border-stone-50">
                                             <img

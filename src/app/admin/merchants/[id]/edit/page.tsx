@@ -114,7 +114,7 @@ export default function EditMerchantPage() {
                     setFormData({
                         ...merchant,
                         content: mergedContent,
-                        // @ts-ignore - explicitly keeping stats
+                        // @ts-expect-error - explicitly keeping stats from API response
                         landing_page_stats: merchant.landing_page_stats
                     })
                 }
@@ -318,7 +318,7 @@ export default function EditMerchantPage() {
                             <p className="text-xs font-bold text-gray-500 uppercase">Page Views</p>
                             <p className="text-2xl font-bold text-indigo-600 mt-1">
                                 {(() => {
-                                    // @ts-ignore
+                                    // @ts-expect-error - landing_page_stats is dynamic shape
                                     const stats = formData.landing_page_stats;
                                     const s = Array.isArray(stats) ? stats[0] : stats;
                                     return (s?.total_page_views || 0).toLocaleString();
@@ -329,7 +329,7 @@ export default function EditMerchantPage() {
                             <p className="text-xs font-bold text-gray-500 uppercase">Claims</p>
                             <p className="text-2xl font-bold text-indigo-600 mt-1">
                                 {(() => {
-                                    // @ts-ignore
+                                    // @ts-expect-error - landing_page_stats is dynamic shape
                                     const stats = formData.landing_page_stats;
                                     const s = Array.isArray(stats) ? stats[0] : stats;
                                     return (s?.total_coupon_claims || 0).toLocaleString();
@@ -340,7 +340,7 @@ export default function EditMerchantPage() {
                             <p className="text-xs font-bold text-gray-500 uppercase">Redemptions</p>
                             <p className="text-2xl font-bold text-indigo-600 mt-1">
                                 {(() => {
-                                    // @ts-ignore
+                                    // @ts-expect-error - landing_page_stats is dynamic shape
                                     const stats = formData.landing_page_stats;
                                     const s = Array.isArray(stats) ? stats[0] : stats;
                                     return (s?.total_redemptions || 0).toLocaleString();
@@ -351,7 +351,7 @@ export default function EditMerchantPage() {
                             <p className="text-xs font-bold text-gray-500 uppercase">Conversion</p>
                             <p className="text-2xl font-bold text-indigo-600 mt-1">
                                 {(() => {
-                                    // @ts-ignore
+                                    // @ts-expect-error - landing_page_stats is dynamic shape
                                     const stats = formData.landing_page_stats;
                                     const s = Array.isArray(stats) ? stats[0] : stats;
                                     return (s?.conversion_rate || 0) + '%';
@@ -442,7 +442,7 @@ export default function EditMerchantPage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     💬 评论数量 <span className="text-gray-400 font-normal">(reviewCount)</span>
                                 </label>
-                                <p className="text-xs text-gray-500 mb-2">如: "1.2k"、"500" - 显示在评分旁边</p>
+                                <p className="text-xs text-gray-500 mb-2">如: &quot;1.2k&quot;、&quot;500&quot; - 显示在评分旁边</p>
                                 <input
                                     type="text"
                                     value={formData.content.reviewCount || ''}
@@ -471,7 +471,7 @@ export default function EditMerchantPage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     💰 折扣数值 * <span className="text-gray-400 font-normal">(offer.value)</span>
                                 </label>
-                                <p className="text-xs text-gray-500 mb-2">卡片上最大的数字，如 "20% OFF"、"$10 Off"、"Buy 1 Get 1"</p>
+                                <p className="text-xs text-gray-500 mb-2">卡片上最大的数字，如 &quot;20% OFF&quot;、&quot;$10 Off&quot;、&quot;Buy 1 Get 1&quot;</p>
                                 <input
                                     type="text"
                                     value={formData.content.offer?.value || ''}
@@ -528,7 +528,7 @@ export default function EditMerchantPage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     🔥 角标文字 <span className="text-gray-400 font-normal">(offer_badge_text)</span>
                                 </label>
-                                <p className="text-xs text-gray-500 mb-2">卡片右下角的小标签，如 "HOT"</p>
+                                <p className="text-xs text-gray-500 mb-2">卡片右下角的小标签，如 &quot;HOT&quot;</p>
                                 <input
                                     type="text"
                                     value={formData.content.offer_badge_text || ''}
@@ -543,7 +543,7 @@ export default function EditMerchantPage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     👥 虚拟热度基数 <span className="text-gray-400 font-normal">(virtual_base_count)</span>
                                 </label>
-                                <p className="text-xs text-gray-500 mb-2">"XX claimed this week" 的虚拟数字</p>
+                                <p className="text-xs text-gray-500 mb-2">&quot;XX claimed this week&quot; 的虚拟数字</p>
                                 <input
                                     type="number"
                                     value={formData.virtual_base_count || 0}
