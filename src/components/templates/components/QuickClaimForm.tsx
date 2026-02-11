@@ -104,6 +104,11 @@ export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: Qu
                         <input
                             type="date"
                             min={new Date().toISOString().split('T')[0]}
+                            max={(() => {
+                                const d = new Date();
+                                d.setDate(d.getDate() + 7);
+                                return d.toISOString().split('T')[0];
+                            })()}
                             value={expectedVisitDate}
                             onChange={(e) => setExpectedVisitDate(e.target.value)}
                             className="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20"

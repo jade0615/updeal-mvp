@@ -15,6 +15,21 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { merchantId, phone, name, email, expectedVisitDate, referralCode } = body;
 
+    // Server-side validation for expectedVisitDate (max 7 days)
+    if (expectedVisitDate) {
+      const visitDate = new Date(expectedVisitDate);
+      const now = new Date();
+      const maxDate = new Date();
+      maxDate.setDate(now.getDate() + 7);
+      
+      if (visitDate > maxDate) {
+        return NextResponse.json(
+          { success: false, error: 'Booking must be within 7 days.' },
+          { status: 400 }
+        );
+      }
+    }
+
     if (!merchantId || !phone) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
