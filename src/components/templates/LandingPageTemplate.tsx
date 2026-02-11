@@ -189,7 +189,7 @@ export default function LandingPageTemplate({ merchant, claimedCount }: LandingP
                 </div>
 
                 <div className="pt-24 border-t border-white/5">
-                    <LandingFooter hideBranding={!!verifiedPhone} />
+                    <LandingFooter hideBranding={!!verifiedPhone} slug={merchant.slug} />
                 </div>
             </main >
 

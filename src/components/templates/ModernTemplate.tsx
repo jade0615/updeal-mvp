@@ -2,6 +2,7 @@
 
 import { TemplateProps } from './index'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 
 // Helper: Generate colorful avatar
@@ -219,6 +220,12 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
 
                                     <div className="mt-8 flex flex-col items-center gap-2">
                                         <p className="text-theme-tertiary text-xs">Valid for 30 days from today</p>
+                                        <Link
+                                            href={`/privacy-policy?slug=${merchant.slug}`}
+                                            className="text-[10px] text-theme-tertiary/60 hover:text-theme-accent transition-colors underline decoration-theme-tertiary/20 underline-offset-4 mt-2"
+                                        >
+                                            Privacy Policy
+                                        </Link>
                                     </div>
                                 </div>
                             ) : (
@@ -322,6 +329,14 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
                                     {!loading && <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>}
                                 </button>
                                 <p className="text-center text-[10px] text-theme-tertiary">Terms & conditions apply. Data secured.</p>
+                                <div className="flex justify-center mt-6">
+                                    <Link
+                                        href={`/privacy-policy?slug=${merchant.slug}`}
+                                        className="text-[10px] text-theme-tertiary/60 hover:text-theme-accent transition-colors underline decoration-theme-tertiary/20 underline-offset-4"
+                                    >
+                                        Privacy Policy
+                                    </Link>
+                                </div>
                             </form>
                         </div>
                     )}

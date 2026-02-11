@@ -773,6 +773,15 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                             <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
                                 <p className="text-purple-800 text-sm font-medium">✨ You're all set!</p>
                             </div>
+
+                            <div className="flex justify-center mt-8">
+                                <Link
+                                    href={`/privacy-policy?slug=${merchant.slug}`}
+                                    className="text-[10px] text-slate-400/80 hover:text-slate-600 transition-colors underline decoration-slate-300 underline-offset-2"
+                                >
+                                    Privacy Policy
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 ) : (
@@ -818,6 +827,15 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                             <p className="text-[10px] text-zinc-400 mt-8 uppercase tracking-[0.2em] font-black">
                                 Valid for 30 days • Save this page
                             </p>
+
+                            <div className="flex justify-center mt-6">
+                                <Link
+                                    href={`/privacy-policy?slug=${merchant.slug}`}
+                                    className="text-[10px] text-slate-400/80 hover:text-slate-600 transition-colors underline decoration-slate-300 underline-offset-2"
+                                >
+                                    Privacy Policy
+                                </Link>
+                            </div>
 
                             {/* Referral Incentive Card */}
                             <div className="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-5">

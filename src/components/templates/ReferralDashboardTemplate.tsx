@@ -6,6 +6,7 @@ import { Check, Clipboard, Download, X, User, Heart, Share2, Info, ArrowRight } 
 import html2canvas from 'html2canvas'
 import { toast } from 'sonner' // Using sonner for toasts as seen in package.json
 import Image from 'next/image'
+import Link from 'next/link'
 
 // Color theme based on screenshots (Weee! Blue)
 const THEME = {
@@ -173,6 +174,14 @@ export default function ReferralDashboardTemplate({ merchant, userId = 'mock-use
                         <li>Same delivery address cannot have two invited accounts.</li>
                         <li>Merchant reserves final right of interpretation.</li>
                     </ul>
+                    <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center">
+                        <Link
+                            href={`/privacy-policy?slug=${merchant.slug}`}
+                            className="text-xs text-gray-400 hover:text-cyan-600 transition-colors underline decoration-gray-200 underline-offset-4"
+                        >
+                            Privacy Policy
+                        </Link>
+                    </div>
                 </div>
             </div>
 
