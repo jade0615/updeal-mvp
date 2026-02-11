@@ -739,7 +739,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
 
                             <div className="flex justify-center mt-6">
                                 <Link
-                                    href="/privacy-policy"
+                                    href={`/privacy-policy?slug=${merchant.slug}`}
                                     className="text-[10px] text-slate-400/80 hover:text-slate-600 transition-colors underline decoration-slate-300 underline-offset-2"
                                 >
                                     Privacy Policy
