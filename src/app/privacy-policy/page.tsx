@@ -14,7 +14,6 @@ export default async function PrivacyPolicyPage({ searchParams }: Props) {
     let merchantName = "King's Super Buffet";
     let merchantAddress = "7101 W Oakland Park Blvd, Lauderhill, FL 33313";
     let merchantPhone = "(954) 747-6668";
-    let merchantEmail = "contact@kingsuperbuffet.com";
 
     if (slug) {
         const supabase = createAdminClient();
@@ -29,8 +28,6 @@ export default async function PrivacyPolicyPage({ searchParams }: Props) {
             merchantName = content.businessName || merchant.name || merchantName;
             merchantAddress = content.address?.fullAddress || content.address?.street + ", " + content.address?.area || merchantAddress;
             merchantPhone = content.phone || merchantPhone;
-            // Email might not be in content, so we keep the default or use a generic one if missing
-            merchantEmail = content.email || `contact@${slug}.com`;
         }
     }
 
@@ -46,7 +43,7 @@ export default async function PrivacyPolicyPage({ searchParams }: Props) {
 
                 <div className="space-y-8 text-white/90 leading-relaxed font-medium">
                     <p className="text-sm">
-                        At <span className="text-white font-bold">{merchantName}</span> (hosted on <span className="text-white font-bold underline decoration-white/20 underline-offset-4">hiraccoon.com</span>), we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you visit our website to view our menu or place orders.
+                        This Privacy Policy describes how your personal information is collected, used, and shared when you visit this website to claim coupons or discounts. This website is operated by <span className="text-white font-bold underline decoration-white/20 underline-offset-4">OPEN MEDIA INC</span> (the "Agent") on behalf of <span className="text-white font-bold">{merchantName}</span> (the "Merchant").
                     </p>
 
                     <section>
@@ -55,20 +52,16 @@ export default async function PrivacyPolicyPage({ searchParams }: Props) {
                             Information We Collect
                         </h2>
                         <p className="text-sm mb-4 text-white/70">
-                            We may collect personal information that you voluntarily provide to us, including:
+                            When you claim a coupon or sign up for promotions on this site, we collect:
                         </p>
                         <ul className="space-y-3 text-sm">
                             <li className="flex gap-2">
                                 <span className="text-white/40">•</span>
-                                <p><span className="text-white font-bold">Identification Data:</span> Name, phone number, and email address (collected when you make a reservation or place an order).</p>
+                                <p><span className="text-white font-bold text-white/100">Identification Data:</span> Name, email address, and phone number.</p>
                             </li>
                             <li className="flex gap-2">
                                 <span className="text-white/40">•</span>
-                                <p><span className="text-white font-bold">Payment Information:</span> If you pay online, our third-party processors collect payment details.</p>
-                            </li>
-                            <li className="flex gap-2">
-                                <span className="text-white/40">•</span>
-                                <p><span className="text-white font-bold">Usage Data:</span> IP address, browser type, and device information for security and optimization purposes.</p>
+                                <p><span className="text-white font-bold text-white/100">Device Information:</span> IP address, browser type, and cookies to ensure the coupon system works correctly.</p>
                             </li>
                         </ul>
                     </section>
@@ -79,81 +72,103 @@ export default async function PrivacyPolicyPage({ searchParams }: Props) {
                             How We Use Your Information
                         </h2>
                         <p className="text-sm mb-4 text-white/70">
-                            We use the information we collect to:
+                            We use the collected information to:
                         </p>
-                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                            <li className="bg-white/5 p-3 rounded-xl border border-white/10">Provide and manage your dining reservations or food orders.</li>
-                            <li className="bg-white/5 p-3 rounded-xl border border-white/10">Send order confirmations and updates.</li>
-                            <li className="bg-white/5 p-3 rounded-xl border border-white/10">Improve our website performance and user experience.</li>
-                            <li className="bg-white/5 p-3 rounded-xl border border-white/10">Comply with legal obligations and Google Ads policies.</li>
+                        <ul className="space-y-3 text-sm">
+                            <li className="flex gap-3 bg-white/5 p-4 rounded-2xl border border-white/5">
+                                <span className="text-white/100 text-lg">🎟️</span>
+                                <p>Generate and send your digital coupons.</p>
+                            </li>
+                            <li className="flex gap-3 bg-white/5 p-4 rounded-2xl border border-white/5">
+                                <span className="text-white/100 text-lg">🛡️</span>
+                                <p>Allow <span className="text-white font-bold">{merchantName}</span> to verify your identity when you redeem the discount.</p>
+                            </li>
+                            <li className="flex gap-3 bg-white/5 p-4 rounded-2xl border border-white/5">
+                                <span className="text-white/100 text-lg">📢</span>
+                                <p>Send you marketing updates if you have opted-in to receive them.</p>
+                            </li>
                         </ul>
                     </section>
 
                     <section>
                         <h2 className="text-lg font-bold mb-4 text-white flex items-center gap-2">
                             <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs">3</span>
-                            Data Sharing and Disclosure
+                            Data Sharing
                         </h2>
-                        <p className="text-sm text-white/70">
-                            We do not sell your personal data. We only share information with:
+                        <p className="text-sm text-white/70 mb-4">
+                            Your data is shared between:
                         </p>
-                        <ul className="mt-4 space-y-3 text-sm">
-                            <li className="flex gap-2">
-                                <span className="text-white/40">•</span>
-                                <p><span className="text-white font-bold">Service Providers:</span> Such as HiRaccoon (our hosting platform) and payment processors to facilitate your orders.</p>
+                        <ul className="space-y-4">
+                            <li className="border-l-2 border-white/10 pl-4 py-1">
+                                <p className="text-sm"><span className="text-white font-bold">The Merchant ({merchantName}):</span> So they can provide the service and honor the discount.</p>
                             </li>
-                            <li className="flex gap-2">
-                                <span className="text-white/40">•</span>
-                                <p><span className="text-white font-bold">Legal Requirements:</span> If required by law or to protect our rights.</p>
+                            <li className="border-l-2 border-white/10 pl-4 py-1">
+                                <p className="text-sm"><span className="text-white font-bold">The Agent (OPEN MEDIA INC):</span> To manage the platform, provide support, and analyze campaign performance.</p>
+                            </li>
+                            <li className="border-l-2 border-white/10 pl-4 py-1">
+                                <p className="text-sm"><span className="text-white font-bold">Service Providers:</span> Third-party tools used for email delivery or hosting.</p>
                             </li>
                         </ul>
                     </section>
 
-                    <section>
-                        <h2 className="text-lg font-bold mb-4 text-white flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs">4</span>
-                            Cookies and Tracking Technologies
-                        </h2>
-                        <p className="text-sm text-white/70">
-                            We use cookies to enhance your browsing experience. You can choose to disable cookies through your browser settings, though some features of the site may not function properly.
-                        </p>
+                    <section className="bg-white/5 rounded-[2rem] p-6 border border-white/10 overflow-hidden relative">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <span className="text-6xl text-white">🏢</span>
+                        </div>
+                        <h2 className="text-xl font-black mb-8 text-white uppercase tracking-wider">4. Merchant & Agent Information</h2>
+
+                        <div className="space-y-8">
+                            <div>
+                                <p className="text-white/40 uppercase text-[10px] font-bold tracking-[0.2em] mb-4">The Merchant (Restaurant)</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                                        <p className="text-xs text-white/40 font-bold mb-1 uppercase">Name</p>
+                                        <p className="text-white font-bold">{merchantName}</p>
+                                    </div>
+                                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                                        <p className="text-xs text-white/40 font-bold mb-1 uppercase">Phone</p>
+                                        <p className="text-white">{merchantPhone}</p>
+                                    </div>
+                                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5 md:col-span-2">
+                                        <p className="text-xs text-white/40 font-bold mb-1 uppercase">Address</p>
+                                        <p className="text-white">{merchantAddress}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p className="text-white/40 uppercase text-[10px] font-bold tracking-[0.2em] mb-4">The Agent (Platform Operator)</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                                        <p className="text-xs text-white/40 font-bold mb-1 uppercase">Company</p>
+                                        <p className="text-white font-bold text-white/100">OPEN MEDIA INC</p>
+                                    </div>
+                                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                                        <p className="text-xs text-white/40 font-bold mb-1 uppercase">Email</p>
+                                        <p className="text-white underline decoration-white/10">info@openmediaus.com</p>
+                                    </div>
+                                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5 md:col-span-2">
+                                        <p className="text-xs text-white/40 font-bold mb-1 uppercase">Address</p>
+                                        <p className="text-white">EnterpriseWorks 60, Hazelwood Dr, Champaign, IL 61820</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </section>
 
                     <section>
                         <h2 className="text-lg font-bold mb-4 text-white flex items-center gap-2">
                             <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs">5</span>
-                            Your Privacy Rights
+                            Your Rights
                         </h2>
                         <p className="text-sm text-white/70">
-                            Depending on your location, you may have the right to access, correct, or delete your personal data. Please contact us using the information below to exercise these rights.
+                            You have the right to request access to the personal information we hold about you and to ask that your personal information be corrected, updated, or deleted.
                         </p>
-                    </section>
-
-                    <section className="bg-white/5 rounded-3xl p-6 border border-white/10">
-                        <h2 className="text-xl font-black mb-6 text-white uppercase tracking-wider">6. Contact Us</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                            <div>
-                                <p className="text-white/40 uppercase text-[10px] font-bold tracking-widest mb-1">Business Name</p>
-                                <p className="text-white font-bold text-base">{merchantName}</p>
-                            </div>
-                            <div>
-                                <p className="text-white/40 uppercase text-[10px] font-bold tracking-widest mb-1">Address</p>
-                                <p className="text-white">{merchantAddress}</p>
-                            </div>
-                            <div>
-                                <p className="text-white/40 uppercase text-[10px] font-bold tracking-widest mb-1">Phone</p>
-                                <p className="text-white">{merchantPhone}</p>
-                            </div>
-                            <div>
-                                <p className="text-white/40 uppercase text-[10px] font-bold tracking-widest mb-1">Email</p>
-                                <p className="text-white">{merchantEmail}</p>
-                            </div>
-                        </div>
                     </section>
                 </div>
 
                 <div className="mt-16 pt-8 border-t border-white/10 text-center">
-                    <p className="text-xs text-white/30 font-bold uppercase tracking-widest">© {new Date().getFullYear()} UpDeal • Powering Local Experiences</p>
+                    <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em]">© {new Date().getFullYear()} • Powered by UpDeal</p>
                 </div>
             </div>
         </div>
