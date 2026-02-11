@@ -10,7 +10,7 @@ export default function PrivacyPolicyPage() {
 
                 <section className="space-y-4">
                     <h2 className="text-xl font-bold">1. Introduction</h2>
-                    <p>Welcome to UpDeal ("we," "our," or "us"). We are committed to protecting your privacy and ensuring you have a positive experience on our website and in using our services.</p>
+                    <p>Welcome to UpDeal (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). We are committed to protecting your privacy and ensuring you have a positive experience on our website and in using our services.</p>
                 </section>
 
                 <section className="space-y-4">

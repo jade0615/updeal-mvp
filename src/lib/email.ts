@@ -2,17 +2,29 @@ import nodemailer from 'nodemailer';
 import { generateICS, generateCalendarLinks } from './calendar';
 
 // Email Service Configuration - Aliyun Direct Mail
-const smtpConfig = {
-  host: 'smtpdm.aliyun.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: 'info@hiraccoon.com',
-    pass: 'Z2CrZ9punU97RaA',
-  },
-};
+// Required envs: EMAIL_SMTP_USER, EMAIL_SMTP_PASS
+// Optional envs: EMAIL_SMTP_HOST, EMAIL_SMTP_PORT, EMAIL_SMTP_SECURE, EMAIL_SENDER
+function getTransporter() {
+  const host = process.env.EMAIL_SMTP_HOST || 'smtpdm.aliyun.com';
+  const port = Number(process.env.EMAIL_SMTP_PORT) || 465;
+  const secure = (process.env.EMAIL_SMTP_SECURE || 'true') === 'true';
+  const user = process.env.EMAIL_SMTP_USER;
+  const pass = process.env.EMAIL_SMTP_PASS;
 
-const transporter = nodemailer.createTransport(smtpConfig);
+  if (!user || !pass) {
+    return null;
+  }
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: {
+      user,
+      pass,
+    },
+  });
+}
 
 interface SendEmailParams {
   to: string;
@@ -27,6 +39,12 @@ interface SendEmailParams {
 
 export async function sendEmail({ to, subject, html, attachments }: SendEmailParams) {
   try {
+    const transporter = getTransporter();
+    if (!transporter) {
+      console.warn('[Aliyun] Email not configured, skipping send.');
+      return { success: false, error: 'Email not configured' };
+    }
+
     const result = await transporter.sendMail({
       from: process.env.EMAIL_SENDER || 'Hiraccoon <info@hiraccoon.com>',
       to,
@@ -41,6 +59,77 @@ export async function sendEmail({ to, subject, html, attachments }: SendEmailPar
     console.error('[Aliyun] Email sending failed:', error);
     return { success: false, error };
   }
+}
+
+/**
+ * Basic Coupon Email (no calendar invite)
+ */
+export async function sendCouponEmail(data: {
+  email: string;
+  merchantName: string;
+  couponCode: string;
+  expiresAt?: Date;
+  offerValue?: string;
+  offerDescription?: string;
+  address?: string;
+  verifyUrl?: string;
+}) {
+  const expiresText = data.expiresAt
+    ? new Date(data.expiresAt).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : 'Valid for a limited time';
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #333; font-size: 24px; margin-bottom: 20px;">Your Coupon is Ready</h2>
+      <p style="color: #555; font-size: 16px; line-height: 1.5;">
+        Thanks for claiming your offer at <strong>${data.merchantName}</strong>.
+      </p>
+
+      ${data.offerValue ? `
+        <div style="background: #f5f5f5; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="margin: 0 0 6px 0; color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Offer</p>
+          <p style="margin: 0; color: #333; font-size: 20px; font-weight: 700;">${data.offerValue}</p>
+          ${data.offerDescription ? `<p style="margin: 8px 0 0 0; color: #666; font-size: 13px;">${data.offerDescription}</p>` : ''}
+        </div>
+      ` : ''}
+
+      <div style="background: #f8f9fa; border-left: 4px solid #4285f4; padding: 16px; margin: 24px 0;">
+        <p style="margin: 0 0 8px 0; color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Coupon Code</p>
+        <p style="margin: 0; color: #333; font-size: 20px; font-weight: 600; letter-spacing: 1px;">${data.couponCode}</p>
+      </div>
+
+      <p style="color: #555; font-size: 14px; line-height: 1.5;">
+        Expires: <strong>${expiresText}</strong>
+      </p>
+
+      ${data.address ? `<p style="color: #666; font-size: 13px; margin: 16px 0;">Location: ${data.address}</p>` : ''}
+
+      ${data.verifyUrl ? `
+        <div style="margin: 20px 0;">
+          <a href="${data.verifyUrl}"
+             style="display: inline-block; background: #4285f4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-size: 14px;">
+            View Coupon
+          </a>
+        </div>
+      ` : ''}
+
+      <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;" />
+
+      <p style="color: #888; font-size: 12px; line-height: 1.5;">
+        This is an automated message. Please keep this email for your records.
+      </p>
+    </div>
+  `;
+
+  return sendEmail({
+    to: data.email,
+    subject: `Your ${data.merchantName} coupon`,
+    html,
+  });
 }
 
 /**

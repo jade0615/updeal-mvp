@@ -68,7 +68,7 @@ export default async function MerchantsPage({ searchParams }: Props) {
           <div className="bg-white rounded-lg shadow p-8 text-center">
             {searchQuery ? (
               <>
-                <p className="text-gray-500 mb-2">没有找到匹配 "{searchQuery}" 的商家</p>
+                <p className="text-gray-500 mb-2">没有找到匹配 &quot;{searchQuery}&quot; 的商家</p>
                 <p className="text-sm text-gray-400">尝试使用其他关键词搜索</p>
               </>
             ) : (

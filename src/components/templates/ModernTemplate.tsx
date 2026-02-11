@@ -2,6 +2,8 @@
 
 import { TemplateProps } from './index'
 import { useState, useEffect } from 'react'
+import { AppleWalletButton } from '@/components/ui/AppleWalletButton'
+import { trackGoogleAdsConversion } from '@/lib/analytics/googleAds'
 
 
 // Helper: Generate colorful avatar
@@ -61,6 +63,27 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
                 const data = await res.json()
                 setCouponData(data.coupon)
                 setSuccess(true)
+
+                if (typeof window !== 'undefined') {
+                    if ((window as any).gtag) {
+                        (window as any).gtag('event', 'claim_coupon', {
+                            merchant_id: merchant.id,
+                            coupon_code: data.coupon.code
+                        })
+                    }
+                    ;(window as any).dataLayer = (window as any).dataLayer || []
+                    ;(window as any).dataLayer.push({
+                        event: 'generate_lead',
+                        value: 10.00,
+                        currency: 'USD'
+                    })
+                }
+
+                trackGoogleAdsConversion({
+                    value: 10.00,
+                    currency: 'USD',
+                    transactionId: data.coupon.code
+                })
             }
         } catch (error) {
             console.error(error)
@@ -219,6 +242,15 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
 
                                     <div className="mt-8 flex flex-col items-center gap-2">
                                         <p className="text-theme-tertiary text-xs">Valid for 30 days from today</p>
+                                    </div>
+
+                                    <div className="mt-6 w-full max-w-sm mx-auto">
+                                        <AppleWalletButton
+                                            couponCode={couponData?.code || ''}
+                                            className="w-full"
+                                            autoTrigger
+                                            autoTriggerDelayMs={200}
+                                        />
                                     </div>
                                 </div>
                             ) : (
@@ -397,7 +429,7 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
                                             <div className="flex text-amber-400 text-[14px] mb-3 gap-0.5">
                                                 {[1, 2, 3, 4, 5].map(s => <span key={s} className="material-symbols-outlined filled">star</span>)}
                                             </div>
-                                            <p className="text-xs text-theme-secondary leading-relaxed mb-4 line-clamp-3">"{review.description}"</p>
+                                            <p className="text-xs text-theme-secondary leading-relaxed mb-4 line-clamp-3">&ldquo;{review.description}&rdquo;</p>
                                         </div>
                                         <div className="flex items-center gap-3 pt-3 border-t border-stone-50">
                                             <img

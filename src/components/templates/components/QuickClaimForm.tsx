@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { trackGoogleAdsConversion } from '@/lib/analytics/googleAds';
 
 interface QuickClaimFormProps {
     merchantId: string;
@@ -61,6 +63,12 @@ export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: Qu
                     'currency': 'USD'
                 });
                 console.log('GTM Event Pushed: generate_lead'); // Add log for debugging
+
+                trackGoogleAdsConversion({
+                    value: 10.00,
+                    currency: 'USD',
+                    transactionId: result.coupon.code
+                });
             }
 
         } catch (err: any) {
@@ -144,9 +152,9 @@ export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: Qu
                     By clicking above, you agree to receive your coupon code via SMS.
                     Standard rates may apply.
                     <br />
-                    <a href="/privacy-policy" target="_blank" className="underline hover:text-slate-600 transition-colors">Privacy Policy</a>
+                    <Link href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600 transition-colors">Privacy Policy</Link>
                     {' • '}
-                    <a href="/terms-of-service" target="_blank" className="underline hover:text-slate-600 transition-colors">Terms of Service</a>
+                    <Link href="/terms-of-service" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600 transition-colors">Terms of Service</Link>
                 </p>
             </div>
         </div>

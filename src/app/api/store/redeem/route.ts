@@ -39,7 +39,9 @@ export async function POST(request: NextRequest) {
           content
         ),
         users (
-          phone
+          phone,
+          name,
+          email
         )
       `)
       .eq('code', couponCode.trim().toUpperCase())
@@ -153,7 +155,9 @@ export async function POST(request: NextRequest) {
     // 8. 返回成功结果
     const merchant = coupon.merchants as any
     const user = coupon.users as any
-    const phoneLastFour = user?.phone?.slice(-4) || '****'
+    const customerName = user?.name || '顾客'
+    const customerPhone = user?.phone || ''
+    const customerDisplay = customerPhone ? `${customerName} (${customerPhone})` : customerName
 
     return NextResponse.json({
       success: true,
@@ -162,7 +166,10 @@ export async function POST(request: NextRequest) {
         code: coupon.code,
         merchant: merchant?.name || 'N/A',
         offer: merchant?.content?.offer?.value || merchant?.content?.offerDiscount || merchant?.content?.offer_value || '优惠',
-        customer: `***${phoneLastFour}`,
+        customer: customerDisplay,
+        customerName,
+        customerPhone,
+        customerEmail: user?.email || null,
         redeemedAt: now
       }
     })

@@ -264,7 +264,7 @@ export default function StoreRedeemPage() {
           <p className="font-semibold mb-2">💡 使用说明:</p>
           <ul className="space-y-1 list-disc list-inside">
             <li>输入优惠券代码（如 XMAS-A7K9）</li>
-            <li>点击"确认核销"或按Enter键</li>
+            <li>点击&quot;确认核销&quot;或按Enter键</li>
             <li>查看核销结果和历史记录</li>
           </ul>
         </div>

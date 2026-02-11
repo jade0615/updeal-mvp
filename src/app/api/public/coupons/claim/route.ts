@@ -89,36 +89,57 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (existingCoupon) {
-        // 补发邮件逻辑：如果是老用户重新领取，且之前没发过邮件（stage=0），且现在有时间了
+        // 补发邮件逻辑：如果是老用户重新领取，且之前没发过邮件（stage=0）
         let t0Success = false;
-        if (userEmail && expectedVisitDate && existingCoupon.email_sent_stage === 0) {
-          console.log('[Claim API] Existing coupon found, processing missing T0 email...');
+        if (userEmail && existingCoupon.email_sent_stage === 0) {
+          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://hiraccoon.com';
 
-          // 1. 更新预约时间
-          await supabase
-            .from('coupons')
-            .update({ expected_visit_date: new Date(expectedVisitDate).toISOString() })
-            .eq('id', existingCoupon.id);
+          if (expectedVisitDate) {
+            console.log('[Claim API] Existing coupon found, processing missing T0 email...');
 
-          // 2. 发送邮件
-          const { sendT0Confirmation } = await import('@/lib/email');
-          const referralCode = `REF-${userId.substring(0, 6).toUpperCase()}`;
+            // 1. 更新预约时间
+            await supabase
+              .from('coupons')
+              .update({ expected_visit_date: new Date(expectedVisitDate).toISOString() })
+              .eq('id', existingCoupon.id);
 
-          const emailRes = await sendT0Confirmation({
-            email: userEmail,
-            merchantName: merchant.name,
-            couponCode: existingCoupon.code,
-            expectedDate: new Date(expectedVisitDate),
-            address: merchant.content?.address?.fullAddress,
-            merchantSlug: merchant.slug,
-            referralCode: referralCode,
-            offerValue: merchant.content?.offer?.value || 'Special Offer',
-            offerDescription: merchant.content?.offer?.description || ''
-          });
+            // 2. 发送邮件
+            const { sendT0Confirmation } = await import('@/lib/email');
+            const referralCode = `REF-${userId.substring(0, 6).toUpperCase()}`;
 
-          if (emailRes.success) {
-            t0Success = true;
-            await supabase.from('coupons').update({ email_sent_stage: 1 }).eq('id', existingCoupon.id);
+            const emailRes = await sendT0Confirmation({
+              email: userEmail,
+              merchantName: merchant.name,
+              couponCode: existingCoupon.code,
+              expectedDate: new Date(expectedVisitDate),
+              address: merchant.content?.address?.fullAddress,
+              merchantSlug: merchant.slug,
+              referralCode: referralCode,
+              offerValue: merchant.content?.offer?.value || 'Special Offer',
+              offerDescription: merchant.content?.offer?.description || ''
+            });
+
+            if (emailRes.success) {
+              t0Success = true;
+              await supabase.from('coupons').update({ email_sent_stage: 1 }).eq('id', existingCoupon.id);
+            }
+          } else {
+            const { sendCouponEmail } = await import('@/lib/email');
+            const emailRes = await sendCouponEmail({
+              email: userEmail,
+              merchantName: merchant.name,
+              couponCode: existingCoupon.code,
+              expiresAt: existingCoupon.expires_at ? new Date(existingCoupon.expires_at) : undefined,
+              offerValue: merchant.content?.offer?.value || 'Special Offer',
+              offerDescription: merchant.content?.offer?.description || '',
+              address: merchant.content?.address?.fullAddress,
+              verifyUrl: `${baseUrl}/verify/${existingCoupon.code}`
+            });
+
+            if (emailRes.success) {
+              t0Success = true;
+              await supabase.from('coupons').update({ email_sent_stage: 1 }).eq('id', existingCoupon.id);
+            }
           }
         }
 
@@ -190,9 +211,11 @@ export async function POST(request: NextRequest) {
       console.error('Coupon DB Error:', couponError);
     }
 
-    // 5. Automatic Email Trigger (T0)
-    // If we have an email and a visit date, send the immediate calendar invite
+    // 5. Automatic Email Trigger
+    // T0: If we have an email and a visit date, send the immediate calendar invite
+    // Basic: If we only have email, still send coupon confirmation
     const shouldSendT0 = userEmail && expectedVisitDate;
+    const shouldSendBasicEmail = userEmail && !expectedVisitDate;
     let t0Success = false;
 
     console.log('[Claim API] Checking T0 Trigger:', {
@@ -221,6 +244,24 @@ export async function POST(request: NextRequest) {
         offerDescription: merchant.content?.offer?.description || merchant.content?.offerDescription || ''
       });
       console.log('[Claim API] T0 Result:', emailRes);
+
+      if (emailRes.success) {
+        t0Success = true;
+        await supabase.from('coupons').update({ email_sent_stage: 1 }).eq('code', code);
+      }
+    } else if (shouldSendBasicEmail) {
+      const { sendCouponEmail } = await import('@/lib/email');
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://hiraccoon.com';
+      const emailRes = await sendCouponEmail({
+        email: userEmail!,
+        merchantName: merchant.name,
+        couponCode: code,
+        expiresAt: expiresAt,
+        offerValue: merchant.content?.offer?.value || merchant.content?.offer_value || 'Special Offer',
+        offerDescription: merchant.content?.offer?.description || merchant.content?.offerDescription || '',
+        address: merchant.content?.address?.fullAddress,
+        verifyUrl: `${baseUrl}/verify/${code}`
+      });
 
       if (emailRes.success) {
         t0Success = true;

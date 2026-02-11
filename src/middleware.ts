@@ -5,7 +5,7 @@ import { validateSession } from '@/lib/auth/session'
 export const runtime = 'nodejs'
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next()
+  const response = NextResponse.next()
 
   // Generate session ID for analytics if not present
   if (!request.cookies.has('updeal_session_id')) {

@@ -10,6 +10,7 @@ import type { Merchant } from '@/types/merchant';
 import { updateMerchant } from '@/actions/merchants';
 import confetti from 'canvas-confetti';
 import { AppleWalletButton } from '@/components/ui/AppleWalletButton';
+import { trackGoogleAdsConversion } from '@/lib/analytics/googleAds';
 
 interface Props {
     merchant: Merchant;
@@ -299,6 +300,12 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                 });
                 console.log('GTM Event Pushed: generate_lead');
             }
+
+            trackGoogleAdsConversion({
+                value: 10.00,
+                currency: 'USD',
+                transactionId: result.coupon.code
+            });
 
             confetti({
                 particleCount: 150,
@@ -711,7 +718,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     />
                                 </div>
                                 <p className="text-[10px] text-orange-600/70 mt-2 ml-1 italic">
-                                    * Valid for 7 days only. We'll send a calendar invite!
+                                    * Valid for 7 days only. We&apos;ll send a calendar invite!
                                 </p>
                             </div>
 
@@ -761,7 +768,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                             </div>
 
                             <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
-                                <p className="text-purple-800 text-sm font-medium">✨ You're all set!</p>
+                                <p className="text-purple-800 text-sm font-medium">✨ You&apos;re all set!</p>
                             </div>
                         </div>
                     </div>
@@ -801,7 +808,12 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 </button>
 
                                 <div className="w-full">
-                                    <AppleWalletButton couponCode={couponCode} className="w-full" />
+                                    <AppleWalletButton
+                                        couponCode={couponCode}
+                                        className="w-full"
+                                        autoTrigger
+                                        autoTriggerDelayMs={200}
+                                    />
                                 </div>
                             </div>
 

@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
     const slug = searchParams.get('slug');
 
     // Get merchant by slug if provided
-    let merchantFilter = {};
     if (slug) {
         const { data: merchant } = await supabase
             .from('merchants')

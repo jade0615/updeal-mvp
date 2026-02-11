@@ -1,21 +1,36 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Loader2, Wallet, CheckCircle2, X } from "lucide-react";
 
 interface AppleWalletButtonProps {
     couponCode: string;
     className?: string;
+    autoTrigger?: boolean;
+    autoTriggerOnAppleOnly?: boolean;
+    autoTriggerDelayMs?: number;
 }
 
 export const AppleWalletButton: React.FC<AppleWalletButtonProps> = ({
     couponCode,
     className = "",
+    autoTrigger = false,
+    autoTriggerOnAppleOnly = true,
+    autoTriggerDelayMs = 0,
 }) => {
     const [loading, setLoading] = useState(false);
     const [imageError, setImageError] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const hasAutoTriggered = useRef(false);
 
-    const handleAddToWallet = async () => {
+    const isAppleDevice = useCallback(() => {
+        if (typeof navigator === "undefined") return false;
+        const ua = navigator.userAgent || "";
+        const isIOS = /iPhone|iPad|iPod/i.test(ua);
+        const isMacWithTouch = /Macintosh/i.test(ua) && navigator.maxTouchPoints > 1;
+        return isIOS || isMacWithTouch;
+    }, []);
+
+    const handleAddToWallet = useCallback(async () => {
         if (!couponCode) {
             console.error("Missing coupon code");
             toast.error("Error: Missing coupon code");
@@ -39,7 +54,20 @@ export const AppleWalletButton: React.FC<AppleWalletButtonProps> = ({
             toast.error(error.message || "Failed to add to Apple Wallet.");
             setLoading(false);
         }
-    };
+    }, [couponCode]);
+
+    useEffect(() => {
+        if (!autoTrigger || hasAutoTriggered.current) return;
+        if (!couponCode) return;
+        if (autoTriggerOnAppleOnly && !isAppleDevice()) return;
+
+        hasAutoTriggered.current = true;
+        const timer = window.setTimeout(() => {
+            handleAddToWallet();
+        }, autoTriggerDelayMs);
+
+        return () => window.clearTimeout(timer);
+    }, [autoTrigger, autoTriggerDelayMs, autoTriggerOnAppleOnly, couponCode, handleAddToWallet, isAppleDevice]);
 
     return (
         <>

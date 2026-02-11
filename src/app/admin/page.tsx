@@ -1,5 +1,6 @@
 import { logoutAdmin } from '@/actions/auth'
 import { getAllMerchantsStats } from '@/actions/analytics'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,12 +29,12 @@ export default async function AdminDashboard() {
               <p className="mt-2 text-slate-500 font-medium">实时监控全平台商家经营数据</p>
             </div>
             <div className="flex gap-3">
-              <a href="/admin/merchants" className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
+              <Link href="/admin/merchants" className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
                 管理商家
-              </a>
-              <a href="/admin/analytics" className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-blue-200 shadow-lg">
+              </Link>
+              <Link href="/admin/analytics" className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-blue-200 shadow-lg">
                 详细报表
-              </a>
+              </Link>
             </div>
           </div>
 

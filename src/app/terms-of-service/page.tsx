@@ -20,7 +20,7 @@ export default function TermsOfServicePage() {
 
                 <section className="space-y-4">
                     <h2 className="text-xl font-bold">3. Offer Redemption</h2>
-                    <p>Offers claimed through our platform are subject to the specific terms set by the participating merchant. We are not responsible for the merchant's failure to honor an offer.</p>
+                    <p>Offers claimed through our platform are subject to the specific terms set by the participating merchant. We are not responsible for the merchant&apos;s failure to honor an offer.</p>
                 </section>
 
                 <section className="space-y-4">

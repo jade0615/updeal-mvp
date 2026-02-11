@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { parsePhoneNumber } from 'libphonenumber-js';
+import { trackGoogleAdsConversion } from '@/lib/analytics/googleAds';
 
 const formSchema = z.object({
     phone: z.string().min(10, 'Valid phone number is required').transform((val) => {
@@ -93,6 +94,12 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
                     console.log('GTM Event Pushed: generate_lead'); // Add log for debugging
                 }
             }
+
+            trackGoogleAdsConversion({
+                value: 10.00,
+                currency: 'USD',
+                transactionId: result.coupon.code
+            });
 
         } catch (err: any) {
             setError(err.message);

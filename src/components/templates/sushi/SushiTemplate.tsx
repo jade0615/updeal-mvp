@@ -4,6 +4,8 @@ import { TemplateProps, OfferType } from '../index'
 import { useState } from 'react'
 
 import OfferBadge from '../../offers/OfferBadge'
+import { AppleWalletButton } from '@/components/ui/AppleWalletButton'
+import { trackGoogleAdsConversion } from '@/lib/analytics/googleAds'
 
 interface CouponData {
   code: string
@@ -166,6 +168,27 @@ export default function SushiTemplate({ merchant }: TemplateProps) {
           offerDiscount: data.coupon.offerDiscount
         })
         setSuccess(true)
+
+        if (typeof window !== 'undefined') {
+          if ((window as any).gtag) {
+            (window as any).gtag('event', 'claim_coupon', {
+              merchant_id: merchant.id,
+              coupon_code: data.coupon.code
+            })
+          }
+          ;(window as any).dataLayer = (window as any).dataLayer || []
+          ;(window as any).dataLayer.push({
+            event: 'generate_lead',
+            value: 10.00,
+            currency: 'USD'
+          })
+        }
+
+        trackGoogleAdsConversion({
+          value: 10.00,
+          currency: 'USD',
+          transactionId: data.coupon.code
+        })
       }
     } catch (error) {
       console.error(error)
@@ -306,6 +329,15 @@ export default function SushiTemplate({ merchant }: TemplateProps) {
                         </a>
                       )}
                     </div>
+
+                    <div className="max-w-sm mx-auto">
+                      <AppleWalletButton
+                        couponCode={couponData.code}
+                        className="w-full"
+                        autoTrigger
+                        autoTriggerDelayMs={200}
+                      />
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -380,7 +412,7 @@ export default function SushiTemplate({ merchant }: TemplateProps) {
                       className="bg-gray-50 dark:bg-gray-700 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all"
                     >
                       <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base mb-2 md:mb-3 italic">
-                        "{review.title}"
+                        &ldquo;{review.title}&rdquo;
                       </p>
                       <p className="text-gray-600 dark:text-gray-400 text-xs md:text-sm font-medium">
                         — {review.description}

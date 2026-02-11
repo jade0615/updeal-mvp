@@ -12,6 +12,21 @@ interface Props {
     limit: number
 }
 
+function SortIcon({
+    field,
+    currentSortField,
+    currentSortDir
+}: {
+    field: string
+    currentSortField: string
+    currentSortDir: string
+}) {
+    if (currentSortField !== field) return <ArrowUpDown className="h-4 w-4 text-gray-300" />
+    return currentSortDir === 'asc'
+        ? <ArrowUp className="h-4 w-4 text-blue-500" />
+        : <ArrowDown className="h-4 w-4 text-blue-500" />
+}
+
 export default function CustomerTable({ data, total, page, limit }: Props) {
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -40,13 +55,6 @@ export default function CustomerTable({ data, total, page, limit }: Props) {
         const isAsc = currentSortField === field && currentSortDir === 'asc'
         updateParam('sortDir', isAsc ? 'desc' : 'asc')
         updateParam('sortField', field)
-    }
-
-    const SortIcon = ({ field }: { field: string }) => {
-        if (currentSortField !== field) return <ArrowUpDown className="h-4 w-4 text-gray-300" />
-        return currentSortDir === 'asc'
-            ? <ArrowUp className="h-4 w-4 text-blue-500" />
-            : <ArrowDown className="h-4 w-4 text-blue-500" />
     }
 
     return (
@@ -79,7 +87,7 @@ export default function CustomerTable({ data, total, page, limit }: Props) {
                                     className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
                                     onClick={() => handleSort('phone')}
                                 >
-                                    Phone <SortIcon field="phone" />
+                                    Phone <SortIcon field="phone" currentSortField={currentSortField} currentSortDir={currentSortDir} />
                                 </div>
                                 <input
                                     type="text"
@@ -105,7 +113,7 @@ export default function CustomerTable({ data, total, page, limit }: Props) {
                                     className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
                                     onClick={() => handleSort('name')}
                                 >
-                                    Name <SortIcon field="name" />
+                                    Name <SortIcon field="name" currentSortField={currentSortField} currentSortDir={currentSortDir} />
                                 </div>
                                 <input
                                     type="text"
@@ -137,7 +145,7 @@ export default function CustomerTable({ data, total, page, limit }: Props) {
                                     className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
                                     onClick={() => handleSort('coupon_code')}
                                 >
-                                    Coupon <SortIcon field="coupon_code" />
+                                    Coupon <SortIcon field="coupon_code" currentSortField={currentSortField} currentSortDir={currentSortDir} />
                                 </div>
                                 <input
                                     type="text"
@@ -158,7 +166,7 @@ export default function CustomerTable({ data, total, page, limit }: Props) {
                                     className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
                                     onClick={() => handleSort('claimed_at')}
                                 >
-                                    Claimed At <SortIcon field="claimed_at" />
+                                    Claimed At <SortIcon field="claimed_at" currentSortField={currentSortField} currentSortDir={currentSortDir} />
                                 </div>
                             </th>
                         </tr>

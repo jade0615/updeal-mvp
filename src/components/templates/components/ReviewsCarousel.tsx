@@ -34,7 +34,7 @@ export default function ReviewsCarousel({ reviews }: ReviewsCarouselProps) {
                                 ))}
                             </div>
                         </div>
-                        <p className="text-sm italic text-gray-700">"{review.text}"</p>
+                        <p className="text-sm italic text-gray-700">&ldquo;{review.text}&rdquo;</p>
                     </div>
                 ))}
             </div>
