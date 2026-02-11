@@ -211,17 +211,17 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
     const couponRef = React.useRef<HTMLDivElement>(null);
 
     const handleClaim = async () => {
-        // Validation with specific alerts as requested
-        if (!formData.name) {
-            alert('Please enter your name');
+        // 1. Validation Logic
+        if (!formData.name?.trim()) {
+            alert('Please enter your name.');
             return;
         }
         if (!formData.phone || formData.phone.length < 10) {
-            alert('Please enter a valid phone number');
+            alert('Please enter a valid phone number.');
             return;
         }
-        if (!formData.email) {
-            alert('Please enter your email');
+        if (!formData.email?.trim() || !formData.email.includes('@')) {
+            alert('Please enter a valid email address.');
             return;
         }
 
@@ -237,6 +237,8 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                     phone: formData.phone,
                     name: formData.name || undefined,
                     email: formData.email || undefined,
+                    // Merge Date and Time if both provided, otherwise use just date (which defaults to 00:00 UTC usually, or local)
+                    // If time is provided, we construct a full local date string
                     expectedVisitDate: formData.expectedVisitTime
                         ? `${formData.expectedVisitDate}T${formData.expectedVisitTime}`
                         : formData.expectedVisitDate || undefined,
@@ -251,17 +253,17 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             }
 
             // Success - show the coupon
+            setLoading(false);
+            setSuccessOpen(true);
             setCouponCode(result.coupon.code);
             setShareUrl(result.shareUrl || window.location.href);
             setReferralCode(result.referralCode || '');
-            setSuccessOpen(true);
 
-            // Trigger Apple Wallet Download immediately
-            if (result.coupon.code) {
-                window.location.href = `/api/wallet/generate?code=${result.coupon.code}`;
-            }
+            // 2. Direct Wallet Download Integration
+            // Direct navigation is required for iOS Safari to handle .pkpass files correctly
+            window.location.href = `/api/wallet/generate?code=${result.coupon.code}`;
 
-            // Track Lead Event
+            // Track Lead Event - 使用原生 window.fbq (更可靠)
             if (typeof window !== 'undefined' && (window as any).fbq) {
                 try {
                     (window as any).fbq('track', 'Lead', {
@@ -271,17 +273,31 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                         value: 0,
                         currency: 'USD'
                     });
+                    console.log('[Meta Pixel] Lead event tracked for:', merchant.name);
                 } catch (fbError) {
                     console.error('[Meta Pixel] Failed to track Lead:', fbError);
                 }
+            } else {
+                console.warn('[Meta Pixel] fbq not available, skipping Lead tracking');
             }
 
             // Track GA4 conversion
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-                (window as any).gtag('event', 'claim_coupon', {
-                    merchant_id: merchant.id,
-                    coupon_code: result.coupon.code
+            if (typeof window !== 'undefined') {
+                if ((window as any).gtag) {
+                    (window as any).gtag('event', 'claim_coupon', {
+                        merchant_id: merchant.id,
+                        coupon_code: result.coupon.code
+                    });
+                }
+
+                // PUSH TO GTM
+                (window as any).dataLayer = (window as any).dataLayer || [];
+                (window as any).dataLayer.push({
+                    'event': 'generate_lead',
+                    'value': 10.00,
+                    'currency': 'USD'
                 });
+                console.log('GTM Event Pushed: generate_lead');
             }
 
             confetti({
@@ -702,20 +718,18 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                             <button
                                 onClick={handleClaim}
                                 disabled={loading}
-                                className="mt-2 w-full inline-flex items-center justify-center transition-all active:scale-95 group disabled:opacity-70 disabled:grayscale"
+                                className="mt-2 w-full btn-orange py-4 rounded-xl text-white font-bold text-[16px] flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-70 disabled:grayscale"
+                                style={{ textShadow: '0px 2px 4px rgba(0,0,0,0.3)' }}
                             >
-                                {loading ? (
-                                    <div className="bg-black text-white px-6 py-4 rounded-xl font-bold flex items-center gap-2 text-[16px] w-full justify-center shadow-lg">
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                        <span>Processing...</span>
-                                    </div>
-                                ) : (
-                                    <img
-                                        src="/passes/assets/add-to-apple-wallet.svg"
-                                        alt="Add to Apple Wallet"
-                                        className="h-14 w-auto object-contain hover:opacity-90 active:opacity-80 transition-opacity drop-shadow-md"
+                                {loading ? 'Processing...' : (
+                                    <EditableLabel
+                                        path="customLabels.button_text_claim"
+                                        value={content.customLabels?.button_text_claim}
+                                        fallback="Add Coupon to Apple Wallet"
+                                        className="bg-transparent text-white border-b-2 border-white/40 w-auto inline-block text-center placeholder:text-white/70"
                                     />
                                 )}
+                                {!loading && <ArrowRight className="w-5 h-5" />}
                             </button>
 
                             <p className="text-center text-[10px] text-slate-400 mt-2">
