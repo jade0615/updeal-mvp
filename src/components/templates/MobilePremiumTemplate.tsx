@@ -6,6 +6,7 @@ import {
     Tag, ArrowRight, Phone, Check, X, Globe, Calendar, Edit2, Save, XCircle
 } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import type { Merchant } from '@/types/merchant';
 import { updateMerchant } from '@/actions/merchants';
 import confetti from 'canvas-confetti';
@@ -735,6 +736,15 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                             <p className="text-center text-[10px] text-slate-400 mt-2">
                                 By clicking, you agree to receive texts. Std msg rates apply.
                             </p>
+
+                            <div className="flex justify-center mt-6">
+                                <Link
+                                    href="/privacy-policy"
+                                    className="text-[10px] text-slate-400/80 hover:text-slate-600 transition-colors underline decoration-slate-300 underline-offset-2"
+                                >
+                                    Privacy Policy
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 ) : normalizedOffer.type === 'vip' || normalizedOffer.type === 'vip_club' ? (
