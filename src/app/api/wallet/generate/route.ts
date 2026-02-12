@@ -92,6 +92,22 @@ async function handlePassGeneration(couponCode: string | null) {
 
         const passBuffer = await WalletService.generatePass(merchantData, userData, coupon.code);
 
+        // Record the download
+        try {
+            await supabase
+                .from('wallet_downloads')
+                .insert({
+                    merchant_slug: merchant.content?.slug || merchant.name.toLowerCase().replace(/\s+/g, '-'),
+                    customer_name: user.name || "Customer",
+                    customer_phone: user.phone || null,
+                    customer_email: user.email || null,
+                    coupon_code: coupon.code,
+                });
+        } catch (dbError) {
+            console.error("Failed to record wallet download:", dbError);
+            // Don't fail the request if logging fails
+        }
+
         return new NextResponse(passBuffer as any, {
             status: 200,
             headers: {

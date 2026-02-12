@@ -17,6 +17,7 @@ export default function AdminNavbar() {
         { name: 'Dashboard', path: '/admin' },
         { name: 'Merchants', path: '/admin/merchants' },
         { name: 'Customers', path: '/admin/customers' },
+        { name: 'Wallet Downloads', path: '/admin/wallet-downloads' },
         // { name: 'Analytics', path: '/admin/analytics' }, // Future
     ]
 
@@ -34,8 +35,8 @@ export default function AdminNavbar() {
                                 key={item.path}
                                 href={item.path}
                                 className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium h-full transition-colors ${isActive(item.path)
-                                        ? 'border-blue-500 text-gray-900'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-blue-500 text-gray-900'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     }`}
                             >
                                 {item.name}
