@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { WalletDownload } from '@/actions/wallet-downloads'
-import { ChevronLeft, ChevronRight, Phone, User, Tag, Calendar, Copy, Check, Search, Mail, Smartphone } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Phone, User, Tag, Calendar, Copy, Check, Search, Mail, Smartphone, X } from 'lucide-react'
 import { useState } from 'react'
 
 interface Props {
@@ -67,6 +67,16 @@ export default function WalletDownloadsTable({ data, total, page, limit, merchan
                             ))}
                         </select>
 
+                        <select
+                            value={searchParams.get('addedToWallet') || ''}
+                            onChange={(e) => updateParam('addedToWallet', e.target.value)}
+                            className="px-4 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">确认状态 (全部)</option>
+                            <option value="true">Yes (已添加)</option>
+                            <option value="false">No (未添加)</option>
+                        </select>
+
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <input
@@ -75,7 +85,7 @@ export default function WalletDownloadsTable({ data, total, page, limit, merchan
                                 value={searchValue}
                                 onChange={(e) => setSearchValue(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-48 sm:w-64"
+                                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-48 sm:w-56"
                             />
                         </div>
                         <button
@@ -97,6 +107,7 @@ export default function WalletDownloadsTable({ data, total, page, limit, merchan
                                 <th className="px-6 py-4">客户信息</th>
                                 <th className="px-6 py-4">商户标识</th>
                                 <th className="px-6 py-4">优惠码</th>
+                                <th className="px-6 py-4">Added to Wallet</th>
                                 <th className="px-6 py-4">下载时间</th>
                             </tr>
                         </thead>
@@ -142,6 +153,19 @@ export default function WalletDownloadsTable({ data, total, page, limit, merchan
                                                 )}
                                             </button>
                                         </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {download.added_to_wallet === true ? (
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold">
+                                                <Check className="h-3 w-3" /> Yes
+                                            </span>
+                                        ) : download.added_to_wallet === false ? (
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 text-rose-700 rounded-full text-xs font-bold">
+                                                <X className="h-3 w-3" /> No
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-400 text-xs">-</span>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-500">
                                         {new Date(download.downloaded_at).toLocaleString('zh-CN')}

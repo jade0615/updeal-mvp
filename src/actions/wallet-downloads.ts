@@ -10,6 +10,7 @@ export interface WalletDownload {
     customer_email: string | null
     coupon_code: string
     downloaded_at: string
+    added_to_wallet: boolean | null
 }
 
 export interface WalletDownloadQuery {
@@ -17,6 +18,7 @@ export interface WalletDownloadQuery {
     limit?: number
     search?: string
     merchantSlug?: string
+    addedToWallet?: boolean | null
 }
 
 export interface WalletDownloadsResult {
@@ -40,6 +42,10 @@ export async function getWalletDownloads(query: WalletDownloadQuery) {
 
         if (query.merchantSlug) {
             dbQuery = dbQuery.eq('merchant_slug', query.merchantSlug)
+        }
+
+        if (query.addedToWallet !== undefined && query.addedToWallet !== null) {
+            dbQuery = dbQuery.eq('added_to_wallet', query.addedToWallet)
         }
 
         if (query.search) {
@@ -70,6 +76,33 @@ export async function getWalletDownloads(query: WalletDownloadQuery) {
         }
     } catch (err) {
         console.error('getWalletDownloads error:', err)
+        return { success: false, error: 'Internal server error' }
+    }
+}
+
+export async function recordWalletDownload(data: {
+    merchant_slug: string
+    customer_name: string | null
+    customer_phone: string | null
+    customer_email: string | null
+    coupon_code: string
+    added_to_wallet: boolean
+}) {
+    const supabase = createAdminClient()
+
+    try {
+        const { error } = await supabase
+            .from('wallet_downloads')
+            .insert(data)
+
+        if (error) {
+            console.error('Error recording wallet download:', error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true }
+    } catch (err) {
+        console.error('recordWalletDownload error:', err)
         return { success: false, error: 'Internal server error' }
     }
 }

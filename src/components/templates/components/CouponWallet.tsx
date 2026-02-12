@@ -7,6 +7,10 @@ interface CouponWalletProps {
     expiresAt: string;
     offerTitle: string;
     redemptionInstructions?: string[];
+    merchantSlug?: string;
+    customerName?: string;
+    customerPhone?: string;
+    customerEmail?: string;
 }
 
 export default function CouponWallet({
@@ -17,7 +21,11 @@ export default function CouponWallet({
         "Show this code to staff to redeem",
         "Enjoy your reward!",
         "Valid for 30 days"
-    ]
+    ],
+    merchantSlug,
+    customerName,
+    customerPhone,
+    customerEmail
 }: CouponWalletProps) {
     const redeemDate = new Date();
     const expiryDate = new Date(expiresAt);
@@ -75,7 +83,14 @@ export default function CouponWallet({
 
                 <div className="w-full flex flex-col items-center gap-4">
                     <div className="w-full bg-zinc-100/50 rounded-2xl p-1 text-center">
-                        <AppleWalletButton couponCode={couponCode} className="w-full" />
+                        <AppleWalletButton
+                            couponCode={couponCode}
+                            className="w-full"
+                            merchantSlug={merchantSlug}
+                            customerName={customerName}
+                            customerPhone={customerPhone}
+                            customerEmail={customerEmail}
+                        />
                     </div>
                 </div>
             </div>

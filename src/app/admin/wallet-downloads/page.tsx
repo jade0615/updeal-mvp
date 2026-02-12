@@ -17,13 +17,18 @@ export default async function WalletDownloadsPage({ searchParams }: Props) {
     const limit = Number(params.limit) || 50
     const search = params.search as string
     const merchantSlug = params.merchantSlug as string
+    const addedToWalletRaw = params.addedToWallet as string
+
+    let addedToWallet: boolean | null = null
+    if (addedToWalletRaw === 'true') addedToWallet = true
+    if (addedToWalletRaw === 'false') addedToWallet = false
 
     // For the filter cards, we need to map slugs to IDs if we use MerchantStatsCards
     // or just let it be. MerchantStatsCards uses merchant.id.
     // wallet_downloads table uses merchant_slug.
     // Let's fetch merchants to provide a way to filter.
     const [downloadsResult, merchantStats] = await Promise.all([
-        getWalletDownloads({ page, limit, search, merchantSlug }),
+        getWalletDownloads({ page, limit, search, merchantSlug, addedToWallet }),
         getMerchantCustomerStats()
     ])
 

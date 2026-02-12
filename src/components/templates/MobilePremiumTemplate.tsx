@@ -844,7 +844,14 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 </button>
 
                                 <div className="w-full">
-                                    <AppleWalletButton couponCode={couponCode} className="w-full" />
+                                    <AppleWalletButton
+                                        couponCode={couponCode}
+                                        className="w-full"
+                                        merchantSlug={merchant.slug}
+                                        customerName={formData.name}
+                                        customerPhone={formData.phone}
+                                        customerEmail={formData.email}
+                                    />
                                 </div>
                             </div>
 

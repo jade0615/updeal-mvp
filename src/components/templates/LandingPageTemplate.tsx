@@ -151,6 +151,10 @@ export default function LandingPageTemplate({ merchant, claimedCount }: LandingP
                                     couponCode={couponData.coupon?.code || 'CODE123'}
                                     expiresAt={couponData.coupon?.expiresAt || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()}
                                     offerTitle={normalizedOffer.value + ' ' + normalizedOffer.unit}
+                                    merchantSlug={merchant.slug}
+                                    customerName={couponData.user?.name}
+                                    customerPhone={couponData.user?.phone}
+                                    customerEmail={couponData.user?.email}
                                 />
                             </div>
                         ) : (
