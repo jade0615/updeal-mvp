@@ -653,6 +653,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 <input
                                     type="text"
                                     placeholder="Your Name"
+                                    aria-label="Full name"
                                     required
                                     value={formData.name}
                                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
@@ -666,6 +667,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 <input
                                     type="tel"
                                     placeholder="(555) 000-0000"
+                                    aria-label="Phone number"
                                     value={formData.phone}
                                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                                     className="w-full h-12 px-4 rounded-xl input-field text-slate-800 placeholder:text-slate-400 outline-none transition-all font-medium"
@@ -678,6 +680,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 <input
                                     type="email"
                                     placeholder="john@example.com"
+                                    aria-label="Email address"
                                     required
                                     value={formData.email}
                                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
@@ -694,6 +697,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 <div className="flex gap-2">
                                     <input
                                         type="date"
+                                        aria-label="Planned visit date"
                                         min={(() => {
                                             const d = new Date();
                                             d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
@@ -711,6 +715,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     />
                                     <input
                                         type="time"
+                                        aria-label="Planned visit time"
                                         value={formData.expectedVisitTime}
                                         onChange={(e) => setFormData(prev => ({ ...prev, expectedVisitTime: e.target.value }))}
                                         className="flex-1 h-12 px-2 text-center rounded-xl border border-orange-200 bg-white text-slate-800 outline-none focus:ring-2 focus:ring-orange-500/20 font-medium"

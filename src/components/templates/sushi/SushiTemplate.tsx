@@ -313,6 +313,7 @@ export default function SushiTemplate({ merchant }: TemplateProps) {
                   <input
                     type="tel"
                     value={phone}
+                    aria-label="Phone number"
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Phone Number *"
                     className="w-full px-4 py-3 md:px-5 md:py-4 rounded-xl md:rounded-2xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm md:text-base focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"
@@ -321,6 +322,7 @@ export default function SushiTemplate({ merchant }: TemplateProps) {
                   <input
                     type="email"
                     value={email}
+                    aria-label="Email address"
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Email (optional)"
                     className="w-full px-4 py-3 md:px-5 md:py-4 rounded-xl md:rounded-2xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm md:text-base focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all"

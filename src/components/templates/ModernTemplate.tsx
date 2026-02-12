@@ -296,6 +296,7 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
                                     <input
                                         className="w-full bg-white border border-transparent focus:bg-white ring-1 ring-theme-border rounded-xl pl-11 pr-4 py-3.5 text-theme-primary placeholder-theme-tertiary text-sm focus:ring-2 focus:ring-theme-accent/20 focus:border-theme-accent outline-none transition-all shadow-sm"
                                         placeholder="Full Name"
+                                        aria-label="Full name"
                                         type="text"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
@@ -309,6 +310,7 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
                                         <input
                                             className="w-full bg-white border border-transparent focus:bg-white ring-1 ring-theme-border rounded-xl pl-11 pr-4 py-3.5 text-theme-primary placeholder-theme-tertiary text-sm focus:ring-2 focus:ring-theme-accent/20 focus:border-theme-accent outline-none transition-all shadow-sm"
                                             placeholder="Phone (Required)"
+                                            aria-label="Phone number"
                                             type="tel"
                                             required
                                             value={phone}
@@ -322,6 +324,7 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
                                         <input
                                             className="w-full bg-white border border-transparent focus:bg-white ring-1 ring-theme-border rounded-xl pl-11 pr-4 py-3.5 text-theme-primary placeholder-theme-tertiary text-sm focus:ring-2 focus:ring-theme-accent/20 focus:border-theme-accent outline-none transition-all shadow-sm"
                                             placeholder="Email"
+                                            aria-label="Email address"
                                             type="email"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}

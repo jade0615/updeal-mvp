@@ -94,6 +94,7 @@ export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: Qu
                         <input
                             type="email"
                             placeholder="To receive calendar invite"
+                            aria-label="Email address"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/20"
@@ -103,6 +104,7 @@ export default function QuickClaimForm({ merchantId, phone, onClaimSuccess }: Qu
                         <label className="text-[10px] font-bold text-slate-400 uppercase ml-2 mb-1 block">When do you plan to visit?</label>
                         <input
                             type="date"
+                            aria-label="Planned visit date"
                             min={new Date().toISOString().split('T')[0]}
                             max={(() => {
                                 const d = new Date();

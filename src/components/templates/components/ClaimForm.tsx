@@ -136,6 +136,7 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
                         <input
                             type="text"
                             placeholder="John Doe"
+                            aria-label="Full name"
                             className="jelly-input w-full px-5 py-4 rounded-2xl text-slate-700 placeholder-slate-400 text-[15px] font-medium outline-none transition-all focus:ring-2 focus:ring-orange-500/10 focus:border-orange-500/30"
                             {...register('name')}
                         />
@@ -149,6 +150,7 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
                         <input
                             type="tel"
                             placeholder="(555) 000-0000"
+                            aria-label="Phone number"
                             className={`jelly-input w-full px-5 py-4 rounded-2xl text-slate-700 placeholder-slate-400 text-[15px] font-medium outline-none transition-all focus:ring-2 focus:ring-orange-500/10 focus:border-orange-500/30 ${errors.phone ? 'border-red-400' : ''}`}
                             {...register('phone')}
                         />
