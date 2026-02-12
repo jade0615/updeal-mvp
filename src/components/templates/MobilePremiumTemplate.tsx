@@ -483,8 +483,13 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
 
                 {/* Navbar */}
                 <div className="flex justify-between items-center px-5 pt-12 pb-4 relative z-20">
-                    <button className="w-11 h-11 rounded-full bg-white/10 border border-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/20 transition-colors">
+                    <button
+                        aria-label="Back"
+                        className="w-11 h-11 rounded-full bg-white/10 border border-white/10 backdrop-blur-md flex flex-col items-center justify-center hover:bg-white/20 transition-colors"
+                        onClick={() => window.history.back()}
+                    >
                         <ArrowLeft className="text-white w-5 h-5" />
+                        <span className="text-white text-[8px] font-bold uppercase leading-none mt-0.5 tracking-tighter">Back</span>
                     </button>
                     <div className="flex gap-3">
                         {/* Buttons Removed */}
