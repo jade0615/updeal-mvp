@@ -10,13 +10,15 @@ export default function LandingFooter({ hideBranding, slug }: LandingFooterProps
 
     return (
         <footer className="mt-12 py-8 text-center text-xs text-gray-400">
-            <p>© {new Date().getFullYear()} UpDeal. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} UpDeal. All rights reserved. • Powered by hiraccoon.com</p>
             <div className="mt-2 flex justify-center gap-4">
                 <Link href={`/privacy-policy${slug ? `?slug=${slug}` : ''}`} className="hover:text-gray-600 underline">
                     Privacy Policy
                 </Link>
-                <span>•</span>
-                <a href="#" className="hover:text-gray-600">Terms of Service</a>
+                <span>|</span>
+                <Link href={`/terms-of-service${slug ? `?slug=${slug}` : ''}`} className="hover:text-gray-600 underline">
+                    Terms of Service
+                </Link>
             </div>
         </footer>
     );

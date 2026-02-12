@@ -175,12 +175,21 @@ export default function ReferralDashboardTemplate({ merchant, userId = 'mock-use
                         <li>Merchant reserves final right of interpretation.</li>
                     </ul>
                     <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center">
-                        <Link
-                            href={`/privacy-policy?slug=${merchant.slug}`}
-                            className="text-xs text-gray-400 hover:text-cyan-600 transition-colors underline decoration-gray-200 underline-offset-4"
-                        >
-                            Privacy Policy
-                        </Link>
+                        <div className="flex justify-center gap-3 text-xs text-gray-400 decoration-gray-200 underline-offset-4">
+                            <Link
+                                href={`/privacy-policy?slug=${merchant.slug}`}
+                                className="hover:text-cyan-600 transition-colors underline"
+                            >
+                                Privacy Policy
+                            </Link>
+                            <span>|</span>
+                            <Link
+                                href={`/terms-of-service?slug=${merchant.slug}`}
+                                className="hover:text-cyan-600 transition-colors underline"
+                            >
+                                Terms of Service
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -292,7 +301,7 @@ export default function ReferralDashboardTemplate({ merchant, userId = 'mock-use
                     </div>
 
                     <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Enjoy your rewards!</p>
-                    <div className="mt-8 text-xs text-gray-300">Powered by Hiraccoon</div>
+                    <div className="mt-8 text-xs text-gray-300">Powered by hiraccoon.com</div>
                 </div>
             </div>
 

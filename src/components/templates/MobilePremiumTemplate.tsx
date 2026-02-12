@@ -737,12 +737,19 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 By clicking, you agree to receive texts. Std msg rates apply.
                             </p>
 
-                            <div className="flex justify-center mt-6">
+                            <div className="flex justify-center gap-3 mt-6 text-[10px] text-slate-400/80 decoration-slate-300 underline-offset-2">
                                 <Link
                                     href={`/privacy-policy?slug=${merchant.slug}`}
-                                    className="text-[10px] text-slate-400/80 hover:text-slate-600 transition-colors underline decoration-slate-300 underline-offset-2"
+                                    className="hover:text-slate-600 transition-colors underline"
                                 >
                                     Privacy Policy
+                                </Link>
+                                <span>|</span>
+                                <Link
+                                    href={`/terms-of-service?slug=${merchant.slug}`}
+                                    className="hover:text-slate-600 transition-colors underline"
+                                >
+                                    Terms of Service
                                 </Link>
                             </div>
                         </div>
@@ -774,12 +781,19 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 <p className="text-purple-800 text-sm font-medium">✨ You're all set!</p>
                             </div>
 
-                            <div className="flex justify-center mt-8">
+                            <div className="flex justify-center gap-3 mt-8 text-[10px] text-slate-400/80 decoration-slate-300 underline-offset-2">
                                 <Link
                                     href={`/privacy-policy?slug=${merchant.slug}`}
-                                    className="text-[10px] text-slate-400/80 hover:text-slate-600 transition-colors underline decoration-slate-300 underline-offset-2"
+                                    className="hover:text-slate-600 transition-colors underline"
                                 >
                                     Privacy Policy
+                                </Link>
+                                <span>|</span>
+                                <Link
+                                    href={`/terms-of-service?slug=${merchant.slug}`}
+                                    className="hover:text-slate-600 transition-colors underline"
+                                >
+                                    Terms of Service
                                 </Link>
                             </div>
                         </div>
@@ -828,12 +842,19 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                 Valid for 30 days • Save this page
                             </p>
 
-                            <div className="flex justify-center mt-6">
+                            <div className="flex justify-center gap-3 mt-6 text-[10px] text-slate-400/80 decoration-slate-300 underline-offset-2">
                                 <Link
                                     href={`/privacy-policy?slug=${merchant.slug}`}
-                                    className="text-[10px] text-slate-400/80 hover:text-slate-600 transition-colors underline decoration-slate-300 underline-offset-2"
+                                    className="hover:text-slate-600 transition-colors underline"
                                 >
                                     Privacy Policy
+                                </Link>
+                                <span>|</span>
+                                <Link
+                                    href={`/terms-of-service?slug=${merchant.slug}`}
+                                    className="hover:text-slate-600 transition-colors underline"
+                                >
+                                    Terms of Service
                                 </Link>
                             </div>
 
@@ -1084,7 +1105,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             {/* Footer */}
             <div className="text-center py-8">
                 <p className="text-slate-400 text-xs">
-                    Powered by <span className="text-slate-500 font-semibold">Hiraccoon</span>
+                    Powered by <span className="text-slate-500 font-semibold">hiraccoon.com</span>
                 </p>
             </div>
 

@@ -220,12 +220,21 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
 
                                     <div className="mt-8 flex flex-col items-center gap-2">
                                         <p className="text-theme-tertiary text-xs">Valid for 30 days from today</p>
-                                        <Link
-                                            href={`/privacy-policy?slug=${merchant.slug}`}
-                                            className="text-[10px] text-theme-tertiary/60 hover:text-theme-accent transition-colors underline decoration-theme-tertiary/20 underline-offset-4 mt-2"
-                                        >
-                                            Privacy Policy
-                                        </Link>
+                                        <div className="flex gap-3 text-[10px] text-theme-tertiary/60 decoration-theme-tertiary/20 underline-offset-4 mt-2">
+                                            <Link
+                                                href={`/privacy-policy?slug=${merchant.slug}`}
+                                                className="hover:text-theme-accent transition-colors underline"
+                                            >
+                                                Privacy Policy
+                                            </Link>
+                                            <span>|</span>
+                                            <Link
+                                                href={`/terms-of-service?slug=${merchant.slug}`}
+                                                className="hover:text-theme-accent transition-colors underline"
+                                            >
+                                                Terms of Service
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
@@ -329,12 +338,19 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
                                     {!loading && <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>}
                                 </button>
                                 <p className="text-center text-[10px] text-theme-tertiary">Terms & conditions apply. Data secured.</p>
-                                <div className="flex justify-center mt-6">
+                                <div className="flex justify-center gap-3 mt-6 text-[10px] text-theme-tertiary/60 decoration-theme-tertiary/20 underline-offset-4">
                                     <Link
                                         href={`/privacy-policy?slug=${merchant.slug}`}
-                                        className="text-[10px] text-theme-tertiary/60 hover:text-theme-accent transition-colors underline decoration-theme-tertiary/20 underline-offset-4"
+                                        className="hover:text-theme-accent transition-colors underline"
                                     >
                                         Privacy Policy
+                                    </Link>
+                                    <span>|</span>
+                                    <Link
+                                        href={`/terms-of-service?slug=${merchant.slug}`}
+                                        className="hover:text-theme-accent transition-colors underline"
+                                    >
+                                        Terms of Service
                                     </Link>
                                 </div>
                             </form>
