@@ -10,9 +10,10 @@ interface Props {
     total: number
     page: number
     limit: number
+    merchantSlugs: string[]
 }
 
-export default function WalletDownloadsTable({ data, total, page, limit }: Props) {
+export default function WalletDownloadsTable({ data, total, page, limit, merchantSlugs }: Props) {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [copiedId, setCopiedId] = useState<string | null>(null)
@@ -53,8 +54,19 @@ export default function WalletDownloadsTable({ data, total, page, limit }: Props
                         <p className="text-sm text-gray-500">共 {total} 条记录</p>
                     </div>
 
-                    {/* Search */}
-                    <div className="flex gap-2">
+                    {/* Filters */}
+                    <div className="flex flex-wrap gap-2 items-center">
+                        <select
+                            value={searchParams.get('merchantSlug') || ''}
+                            onChange={(e) => updateParam('merchantSlug', e.target.value)}
+                            className="px-4 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">所有商户</option>
+                            {merchantSlugs.map(slug => (
+                                <option key={slug} value={slug}>{slug}</option>
+                            ))}
+                        </select>
+
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <input
@@ -63,7 +75,7 @@ export default function WalletDownloadsTable({ data, total, page, limit }: Props
                                 value={searchValue}
                                 onChange={(e) => setSearchValue(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+                                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-48 sm:w-64"
                             />
                         </div>
                         <button

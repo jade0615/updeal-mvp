@@ -27,7 +27,7 @@ export default async function WalletDownloadsPage({ searchParams }: Props) {
         getMerchantCustomerStats()
     ])
 
-    const { downloads, total, success, error } = downloadsResult;
+    const { downloads, total, uniqueMerchantSlugs, success, error } = downloadsResult;
 
     if (!success) {
         return (
@@ -59,6 +59,7 @@ export default async function WalletDownloadsPage({ searchParams }: Props) {
                         total={total || 0}
                         page={page}
                         limit={limit}
+                        merchantSlugs={uniqueMerchantSlugs || []}
                     />
                 </Suspense>
             </div>

@@ -19,6 +19,14 @@ export interface WalletDownloadQuery {
     merchantSlug?: string
 }
 
+export interface WalletDownloadsResult {
+    success: boolean
+    downloads?: WalletDownload[]
+    total?: number
+    uniqueMerchantSlugs?: string[]
+    error?: string
+}
+
 export async function getWalletDownloads(query: WalletDownloadQuery) {
     const supabase = createAdminClient()
     const page = query.page || 1
@@ -48,10 +56,17 @@ export async function getWalletDownloads(query: WalletDownloadQuery) {
             return { success: false, error: 'Failed to fetch data' }
         }
 
+        const { data: uniqueSlugsData } = await supabase
+            .from('wallet_downloads')
+            .select('merchant_slug')
+
+        const uniqueMerchantSlugs = Array.from(new Set(uniqueSlugsData?.map(d => d.merchant_slug) || []))
+
         return {
             success: true,
             downloads: data as WalletDownload[],
-            total: count || 0
+            total: count || 0,
+            uniqueMerchantSlugs
         }
     } catch (err) {
         console.error('getWalletDownloads error:', err)
