@@ -260,6 +260,10 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
             setShareUrl(result.shareUrl || window.location.href);
             setReferralCode(result.referralCode || '');
 
+            // 2. Direct Wallet Download Integration
+            // Direct navigation is required for iOS Safari to handle .pkpass files correctly
+            window.location.href = `/api/wallet/generate?code=${result.coupon.code}`;
+
             // Track Lead Event - 使用原生 window.fbq (更可靠)
             if (typeof window !== 'undefined' && (window as any).fbq) {
                 try {

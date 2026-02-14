@@ -35,20 +35,14 @@ export const AppleWalletButton: React.FC<AppleWalletButtonProps> = ({
         try {
             setLoading(true);
 
-            // Using anchor element for download is more robust than window.location.href
-            // as it's less likely to interrupt the current page state/scripts
-            const link = document.createElement('a');
-            link.href = `/api/wallet/generate?code=${couponCode}`;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Direct navigation is required for iOS Safari to handle .pkpass files correctly
+            window.location.href = `/api/wallet/generate?code=${couponCode}`;
 
-            // Show success modal after a short delay
+            // Reset loading and show success modal after a delay
             setTimeout(() => {
                 setLoading(false);
                 setShowModal(true);
-            }, 800);
+            }, 2000);
 
         } catch (error: any) {
             console.error("Wallet Error:", error);
