@@ -55,6 +55,19 @@ export async function GET(request: NextRequest) {
             .select('*', { count: 'exact', head: true })
             .eq('merchant_id', merchant.id)
 
+        // 5. Get Total Page Views
+        const { count: viewsCount, error: viewsError } = await supabase
+            .from('page_views')
+            .select('*', { count: 'exact', head: true })
+            .eq('merchant_id', merchant.id)
+
+        // 6. Get Apple Wallet Additions (added_to_wallet = true)
+        const { count: walletCount, error: walletError } = await supabase
+            .from('wallet_downloads')
+            .select('*', { count: 'exact', head: true })
+            .eq('merchant_slug', slug)
+            .eq('added_to_wallet', true)
+
         if (todayError || totalError || claimsError) {
             console.error('Error fetching stats', todayError, totalError, claimsError)
             return NextResponse.json({ success: false, error: 'Failed to fetch stats' }, { status: 500 })
@@ -65,7 +78,9 @@ export async function GET(request: NextRequest) {
             stats: {
                 todayRedemptions: todayCount || 0,
                 totalRedemptions: totalCount || 0,
-                totalClaims: claimsCount || 0
+                totalClaims: claimsCount || 0,
+                totalViews: viewsCount || 0,
+                walletAdditions: walletCount || 0
             }
         })
 
