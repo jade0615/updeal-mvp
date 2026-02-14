@@ -411,8 +411,8 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
               </div>
             </div>
 
-            {/* New Analytics Row: Views, Claims, Wallet Additions */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 grid grid-cols-3 gap-4">
+            {/* New Analytics Row: Views, Claims */}
+            <div className="bg-white rounded-2xl shadow-xl p-6 grid grid-cols-2 gap-4">
               <div className="bg-blue-50 rounded-xl p-4 text-center">
                 <p className="text-xs font-bold text-blue-600 uppercase">浏览量</p>
                 <p className="text-2xl font-bold text-blue-900 mt-1">{stats.totalViews}</p>
@@ -420,10 +420,6 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
               <div className="bg-green-50 rounded-xl p-4 text-center">
                 <p className="text-xs font-bold text-green-600 uppercase">领取量</p>
                 <p className="text-2xl font-bold text-green-900 mt-1">{stats.totalClaims}</p>
-              </div>
-              <div className="bg-amber-50 rounded-xl p-4 text-center">
-                <p className="text-xs font-bold text-amber-600 uppercase">Apple Wallet 添加</p>
-                <p className="text-2xl font-bold text-amber-900 mt-1">{stats.walletAdditions}</p>
               </div>
             </div>
 
