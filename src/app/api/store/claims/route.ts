@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
             .select(`
                 code,
                 created_at,
+                expected_visit_date,
                 users (
                     name,
                     email,
@@ -52,6 +53,7 @@ export async function GET(request: NextRequest) {
         const formattedClaims = claims.map((c: any) => ({
             code: c.code,
             createdAt: c.created_at,
+            expectedVisitDate: c.expected_visit_date,
             customerName: c.users?.name || '未知',
             customerEmail: c.users?.email || '-',
             customerPhone: c.users?.phone || '-'

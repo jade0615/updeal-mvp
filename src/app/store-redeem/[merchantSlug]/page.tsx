@@ -566,16 +566,17 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
                   <th className="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">电话/邮箱</th>
                   <th className="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">优惠券码</th>
                   <th className="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">领取时间</th>
+                  <th className="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">预约到访</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {claimsLoading ? (
                   <tr>
-                    <td colSpan={4} className="px-2 py-8 text-center text-sm text-gray-500">加载中...</td>
+                    <td colSpan={5} className="px-2 py-8 text-center text-sm text-gray-500">加载中...</td>
                   </tr>
                 ) : claims.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-2 py-8 text-center text-sm text-gray-500">暂无领取记录</td>
+                    <td colSpan={5} className="px-2 py-8 text-center text-sm text-gray-500">暂无领取记录</td>
                   </tr>
                 ) : (
                   claims.map((claim, idx) => (
@@ -590,6 +591,11 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
                         {new Date(claim.createdAt).toLocaleString('zh-CN', {
                           month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
                         })}
+                      </td>
+                      <td className="px-2 py-4 whitespace-nowrap text-xs text-gray-600 font-medium">
+                        {claim.expectedVisitDate ? new Date(claim.expectedVisitDate).toLocaleDateString('zh-CN', {
+                          month: '2-digit', day: '2-digit'
+                        }) : '-'}
                       </td>
                     </tr>
                   ))
