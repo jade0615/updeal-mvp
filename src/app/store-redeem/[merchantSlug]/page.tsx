@@ -67,6 +67,25 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
   const [fullHistory, setFullHistory] = useState<any[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
 
+  // Claims List State
+  const [claims, setClaims] = useState<any[]>([])
+  const [claimsLoading, setClaimsLoading] = useState(false)
+
+  const fetchClaims = async () => {
+    setClaimsLoading(true)
+    try {
+      const res = await fetch(`/api/store/claims?slug=${merchantSlug}`)
+      const data = await res.json()
+      if (data.success) {
+        setClaims(data.claims)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setClaimsLoading(false)
+    }
+  }
+
   const fetchHistory = async () => {
     setHistoryLoading(true)
     try {
@@ -105,7 +124,7 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
     }
   }, [merchantSlug])
 
-  // Fetch stats when authenticated
+  // Fetch stats and claims when authenticated
   useEffect(() => {
     if (isAuthenticated && merchantSlug) {
       fetch(`/api/store/stats?slug=${merchantSlug}`)
@@ -116,6 +135,8 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
           }
         })
         .catch(err => console.error('Failed to load stats', err))
+
+      fetchClaims()
     }
   }, [isAuthenticated, merchantSlug])
 
@@ -531,6 +552,52 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
             </div>
           </div>
         )}
+
+        {/* Claim Records */}
+        <div className="bg-white rounded-2xl shadow-xl p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <span>👥</span> 领取记录
+          </h2>
+          <div className="overflow-x-auto -mx-6 px-6">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr>
+                  <th className="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">姓名</th>
+                  <th className="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">电话/邮箱</th>
+                  <th className="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">优惠券码</th>
+                  <th className="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">领取时间</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {claimsLoading ? (
+                  <tr>
+                    <td colSpan={4} className="px-2 py-8 text-center text-sm text-gray-500">加载中...</td>
+                  </tr>
+                ) : claims.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-2 py-8 text-center text-sm text-gray-500">暂无领取记录</td>
+                  </tr>
+                ) : (
+                  claims.map((claim, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50">
+                      <td className="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{claim.customerName}</td>
+                      <td className="px-2 py-4 whitespace-nowrap text-xs text-gray-500">
+                        <div>{claim.customerPhone}</div>
+                        <div className="opacity-60">{claim.customerEmail}</div>
+                      </td>
+                      <td className="px-2 py-4 whitespace-nowrap text-xs font-mono text-gray-600">{claim.code}</td>
+                      <td className="px-2 py-4 whitespace-nowrap text-xs text-gray-400">
+                        {new Date(claim.createdAt).toLocaleString('zh-CN', {
+                          month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+                        })}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
       </div>
 
