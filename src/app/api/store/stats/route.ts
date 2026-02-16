@@ -1,6 +1,6 @@
-
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getNYStartOfDay } from '@/lib/utils/date'
 
 export const dynamic = 'force-dynamic';
 
@@ -31,16 +31,15 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'Merchant not found' }, { status: 404 })
         }
 
-        // 2. Get Today's Redemptions
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        // 2. Get Today's Redemptions (NY Time)
+        const todayStart = getNYStartOfDay()
 
         const { count: todayCount, error: todayError } = await supabase
             .from('coupons')
             .select('*', { count: 'exact', head: true })
             .eq('merchant_id', merchant.id)
             .eq('status', 'redeemed')
-            .gte('redeemed_at', today.toISOString()) // Filter by redeemed time
+            .gte('redeemed_at', todayStart) // Filter by redeemed time (NY Start of Day)
 
         // 3. Get Total Redemptions
         const { count: totalCount, error: totalError } = await supabase

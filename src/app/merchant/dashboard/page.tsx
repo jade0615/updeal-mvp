@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getMerchantAnalytics, type MerchantAnalytics } from '@/actions/merchant-analytics'
 import { logoutMerchantAction } from '@/actions/merchant-auth'
+import { getNYLastUpdatedMessage } from '@/lib/utils/date'
 
 
 export default function MerchantDashboardPage() {
@@ -103,7 +104,12 @@ export default function MerchantDashboardPage() {
                             <h1 className="text-2xl font-bold text-gray-900">
                                 {analytics?.merchantName || '商户后台'}
                             </h1>
-                            <p className="text-sm text-gray-500 mt-1">数据统计面板</p>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-x-4">
+                                <p className="text-sm text-gray-500 mt-1">数据统计面板</p>
+                                <p className="text-xs text-blue-500 mt-1 font-medium bg-blue-50 px-2 py-0.5 rounded-full">
+                                    数据更新时间：{getNYLastUpdatedMessage()}
+                                </p>
+                            </div>
                         </div>
                         <div className="flex gap-3">
                             <button

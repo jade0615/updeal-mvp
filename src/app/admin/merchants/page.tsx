@@ -6,6 +6,7 @@ import ToggleMerchantStatus from '@/components/admin/ToggleMerchantStatus'
 import MerchantSearch from '@/components/admin/MerchantSearch'
 import { getAllMerchantsStats } from '@/actions/analytics'
 import TimeRangeFilter from '@/components/admin/TimeRangeFilter'
+import { getNYLastUpdatedMessage } from '@/lib/utils/date'
 
 interface Props {
   searchParams: Promise<{ q?: string; period?: string }>
@@ -40,8 +41,13 @@ export default async function MerchantsPage({ searchParams }: Props) {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col gap-6 mb-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">商家管理 dashboard</h1>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">商家管理 dashboard</h1>
+              <p className="text-sm text-blue-600 mt-1 font-medium">
+                数据更新时间：{getNYLastUpdatedMessage()}
+              </p>
+            </div>
             <div className="flex gap-3 items-center">
               <MerchantSearch />
               <ExportMerchantsButton merchants={merchants || []} />
@@ -59,7 +65,7 @@ export default async function MerchantsPage({ searchParams }: Props) {
             <span className="text-sm font-medium text-gray-500">统计时间范围:</span>
             <TimeRangeFilter />
             <span className="text-xs text-gray-400 ml-auto">
-              Data updates in real-time
+              数据实时更新 (NY Time)
             </span>
           </div>
         </div>

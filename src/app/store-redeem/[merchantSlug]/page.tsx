@@ -2,6 +2,8 @@
 
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { formatToNYTime, getNYLastUpdatedMessage } from '@/lib/utils/date'
 
 interface RedeemResult {
   success: boolean
@@ -21,6 +23,7 @@ interface RedeemHistoryItem {
   code: string
   time: string
   success: boolean
+  couponName?: string // Newly added
 }
 
 interface MerchantPageProps {
@@ -274,7 +277,7 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
           // Use verification data for name if available, or fallback
           // The redeem endpoint returns `coupon.offer`, we can use that too.
           couponName: verificationData?.name || data.coupon?.offer || '优惠券',
-          time: new Date().toLocaleTimeString('zh-CN', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+          time: new Date().toISOString(), // Store as ISO string for consistent parsing
           success: data.success
         }
         setHistory(prev => [newItem, ...prev.slice(0, 9)])
@@ -408,6 +411,9 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
             {merchantName}
           </h1>
           <p className="text-gray-500 text-sm">核销终端</p>
+          <p className="text-xs text-blue-600 mt-1 font-medium italic">
+            数据实时更新 (NY Time) | {getNYLastUpdatedMessage()}
+          </p>
         </div>
 
         {/* Stats Card */}
@@ -542,7 +548,9 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
                     <span className="font-mono text-xs text-gray-500">{item.code}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-400">{item.time}</span>
+                    <span className="text-xs font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded">
+                      {formatToNYTime(item.time, { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                     <span className="text-lg">
                       {item.success ? '✅' : '⚠️'}
                     </span>
@@ -588,7 +596,7 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
                       </td>
                       <td className="px-2 py-4 whitespace-nowrap text-xs font-mono text-gray-600">{claim.code}</td>
                       <td className="px-2 py-4 whitespace-nowrap text-xs text-gray-400">
-                        {new Date(claim.createdAt).toLocaleString('zh-CN', {
+                        {formatToNYTime(claim.createdAt, {
                           month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
                         })}
                       </td>
@@ -698,7 +706,7 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
                         {fullHistory.map((item, idx) => (
                           <tr key={idx} className="hover:bg-gray-50 transition-colors">
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {new Date(item.redeemed_at).toLocaleString('zh-CN', {
+                              {formatToNYTime(item.redeemed_at, {
                                 month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
                               })}
                             </td>

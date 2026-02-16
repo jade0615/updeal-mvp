@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { cookies, headers } from 'next/headers'
+import { getNYPeriodRange, getNYStartOfDay } from '@/lib/utils/date'
 
 export type EventType = 'page_view' | 'form_submit' | 'coupon_claim' | 'coupon_redeem' | 'button_click'
 
@@ -324,43 +325,8 @@ export async function getAllMerchantsStats(period: string = 'today') {
     return []
   }
 
-  // 2. Calculate Date Range
-  const now = new Date();
-  let startDate: string | null = null;
-  let endDate: string | null = null;
-
-  // Helper to set start of day
-  const getStartOfDay = (d: Date) => {
-    const copy = new Date(d);
-    copy.setHours(0, 0, 0, 0);
-    return copy.toISOString();
-  }
-
-  switch (period) {
-    case 'today':
-      startDate = getStartOfDay(now);
-      break;
-    case 'yesterday':
-      const yest = new Date(now);
-      yest.setDate(yest.getDate() - 1);
-      startDate = getStartOfDay(yest);
-      endDate = getStartOfDay(now);
-      break;
-    case '7d':
-      const d7 = new Date(now);
-      d7.setDate(d7.getDate() - 7);
-      startDate = getStartOfDay(d7);
-      break;
-    case '30d':
-      const d30 = new Date(now);
-      d30.setDate(d30.getDate() - 30);
-      startDate = getStartOfDay(d30);
-      break;
-    case 'all':
-    default:
-      startDate = null;
-      break;
-  }
+  // 2. Calculate Date Range using NY Time
+  const { startDate, endDate } = getNYPeriodRange(period);
 
   // 3. Fetch Real-time Aggregations for each merchant
   const enrichedMerchants = await Promise.all(merchants.map(async (merchant) => {
@@ -369,8 +335,8 @@ export async function getAllMerchantsStats(period: string = 'today') {
     let claimsQuery = supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id);
     let redeemedQuery = supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).eq('status', 'redeemed');
 
-    // Queries for TODAY specifically
-    const todayStart = getStartOfDay(now);
+    // Queries for TODAY specifically (NY Time)
+    const todayStart = getNYStartOfDay();
     let todayViewsQuery = supabase.from('page_views').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).gte('viewed_at', todayStart);
     let todayRedeemedQuery = supabase.from('coupons').select('*', { count: 'exact', head: true }).eq('merchant_id', merchant.id).eq('status', 'redeemed').gte('redeemed_at', todayStart);
 
