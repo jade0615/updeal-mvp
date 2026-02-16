@@ -687,26 +687,33 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">时间</th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">优惠券 / 折扣</th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">顾客信息</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">时间</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">优惠券码</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">折扣项目</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">客户姓名</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">联系方式</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white">
                         {fullHistory.map((item, idx) => (
                           <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                               {new Date(item.redeemed_at).toLocaleString('zh-CN', {
                                 month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
                               })}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-bold text-gray-900">{item.offer_discount}</div>
-                              <div className="text-xs font-mono text-gray-500">{item.code}</div>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
+                              {item.code}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-gray-900">{item.customer_name || '-'}</div>
-                              <div className="text-xs text-gray-500">{item.customer_phone || item.customer_email || '-'}</div>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                              {item.offer_discount || '优惠券'}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {item.customer_name}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-500">
+                              <div>{item.customer_phone}</div>
+                              <div className="opacity-60">{item.customer_email}</div>
                             </td>
                           </tr>
                         ))}
