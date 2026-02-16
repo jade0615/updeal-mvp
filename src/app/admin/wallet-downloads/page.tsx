@@ -3,6 +3,7 @@ import { getMerchantCustomerStats } from '@/actions/customers';
 import WalletDownloadsTable from '@/components/admin/WalletDownloadsTable';
 import MerchantStatsCards from '@/components/admin/MerchantStatsCards';
 import { Suspense } from 'react';
+import { getNYLastUpdatedMessage } from '@/lib/utils/date';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,9 +50,14 @@ export default async function WalletDownloadsPage({ searchParams }: Props) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-6">
                     <h1 className="text-2xl font-bold text-gray-900">Apple Wallet 下载追踪</h1>
-                    <p className="mt-1 text-sm text-gray-500">
-                        监控客户将优惠券添加到 Apple Wallet 的实时情况
-                    </p>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-x-4">
+                        <p className="mt-1 text-sm text-gray-500">
+                            监控客户将优惠券添加到 Apple Wallet 的实时情况 (NY Time)
+                        </p>
+                        <p className="text-xs text-blue-500 mt-1 font-medium bg-blue-50 px-2 py-0.5 rounded-full">
+                            数据更新时间：{getNYLastUpdatedMessage()}
+                        </p>
+                    </div>
                 </div>
 
                 {/* Optional: Add merchant cards here if beneficial, 

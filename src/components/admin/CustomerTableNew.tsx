@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CustomerData } from '@/actions/customers'
+import { formatToNYTime } from '@/lib/utils/date'
 import { ChevronLeft, ChevronRight, Phone, User, Tag, Calendar, Copy, Check, Search, Mail } from 'lucide-react'
 import { useState } from 'react'
 
@@ -166,7 +167,7 @@ export default function CustomerTableNew({ data, total, page, limit, selectedMer
                                     <div className="flex items-center gap-2">
                                         <Calendar className="h-4 w-4 text-gray-400" />
                                         <span className="text-sm text-gray-500">
-                                            {customer.claimed_at}
+                                            {formatToNYTime(customer.claimed_at)}
                                         </span>
                                     </div>
 

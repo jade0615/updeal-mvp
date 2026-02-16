@@ -3,6 +3,7 @@ import CustomerExportButton from '@/components/admin/CustomerExportButton';
 import MerchantStatsCards from '@/components/admin/MerchantStatsCards';
 import CustomerTableNew from '@/components/admin/CustomerTableNew';
 import { Suspense } from 'react';
+import { getNYLastUpdatedMessage } from '@/lib/utils/date';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,9 +61,14 @@ export default async function CustomersPage({ searchParams }: Props) {
                 <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">客户数据</h1>
-                        <p className="mt-1 text-sm text-gray-500">
-                            查看和管理所有客户信息，按商家分类查看
-                        </p>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-x-4">
+                            <p className="mt-1 text-sm text-gray-500">
+                                查看和管理所有客户信息 (NY Time)
+                            </p>
+                            <p className="text-xs text-blue-500 mt-1 font-medium bg-blue-50 px-2 py-0.5 rounded-full">
+                                数据更新时间：{getNYLastUpdatedMessage()}
+                            </p>
+                        </div>
                     </div>
                     <CustomerExportButton data={customers || []} />
                 </div>

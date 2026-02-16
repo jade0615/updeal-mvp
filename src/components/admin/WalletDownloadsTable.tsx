@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { WalletDownload } from '@/actions/wallet-downloads'
+import { formatToNYTime } from '@/lib/utils/date'
 import { ChevronLeft, ChevronRight, Phone, User, Tag, Calendar, Copy, Check, Search, Mail, Smartphone, X } from 'lucide-react'
 import { useState } from 'react'
 
@@ -168,7 +169,7 @@ export default function WalletDownloadsTable({ data, total, page, limit, merchan
                                         )}
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-500">
-                                        {new Date(download.downloaded_at).toLocaleString('zh-CN')}
+                                        {formatToNYTime(download.downloaded_at)}
                                     </td>
                                 </tr>
                             ))}

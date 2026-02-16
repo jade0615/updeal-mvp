@@ -1,5 +1,6 @@
 import { logoutAdmin } from '@/actions/auth'
 import { getAllMerchantsStats } from '@/actions/analytics'
+import { getNYLastUpdatedMessage } from '@/lib/utils/date'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,7 +26,10 @@ export default async function AdminDashboard() {
           <div className="flex justify-between items-end">
             <div>
               <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">运营概览</h1>
-              <p className="mt-2 text-slate-500 font-medium">实时监控全平台商家经营数据</p>
+              <p className="mt-2 text-slate-500 font-medium">实时监控全平台商家经营数据 (America/New_York)</p>
+              <p className="mt-1 text-sm text-blue-600 font-bold bg-blue-50/50 px-3 py-1 rounded-lg inline-block">
+                数据更新时间：{getNYLastUpdatedMessage()}
+              </p>
             </div>
             <div className="flex gap-3">
               <a href="/admin/merchants" className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
