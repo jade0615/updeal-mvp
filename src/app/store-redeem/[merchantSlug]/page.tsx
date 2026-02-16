@@ -706,7 +706,7 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
                               {item.code}
                             </td>
                             <td className="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                              {item.offer_discount || '优惠券'}
+                              {item.offer_name || '优惠券'}
                             </td>
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                               {item.customer_name}
