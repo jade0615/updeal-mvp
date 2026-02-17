@@ -48,17 +48,25 @@ export async function sendExpirationRemindersAction(explicitMerchantId?: string)
             targetMerchantId = session.merchants.id;
         }
 
-        // 2. Check cooldown (24 hours) - only if NOT admin (Admins can override or we still want the log?)
-        // The user said: "同一商户 24 小时内只能群发一次"，so let's keep it for everyone for now.
+        // 2. Resolve merchant details
+        // We select 'content' because address and phone are nested inside it
         const { data: mData, error: mError } = await supabase
             .from('merchants')
-            .select('last_reminder_sent_at, name, slug, address, phone')
-            .eq('id', targetMerchantId)
+            .select('last_reminder_sent_at, name, slug, content')
+            .or(`id.eq.${targetMerchantId},slug.eq.${targetMerchantId}`)
             .single()
 
         if (mError || !mData) {
+            console.error('Error fetching merchant for reminders:', mError)
             return { success: false, error: '获取商家信息失败' }
         }
+
+        // If we found it by slug, update targetMerchantId to the actual UUID for subsequent queries
+        targetMerchantId = (mData as any).id || targetMerchantId;
+
+        const merchantContent = (mData.content as any) || {}
+        const merchantAddress = merchantContent.address?.fullAddress || merchantContent.address?.street || ''
+        const merchantPhone = merchantContent.phone || ''
 
         if (mData.last_reminder_sent_at) {
             const lastSent = new Date(mData.last_reminder_sent_at).getTime()
@@ -121,8 +129,8 @@ export async function sendExpirationRemindersAction(explicitMerchantId?: string)
                     html: getExpirationReminderEmailTemplate({
                         name: user.name || '',
                         merchantName: mData.name || 'Merchant',
-                        merchantAddress: (mData.address) || '',
-                        merchantPhone: (mData.phone) || '',
+                        merchantAddress: merchantAddress,
+                        merchantPhone: merchantPhone,
                         merchantSlug: mData.slug
                     }),
                 })
@@ -191,7 +199,18 @@ export async function getEligibleRecipientsCount(explicitMerchantId?: string): P
             if (!token) return { count: 0, error: '未授权' };
             const admin = await validateSession(token);
             if (!admin) return { count: 0, error: '未授权' };
-            targetMerchantId = explicitMerchantId;
+
+            // Resolve actual merchant ID and verify existence
+            const { data: mData, error: mError } = await supabase
+                .from('merchants')
+                .select('id')
+                .or(`id.eq.${explicitMerchantId},slug.eq.${explicitMerchantId}`)
+                .maybeSingle()
+
+            if (mError || !mData) {
+                return { count: 0, error: '获取商家信息失败' }
+            }
+            targetMerchantId = mData.id;
         } else {
             // Merchant context
             const session = await getMerchantSession()
