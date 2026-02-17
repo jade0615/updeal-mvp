@@ -3,6 +3,8 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { resend, DEFAULT_FROM_EMAIL } from '@/lib/email/resend'
+import { getCouponClaimedEmailTemplate } from '@/lib/email/templates'
 
 const claimSchema = z.object({
     merchant_id: z.string().uuid(),
@@ -41,6 +43,32 @@ export async function createClaim(data: ClaimFormData) {
         if (error) {
             console.error('Error creating claim:', error)
             return { success: false, error: 'Failed to create claim. Please try again.' }
+        }
+
+        // --- Send Confirmation Email ---
+        if (validated.email && resend) {
+            try {
+                // Fetch merchant name for the email
+                const { data: merchant } = await supabase
+                    .from('merchants')
+                    .select('name')
+                    .eq('id', validated.merchant_id)
+                    .single();
+
+                await resend.emails.send({
+                    from: DEFAULT_FROM_EMAIL,
+                    to: validated.email,
+                    subject: `🎁 Your Coupon from ${merchant?.name || 'Updeal'} is Ready!`,
+                    html: getCouponClaimedEmailTemplate({
+                        name: validated.name,
+                        couponCode: validated.coupon_code,
+                        merchantName: merchant?.name,
+                    }),
+                });
+            } catch (emailError) {
+                // Log but don't fail the claim if email fails
+                console.error('Failed to send claim email:', emailError);
+            }
         }
 
         // Optional: Revalidate analytics or merchant page if needed
