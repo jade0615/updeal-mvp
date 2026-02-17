@@ -6,6 +6,7 @@ import { updateMerchant, getMerchant } from '@/actions/merchants'
 import type { MerchantFormData } from '@/lib/utils/validation'
 import Link from 'next/link'
 import { Copy, ExternalLink, Check, MapPin, Clock, Phone, Globe } from 'lucide-react'
+import SendRemindersButton from '@/components/merchant/SendRemindersButton'
 
 export default function EditMerchantPage() {
     const router = useRouter()
@@ -359,6 +360,11 @@ export default function EditMerchantPage() {
                             </p>
                         </div>
                     </div>
+                </div>
+
+                {/* === REMINDERS CARD === */}
+                <div className="mb-6">
+                    <SendRemindersButton merchantId={params.id as string} />
                 </div>
 
                 <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-8">

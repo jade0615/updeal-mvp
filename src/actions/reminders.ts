@@ -4,6 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getMerchantSession } from '@/lib/merchant-auth'
 import { resend } from '@/lib/email/resend'
 import { getExpirationReminderEmailTemplate } from '@/lib/email/templates'
+import { cookies } from 'next/headers'
+import { validateSession } from '@/lib/auth/session'
 
 export interface RemindersResult {
     success: boolean
@@ -15,28 +17,43 @@ export interface RemindersResult {
 }
 
 /**
- * Server action to send coupon expiration reminders for the current merchant
+ * Server action to send coupon expiration reminders for a specific merchant
  */
-export async function sendExpirationRemindersAction(): Promise<RemindersResult> {
+export async function sendExpirationRemindersAction(explicitMerchantId?: string): Promise<RemindersResult> {
     try {
-        // 1. Authenticate merchant
-        const session = await getMerchantSession()
-        if (!session || !session.merchants) {
-            return {
-                success: false,
-                error: '未登录，请先登录商家账号'
+        let targetMerchantId: string;
+        let adminSession: any = null;
+
+        const supabase = createAdminClient();
+
+        // 1. Authorization check
+        if (explicitMerchantId) {
+            // If merchantId is provided, requester MUST be an admin
+            const cookieStore = await cookies();
+            const token = cookieStore.get('updeal_admin_session')?.value;
+            if (!token) {
+                return { success: false, error: '未授权：需要管理员权限' };
             }
+            adminSession = await validateSession(token);
+            if (!adminSession) {
+                return { success: false, error: '未授权：管理员会话无效' };
+            }
+            targetMerchantId = explicitMerchantId;
+        } else {
+            // Default: use current merchant session
+            const session = await getMerchantSession();
+            if (!session || !session.merchants) {
+                return { success: false, error: '未登录，请先登录商家账号' };
+            }
+            targetMerchantId = session.merchants.id;
         }
 
-        const merchant = session.merchants
-        const merchantId = merchant.id
-        const supabase = createAdminClient()
-
-        // 2. Check cooldown (24 hours)
+        // 2. Check cooldown (24 hours) - only if NOT admin (Admins can override or we still want the log?)
+        // The user said: "同一商户 24 小时内只能群发一次"，so let's keep it for everyone for now.
         const { data: mData, error: mError } = await supabase
             .from('merchants')
             .select('last_reminder_sent_at, name, slug, address, phone')
-            .eq('id', merchantId)
+            .eq('id', targetMerchantId)
             .single()
 
         if (mError || !mData) {
@@ -52,7 +69,7 @@ export async function sendExpirationRemindersAction(): Promise<RemindersResult> 
                 const remaining = Math.ceil(24 - hoursSince)
                 return {
                     success: false,
-                    error: `发送频率限制：每 24 小时只能群发一次。请在 ${remaining} 小时后再试。`
+                    error: `发送频率限制：该商户每 24 小时只能群发一次。请在 ${remaining} 小时后再试。`
                 }
             }
         }
@@ -61,7 +78,7 @@ export async function sendExpirationRemindersAction(): Promise<RemindersResult> 
         const { data: coupons, error: cError } = await supabase
             .from('coupons')
             .select('user_id')
-            .eq('merchant_id', merchantId)
+            .eq('merchant_id', targetMerchantId)
             .neq('status', 'redeemed')
 
         if (cError) {
@@ -104,8 +121,8 @@ export async function sendExpirationRemindersAction(): Promise<RemindersResult> 
                     html: getExpirationReminderEmailTemplate({
                         name: user.name || '',
                         merchantName: mData.name || 'Merchant',
-                        merchantAddress: (mData as any).address || '', // Might be missing until DB updated
-                        merchantPhone: (mData as any).phone || '',     // Might be missing until DB updated
+                        merchantAddress: (mData.address) || '',
+                        merchantPhone: (mData.phone) || '',
                         merchantSlug: mData.slug
                     }),
                 })
@@ -125,21 +142,21 @@ export async function sendExpirationRemindersAction(): Promise<RemindersResult> 
         await supabase
             .from('merchants')
             .update({ last_reminder_sent_at: now })
-            .eq('id', merchantId)
+            .eq('id', targetMerchantId)
 
-        // Log campaign (optional, ignore errors if table doesn't exist yet)
+        // Log campaign
         try {
             await supabase
                 .from('reminder_campaigns')
                 .insert({
-                    merchant_id: merchantId,
+                    merchant_id: targetMerchantId,
                     sent_at: now,
                     recipient_count: users.length,
                     success_count: successCount,
                     fail_count: failCount
                 })
         } catch (e) {
-            console.warn('Logging campaign failed (table might not exist):', e)
+            console.warn('Logging campaign failed:', e)
         }
 
         return {
@@ -162,20 +179,32 @@ export async function sendExpirationRemindersAction(): Promise<RemindersResult> 
 /**
  * Get count of eligible recipients for reminders
  */
-export async function getEligibleRecipientsCount(): Promise<{ count: number; error?: string }> {
+export async function getEligibleRecipientsCount(explicitMerchantId?: string): Promise<{ count: number; error?: string }> {
     try {
-        const session = await getMerchantSession()
-        if (!session || !session.merchants) {
-            return { count: 0, error: '未登录' }
-        }
+        let targetMerchantId: string;
+        const supabase = createAdminClient();
 
-        const merchantId = session.merchants.id
-        const supabase = createAdminClient()
+        if (explicitMerchantId) {
+            // Admin context
+            const cookieStore = await cookies();
+            const token = cookieStore.get('updeal_admin_session')?.value;
+            if (!token) return { count: 0, error: '未授权' };
+            const admin = await validateSession(token);
+            if (!admin) return { count: 0, error: '未授权' };
+            targetMerchantId = explicitMerchantId;
+        } else {
+            // Merchant context
+            const session = await getMerchantSession()
+            if (!session || !session.merchants) {
+                return { count: 0, error: '未登录' }
+            }
+            targetMerchantId = session.merchants.id
+        }
 
         const { data: coupons, error: cError } = await supabase
             .from('coupons')
             .select('user_id')
-            .eq('merchant_id', merchantId)
+            .eq('merchant_id', targetMerchantId)
             .neq('status', 'redeemed')
 
         if (cError) return { count: 0, error: '获取优惠券失败' }

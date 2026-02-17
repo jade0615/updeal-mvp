@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { getEligibleRecipientsCount, sendExpirationRemindersAction, type RemindersResult } from '@/actions/reminders'
 
-export default function SendRemindersButton() {
+export default function SendRemindersButton({ merchantId }: { merchantId?: string }) {
     const [count, setCount] = useState<number | null>(null)
     const [loading, setLoading] = useState(false)
     const [showModal, setShowModal] = useState(false)
@@ -11,7 +11,7 @@ export default function SendRemindersButton() {
     const [error, setError] = useState<string | null>(null)
 
     const fetchCount = async () => {
-        const res = await getEligibleRecipientsCount()
+        const res = await getEligibleRecipientsCount(merchantId)
         if (res.error) {
             setError(res.error)
         } else {
@@ -21,13 +21,13 @@ export default function SendRemindersButton() {
 
     useEffect(() => {
         fetchCount()
-    }, [])
+    }, [merchantId])
 
     const handleSend = async () => {
         setLoading(true)
         setError(null)
         try {
-            const res = await sendExpirationRemindersAction()
+            const res = await sendExpirationRemindersAction(merchantId)
             setResult(res)
             if (!res.success) {
                 setError(res.error || '发送失败')
