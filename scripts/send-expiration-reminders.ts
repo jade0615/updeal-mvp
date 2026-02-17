@@ -65,6 +65,18 @@ async function main() {
         return;
     }
 
+    // --- Add manual recipients list ---
+    const manualRecipients = [
+        { email: 'yaaqiu@gmail.com', name: 'Yaaqiu' }
+    ];
+
+    // Merge manual recipients if they are not already in the list
+    manualRecipients.forEach(manual => {
+        if (!users.some(u => u.email?.toLowerCase() === manual.email.toLowerCase())) {
+            users.push(manual);
+        }
+    });
+
     console.log(`📊 Found ${users.length} unique customers with email.`);
     console.log('--- Recipient List ---');
     users.forEach((u, i) => console.log(`${i + 1}. ${u.name || 'N/A'} <${u.email}>`));
