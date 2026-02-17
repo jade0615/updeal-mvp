@@ -81,14 +81,14 @@ async function main() {
     console.log('--- Recipient List ---');
     users.forEach((u, i) => console.log(`${i + 1}. ${u.name || 'N/A'} <${u.email}>`));
 
-    if (DRY_RUN) {
-        console.log('\n✅ Dry run completed. No emails sent.');
-        return;
-    }
-
     if (!resend) {
         console.error('❌ RESEND_API_KEY not configured. Cannot send emails.');
         process.exit(1);
+    }
+
+    if (DRY_RUN) {
+        console.log('\n✅ Dry run completed. No emails sent.');
+        return;
     }
 
     console.log('\n📧 Sending emails...');

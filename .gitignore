@@ -40,3 +40,4 @@ src/certificates/*.csr
 src/certificates/*.cer
 src/certificates/*.p12
 src/certificates/*.pem
+.env*.local

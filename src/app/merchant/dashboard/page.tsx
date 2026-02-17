@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { getMerchantAnalytics, type MerchantAnalytics } from '@/actions/merchant-analytics'
 import { logoutMerchantAction } from '@/actions/merchant-auth'
 import { getNYLastUpdatedMessage } from '@/lib/utils/date'
+import SendRemindersButton from '@/components/merchant/SendRemindersButton'
 
 
 export default function MerchantDashboardPage() {
@@ -199,6 +200,9 @@ export default function MerchantDashboardPage() {
                         <p className="text-xs text-gray-400 mt-2">浏览到领取转化</p>
                     </div>
                 </div>
+
+                {/* Reminders Button */}
+                <SendRemindersButton />
 
                 {/* Additional Info */}
                 <div className="bg-white rounded-lg shadow p-6">

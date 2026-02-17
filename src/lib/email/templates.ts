@@ -131,14 +131,21 @@ export const getCouponClaimedEmailTemplate = (data: {
 
 export const getExpirationReminderEmailTemplate = (data: {
     name: string;
+    merchantName: string;
+    merchantAddress?: string;
+    merchantPhone?: string;
+    merchantSlug: string;
 }) => {
+    const { name, merchantName, merchantAddress, merchantPhone, merchantSlug } = data;
+    const previewUrl = `https://hiraccoon.com/${merchantSlug}`;
+
     return `
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Your Honoo Ramen Bar coupon is expiring soon!</title>
+            <title>Your ${merchantName} coupon is expiring soon!</title>
             <style>
                 body {
                     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -203,26 +210,26 @@ export const getExpirationReminderEmailTemplate = (data: {
                     <div class="logo">UPDEAL</div>
                 </div>
                 <div class="content">
-                    <p>Hi ${data.name || 'there'},</p>
-                    <p>Just a friendly reminder — your exclusive <strong>Free Drink</strong> coupon for <strong>Honoo Ramen Bar</strong> is expiring soon! Don't miss out on this deal.</p>
+                    <p>Hi ${name || 'there'},</p>
+                    <p>Just a friendly reminder — your exclusive coupon for <strong>${merchantName}</strong> is expiring soon! Don't miss out on this deal.</p>
                     
                     <p>Come visit us before it's too late:</p>
                     
                     <div class="address-box">
-                        <strong>📍 Honoo Ramen Bar</strong><br>
-                        📫 814 W Grace St, Richmond, VA 23220<br>
-                        📞 (804) 658-2231
+                        <strong>📍 ${merchantName}</strong><br>
+                        ${merchantAddress ? `📫 ${merchantAddress}<br>` : ''}
+                        ${merchantPhone ? `📞 ${merchantPhone}` : ''}
                     </div>
                     
                     <div style="text-align: center;">
-                        <a href="https://hiraccoon.com/honoo-ramen-bar-1" class="button">View your coupon</a>
+                        <a href="${previewUrl}" class="button">View your coupon</a>
                     </div>
                     
                     <p style="margin-top: 30px;">We can't wait to see you!</p>
-                    <p>Best,<br>Honoo Ramen Bar</p>
+                    <p>Best,<br>${merchantName}</p>
                 </div>
                 <div class="footer">
-                    <p>&copy; ${new Date().getFullYear()} Updeal & Honoo Ramen Bar. All rights reserved.</p>
+                    <p>&copy; ${new Date().getFullYear()} Updeal & ${merchantName}. All rights reserved.</p>
                 </div>
             </div>
         </body>
