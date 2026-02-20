@@ -204,6 +204,21 @@ export default function MerchantDashboardPage() {
                 {/* Reminders Button */}
                 <SendRemindersButton />
 
+                {/* Manual Email Card */}
+                <a
+                    href="/merchant/dashboard/email"
+                    className="mt-4 flex items-center gap-4 p-5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg shadow-blue-200 hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all group"
+                >
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                        ✉️
+                    </div>
+                    <div className="flex-1">
+                        <div className="font-bold text-white text-base">主动发邮件</div>
+                        <div className="text-blue-100 text-sm mt-0.5">勾选客户，自定义内容，一键发送</div>
+                    </div>
+                    <div className="text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all text-xl">→</div>
+                </a>
+
                 {/* Additional Info */}
                 <div className="bg-white rounded-lg shadow p-6">
                     <h2 className="text-lg font-semibold text-gray-900 mb-4">使用说明</h2>

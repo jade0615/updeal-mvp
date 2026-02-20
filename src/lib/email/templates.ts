@@ -236,3 +236,344 @@ export const getExpirationReminderEmailTemplate = (data: {
         </html>
     `;
 };
+
+export const getVerificationReminderEmailTemplate = (data: {
+    name: string;
+    merchantName: string;
+    merchantAddress?: string;
+    merchantPhone?: string;
+    merchantSlug: string;
+}) => {
+    const { name, merchantName, merchantAddress, merchantPhone, merchantSlug } = data;
+    const previewUrl = `https://hiraccoon.com/${merchantSlug}`;
+
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Verification Reminder: Your ${merchantName} coupon!</title>
+            <style>
+                body {
+                    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                    background-color: #f4f4f5;
+                    margin: 0;
+                    padding: 0;
+                    line-height: 1.6;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    background-color: #ffffff;
+                    border-radius: 16px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                }
+                .header {
+                    background: #0F172A;
+                    padding: 30px 20px;
+                    text-align: center;
+                }
+                .logo {
+                    color: #D4AF37;
+                    font-size: 28px;
+                    font-weight: bold;
+                }
+                .content {
+                    padding: 40px;
+                    color: #1E293B;
+                }
+                .content p {
+                    margin-bottom: 20px;
+                }
+                .address-box {
+                    background-color: #F8FAFC;
+                    border-left: 4px solid #D4AF37;
+                    padding: 20px;
+                    margin: 30px 0;
+                }
+                .button {
+                    display: inline-block;
+                    background-color: #0F172A;
+                    color: #ffffff !important;
+                    padding: 14px 28px;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-weight: 600;
+                    margin-top: 10px;
+                }
+                .footer {
+                    padding: 30px;
+                    text-align: center;
+                    font-size: 14px;
+                    color: #64748B;
+                    background-color: #F8FAFC;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div class="logo">UPDEAL</div>
+                </div>
+                <div class="content">
+                    <p>Hi ${name || 'there'},</p>
+                    <p>We noticed you haven't used your special coupon for <strong>${merchantName}</strong> yet! 🍜</p>
+                    <p>This is just a friendly reminder to come and verify your voucher at the store. We'd love to serve you soon!</p>
+                    
+                    <div class="address-box">
+                        <strong>📍 ${merchantName}</strong><br>
+                        ${merchantAddress ? `📫 ${merchantAddress}<br>` : ''}
+                        ${merchantPhone ? `📞 ${merchantPhone}` : ''}
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <a href="${previewUrl}" class="button">View your coupon</a>
+                    </div>
+                    
+                    <p style="margin-top: 30px;">See you soon!</p>
+                    <p>Best,<br>${merchantName}</p>
+                </div>
+                <div class="footer">
+                    <p>&copy; ${new Date().getFullYear()} Updeal & ${merchantName}. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+};
+
+export const getHotPot757ExpirationReminderTemplate = (data: {
+    name: string;
+}) => {
+    const { name } = data;
+    const merchantName = 'Hot Pot 757 Colonial Heights';
+    const merchantAddress = '1042 Temple Ave, Colonial Heights, VA 23834';
+    const merchantPhone = '(804) 805-8363';
+    const merchantSlug = 'hot-pot-757-colonial-heights';
+    const previewUrl = `https://hiraccoon.com/${merchantSlug}`;
+
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Your ${merchantName} coupon is expiring soon!</title>
+            <style>
+                body {
+                    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                    background-color: #f4f4f5;
+                    margin: 0;
+                    padding: 0;
+                    line-height: 1.6;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    background-color: #ffffff;
+                    border-radius: 16px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                }
+                .header {
+                    background: #0F172A;
+                    padding: 30px 20px;
+                    text-align: center;
+                }
+                .logo {
+                    color: #D4AF37;
+                    font-size: 28px;
+                    font-weight: bold;
+                }
+                .content {
+                    padding: 40px;
+                    color: #1E293B;
+                }
+                .content p {
+                    margin-bottom: 20px;
+                }
+                .highlight-box {
+                    background-color: #F8FAFC;
+                    border-left: 4px solid #D4AF37;
+                    padding: 20px;
+                    margin: 30px 0;
+                }
+                .button {
+                    display: inline-block;
+                    background-color: #0F172A;
+                    color: #ffffff !important;
+                    padding: 14px 28px;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-weight: 600;
+                    margin-top: 10px;
+                }
+                .footer {
+                    padding: 30px;
+                    text-align: center;
+                    font-size: 14px;
+                    color: #64748B;
+                    background-color: #F8FAFC;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div class="logo">UPDEAL</div>
+                </div>
+                <div class="content">
+                    <p>Hi ${name || 'there'},</p>
+                    <p>Just a friendly reminder — your exclusive <strong>Free Boba Tea</strong> coupon for <strong>${merchantName}</strong> is expiring soon! Don't miss out on this deal.</p>
+                    
+                    <p>🎟️ Already added to Apple Wallet? Check your Wallet app — your coupon is ready to use!</p>
+                    
+                    <p>Come visit us before it's too late:</p>
+                    
+                    <div class="highlight-box">
+                        <strong>📍 ${merchantName}</strong><br>
+                        📫 ${merchantAddress}<br>
+                        📞 ${merchantPhone}
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <a href="${previewUrl}" class="button">View your coupon</a>
+                    </div>
+                    
+                    <p style="margin-top: 30px;">We can't wait to see you!</p>
+                    <p>Best,<br>${merchantName}</p>
+                </div>
+                <div class="footer">
+                    <p>&copy; ${new Date().getFullYear()} Updeal & ${merchantName}. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+};
+
+export const getHotPot757IcsReminderTemplate = (data: {
+    name?: string;
+    confirmationCode: string;
+}) => {
+    const { name, confirmationCode } = data;
+    const merchantName = 'Hot Pot 757 Colonial Heights';
+    const merchantAddress = '1042 Temple Ave, Colonial Heights, VA 23834';
+    const merchantPhone = '(804) 805-8363';
+    const merchantSlug = 'hot-pot-757-colonial-heights';
+    const previewUrl = `https://hiraccoon.com/${merchantSlug}`;
+
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Reminder: Your Hot Pot 757 Free Boba Tea coupon is expiring soon!</title>
+            <style>
+                body {
+                    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                    background-color: #f4f4f5;
+                    margin: 0;
+                    padding: 0;
+                    line-height: 1.6;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    background-color: #ffffff;
+                    border-radius: 16px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                }
+                .header {
+                    background: #0F172A;
+                    padding: 30px 20px;
+                    text-align: center;
+                }
+                .logo {
+                    color: #D4AF37;
+                    font-size: 28px;
+                    font-weight: bold;
+                }
+                .content {
+                    padding: 40px;
+                    color: #1E293B;
+                }
+                .content p {
+                    margin-bottom: 20px;
+                }
+                .code-box {
+                    background-color: #F8FAFC;
+                    border: 2px dashed #D4AF37;
+                    border-radius: 12px;
+                    padding: 20px;
+                    text-align: center;
+                    margin: 30px 0;
+                }
+                .address-box {
+                    background-color: #F8FAFC;
+                    border-left: 4px solid #D4AF37;
+                    padding: 20px;
+                    margin: 30px 0;
+                }
+                .button {
+                    display: inline-block;
+                    background-color: #0F172A;
+                    color: #ffffff !important;
+                    padding: 14px 28px;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-weight: 600;
+                    margin-top: 10px;
+                }
+                .footer {
+                    padding: 30px;
+                    text-align: center;
+                    font-size: 14px;
+                    color: #64748B;
+                    background-color: #F8FAFC;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div class="logo">UPDEAL</div>
+                </div>
+                <div class="content">
+                    <p>Hi ${name || 'there'},</p>
+                    <p>Just a friendly reminder — your exclusive <strong>Free Boba Tea</strong> coupon for <strong>${merchantName}</strong> is expiring soon! Don't miss out on this deal.</p>
+                    
+                    <div class="code-box">
+                        <span style="font-size: 14px; color: #64748B;">🎫 Your Confirmation Code:</span><br>
+                        <strong style="font-size: 32px; color: #0F172A; letter-spacing: 2px;">${confirmationCode}</strong>
+                    </div>
+
+                    <p>🎟️ Already added to Apple Wallet? Check your Wallet app — your coupon is ready to use!</p>
+                    
+                    <p>Come visit us before it's too late:</p>
+                    
+                    <div class="address-box">
+                        <strong>📍 ${merchantName}</strong><br>
+                        📫 ${merchantAddress}<br>
+                        📞 ${merchantPhone}
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <a href="${previewUrl}" class="button">View your coupon</a>
+                    </div>
+                    
+                    <p style="margin-top: 30px;">We can't wait to see you!</p>
+                    <p>Best,<br>${merchantName}</p>
+                </div>
+                <div class="footer">
+                    <p>&copy; ${new Date().getFullYear()} Updeal & ${merchantName}. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+};

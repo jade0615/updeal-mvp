@@ -1,0 +1,26 @@
+﻿[dotenv@17.2.3] injecting env (0) from .env.local -- tip: ΓÜÖ∩╕Å  load multiple .env files with { path: ['.env.local', '.env'] }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  enable debug logging with { debug: true }
+≡ƒÜÇ Starting Expiration Reminder Campaign for honoo-ramen-bar-1
+Mode: ≡ƒöì DRY RUN (No emails will be sent)
+≡ƒôè Found 18 unique customers with email.
+--- Recipient List ---
+1. Sarah <sarah.ordonez49@gmail.com>
+2. kai lee <llcoupon22@gmail.com>
+3. Kee <keasiamc@gmail.com>
+4. S Penn <sh.penn73@gmail.com>
+5. Divine <divinezhuo@gmail.com>
+6. Kristen Xayaboupha <kristenexx@gmail.com>
+7. Elvis Vera <eovera88@gmail.com>
+8. DeShanda Harris  <thedangerzonellc@gmail.com>
+9. Kyra Ruano <kyraruano12@gmail.com>
+10. Darek Olmos <dareko2006@gmail.com>
+11. Nicole <udaetarojaan@vcu.edu>
+12. India hatcher <indiahatcher11@gmail.com>
+13. Simon <simoneveryday@gmail.com>
+14. Mimi <mimilee81@gmail.com>
+15. Sydney A Steele <SYDNEYADAMSTEELE@HOTMAIL.COM>
+16. Kimberly Hall-Deans  <kimdeans@prodigy.net>
+17. Evelyn  <evelynd0111@gmail.com>
+18. Deven  <dlm10092019@gmail.com>
+
+Γ£à Dry run completed. No emails sent.
