@@ -88,10 +88,12 @@ export async function getMerchantEmailRecipients(): Promise<{
 
 // ─────────────────────────────────────────────
 // Send custom email to selected recipients
+// recipients array carries both email and name —
+// no second DB lookup needed, avoids "0 sent" bug
 // ─────────────────────────────────────────────
 
 export async function sendMerchantEmailAction(params: {
-    recipientEmails: string[]
+    recipients: { email: string; name: string | null }[]
     subject: string
     bodyText: string
 }): Promise<{
@@ -110,15 +112,6 @@ export async function sendMerchantEmailAction(params: {
         const merchant = session.merchants
         const supabase = createAdminClient()
 
-        // Fetch recipient details for the selected emails
-        const { data: users, error: userErr } = await supabase
-            .from('users')
-            .select('id, email, name')
-            .in('email', params.recipientEmails)
-
-        if (userErr) throw userErr
-
-        // Build HTML from body text (wrap in brand template)
         const buildHtml = (name: string | null, bodyText: string, merchantName: string) => `<!DOCTYPE html>
 <html>
 <head>
@@ -158,31 +151,34 @@ export async function sendMerchantEmailAction(params: {
         const campaignName = `merchant-${merchant.id.slice(0, 8)}-${new Date().toISOString().slice(0, 10)}`
         const sentAt = new Date().toISOString()
 
-        for (const user of (users || [])) {
-            const html = buildHtml(user.name, params.bodyText, merchant.name)
-            const result = await sendEmail({ to: user.email, subject: params.subject, html })
+        for (const recipient of params.recipients) {
+            const html = buildHtml(recipient.name, params.bodyText, merchant.name)
+            const result = await sendEmail({ to: recipient.email, subject: params.subject, html })
 
             const status = result.success ? 'success' : 'failed'
             results.push({
-                email: user.email,
-                name: user.name,
+                email: recipient.email,
+                name: recipient.name,
                 status,
                 error: result.success ? undefined : String((result as any).error || 'Unknown error'),
             })
 
-            // Write to email_logs
-            await supabase.from('email_logs').insert({
-                merchant_id: merchant.id,
-                recipient_email: user.email,
-                recipient_name: user.name,
-                subject: params.subject,
-                template_name: 'merchant-custom',
-                html_content: html,
-                status,
-                error_message: status === 'failed' ? String((result as any).error || '') : null,
-                campaign_name: campaignName,
-                sent_at: sentAt,
-            })
+            // Write to email_logs — silently ignore if table doesn't exist yet
+            try {
+                await supabase.from('email_logs').insert({
+                    merchant_id: merchant.id,
+                    recipient_email: recipient.email,
+                    recipient_name: recipient.name,
+                    subject: params.subject,
+                    template_name: 'merchant-custom',
+                    html_content: html,
+                    status,
+                    error_message: status === 'failed' ? String((result as any).error || '') : null,
+                    campaign_name: campaignName,
+                    sent_at: sentAt,
+                })
+            } catch { /* ignore if email_logs table not yet created */ }
+
 
             // Small delay to respect SMTP rate limits
             await new Promise(r => setTimeout(r, 300))

@@ -15,8 +15,8 @@ function StepBadge({ step, current }: { step: number; current: number }) {
     const active = current === step
     return (
         <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold border-2 transition-all ${done ? 'bg-emerald-500 border-emerald-500 text-white' :
-                active ? 'bg-blue-600 border-blue-600 text-white' :
-                    'bg-white border-gray-200 text-gray-400'
+            active ? 'bg-blue-600 border-blue-600 text-white' :
+                'bg-white border-gray-200 text-gray-400'
             }`}>
             {done ? '✓' : step}
         </div>
@@ -125,8 +125,11 @@ export default function MerchantEmailPage() {
     const handleSend = async () => {
         setSending(true)
         setSendError('')
+        const selectedRecipients = recipients
+            .filter(r => selected.has(r.email))
+            .map(r => ({ email: r.email, name: r.name }))
         const res = await sendMerchantEmailAction({
-            recipientEmails: Array.from(selected),
+            recipients: selectedRecipients,
             subject,
             bodyText,
         })
@@ -238,8 +241,8 @@ export default function MerchantEmailPage() {
                                     <label
                                         key={r.email}
                                         className={`flex items-center gap-4 px-4 py-3 rounded-xl border cursor-pointer transition-all ${selected.has(r.email)
-                                                ? 'border-blue-300 bg-blue-50'
-                                                : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                                            ? 'border-blue-300 bg-blue-50'
+                                            : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
                                             }`}
                                     >
                                         <input
