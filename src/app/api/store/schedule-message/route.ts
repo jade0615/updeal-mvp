@@ -6,9 +6,9 @@ import { twilioClient, SMS_FROM_NUMBER } from '@/lib/sms'
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        const { merchantSlug, merchantId, type, recipients, subject, body: messageBody, scheduledLocalTime } = body
+        const { merchantSlug, merchantId, type, recipients, subject, body: messageBody, scheduledLocalTime, scheduledAtUTC } = body
 
-        if (!merchantSlug || !merchantId || !type || !recipients?.length || !messageBody || !scheduledLocalTime) {
+        if (!merchantSlug || !merchantId || !type || !recipients?.length || !messageBody || (!scheduledLocalTime && !scheduledAtUTC)) {
             return NextResponse.json({ error: '参数缺失' }, { status: 400 })
         }
         if (!['email', 'sms'].includes(type)) {
@@ -34,9 +34,13 @@ export async function POST(request: NextRequest) {
 
         const timezone = merchant.timezone || 'America/New_York'
 
-        // scheduledLocalTime is a naive datetime string "2026-02-25T14:30"
-        // interpreted as the merchant's local timezone
-        const scheduledAt = localToUTC(scheduledLocalTime, timezone)
+        // Prefer scheduledAtUTC (ISO string from frontend) over localToUTC conversion
+        let scheduledAt: Date
+        if (scheduledAtUTC) {
+            scheduledAt = new Date(scheduledAtUTC)
+        } else {
+            scheduledAt = localToUTC(scheduledLocalTime, timezone)
+        }
 
         if (isNaN(scheduledAt.getTime())) {
             return NextResponse.json({ error: '时间格式无效' }, { status: 400 })
@@ -44,7 +48,7 @@ export async function POST(request: NextRequest) {
 
         // Allow 2-minute buffer so minor clock skew doesn't cause false rejections
         const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000)
-        console.log('[schedule-message] scheduledLocalTime:', scheduledLocalTime, '→ UTC:', scheduledAt.toISOString(), '| now UTC:', new Date().toISOString())
+        console.log('[schedule-message] input:', scheduledAtUTC || scheduledLocalTime, '→ UTC:', scheduledAt.toISOString(), '| now UTC:', new Date().toISOString())
         if (scheduledAt <= twoMinutesAgo) {
             const nowLocal = new Date().toLocaleString('zh-CN', { timeZone: timezone, hour12: false })
             return NextResponse.json({

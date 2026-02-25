@@ -325,9 +325,36 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
     } catch { return '' }
   }
 
+  /** Convert a naive local datetime (from datetime-local input) in merchantTimezone to a UTC ISO string */
+  const localToUTCClient = (naiveDatetime: string): string => {
+    const [datePart, timePart] = naiveDatetime.split('T')
+    const [year, month, day] = datePart.split('-').map(Number)
+    const [hour, minute] = (timePart || '00:00').split(':').map(Number)
+    // Start with a guess: treat the naive time as UTC
+    let utc = new Date(Date.UTC(year, month - 1, day, hour, minute))
+    const fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: merchantTimezone,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    })
+    // Iteratively correct the UTC guess until the local representation matches
+    for (let i = 0; i < 3; i++) {
+      const parts = fmt.formatToParts(utc)
+      const get = (t: string) => parseInt(parts.find(p => p.type === t)?.value ?? '0')
+      const lH = get('hour'), lM = get('minute'), lY = get('year'), lMo = get('month'), lD = get('day')
+      let diffMin = (hour * 60 + minute) - (lH * 60 + lM)
+      if (diffMin > 720) diffMin -= 1440
+      if (diffMin < -720) diffMin += 1440
+      const dayShift = Date.UTC(year, month - 1, day) - Date.UTC(lY, lMo - 1, lD)
+      utc = new Date(utc.getTime() + diffMin * 60000 + dayShift)
+    }
+    return utc.toISOString()
+  }
+
   const scheduleEmail = async () => {
     if (!emailSubject.trim() || !emailBody.trim() || emailSelected.size === 0 || !emailScheduleTime) return
     setSchedulingEmail(true)
+    const utcISO = localToUTCClient(emailScheduleTime)
     const recipients = emailRecipients
       .filter((c: any) => emailSelected.has(c.customerEmail))
       .map((c: any) => ({ email: c.customerEmail, name: c.customerName || null }))
@@ -339,7 +366,7 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
           merchantSlug, merchantId,
           type: 'email', recipients,
           subject: emailSubject, body: emailBody,
-          scheduledLocalTime: emailScheduleTime, // naked merchant-TZ string; API does localToUTC
+          scheduledAtUTC: utcISO,
         }),
       })
       const data = await res.json()
@@ -361,6 +388,7 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
   const scheduleSms = async () => {
     if (!smsMessage.trim() || smsSelected.size === 0 || !smsScheduleTime) return
     setSchedulingSms(true)
+    const utcISO = localToUTCClient(smsScheduleTime)
     const recipients = smsRecipients
       .filter((c: any) => smsSelected.has(c.customerPhone))
       .map((c: any) => ({ phone: c.customerPhone, name: c.customerName || null }))
@@ -372,7 +400,7 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
           merchantSlug, merchantId,
           type: 'sms', recipients,
           body: smsMessage,
-          scheduledLocalTime: smsScheduleTime, // naked merchant-TZ string; API does localToUTC
+          scheduledAtUTC: utcISO,
         }),
       })
       const data = await res.json()
