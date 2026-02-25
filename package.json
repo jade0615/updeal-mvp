@@ -27,7 +27,7 @@
     "next": "16.0.10",
     "nodemailer": "^7.0.12",
     "passkit-generator": "^3.5.7",
-    "pg": "^8.16.3",
+    "pg": "^8.18.0",
     "qrcode.react": "^4.2.0",
     "react": "19.2.1",
     "react-barcode": "^1.6.1",
