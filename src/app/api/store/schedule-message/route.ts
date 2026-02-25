@@ -46,15 +46,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: '时间格式无效' }, { status: 400 })
         }
 
-        // Allow 2-minute buffer so minor clock skew doesn't cause false rejections
-        const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000)
+        // Log for debugging (no longer reject past times — cron will handle timing)
         console.log('[schedule-message] input:', scheduledAtUTC || scheduledLocalTime, '→ UTC:', scheduledAt.toISOString(), '| now UTC:', new Date().toISOString())
-        if (scheduledAt <= twoMinutesAgo) {
-            const nowLocal = new Date().toLocaleString('zh-CN', { timeZone: timezone, hour12: false })
-            return NextResponse.json({
-                error: `定时时间必须是未来时间（当前门店时间：${nowLocal}，请以${timezone}时区为准）`
-            }, { status: 400 })
-        }
 
 
         // ── Pre-flight check for email ─────────────────────────────────────
