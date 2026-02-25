@@ -42,12 +42,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: '时间格式无效' }, { status: 400 })
         }
 
-        if (scheduledAt <= new Date()) {
+        // Allow 2-minute buffer so minor clock skew doesn't cause false rejections
+        const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000)
+        console.log('[schedule-message] scheduledLocalTime:', scheduledLocalTime, '→ UTC:', scheduledAt.toISOString(), '| now UTC:', new Date().toISOString())
+        if (scheduledAt <= twoMinutesAgo) {
             const nowLocal = new Date().toLocaleString('zh-CN', { timeZone: timezone, hour12: false })
             return NextResponse.json({
                 error: `定时时间必须是未来时间（当前门店时间：${nowLocal}，请以${timezone}时区为准）`
             }, { status: 400 })
         }
+
 
         // ── Pre-flight check for email ─────────────────────────────────────
         // Try sending one test email to our own address to verify Aliyun
@@ -169,27 +173,59 @@ export async function POST(request: NextRequest) {
 /**
  * Convert a local datetime string (YYYY-MM-DDTHH:mm) in the given IANA timezone to a UTC Date.
  */
+/**
+ * Convert a naive local datetime string (e.g. "2026-02-25T11:52") in the
+ * given IANA timezone to a UTC Date.
+ *
+ * Strategy: binary-search the UTC offset by asking Intl.DateTimeFormat what
+ * local time corresponds to a given UTC instant, then adjust until they match.
+ * This handles DST transitions correctly.
+ */
 function localToUTC(localDatetime: string, timezone: string): Date {
+    // Parse the naive string — treat it as if it were UTC first (no offset)
     const [datePart, timePart] = localDatetime.split('T')
     const [year, month, day] = datePart.split('-').map(Number)
     const [hour, minute] = (timePart || '00:00').split(':').map(Number)
 
-    const assumedUTC = new Date(Date.UTC(year, month - 1, day, hour, minute))
+    if (!year || isNaN(hour)) return new Date(NaN)
 
-    const formatter = new Intl.DateTimeFormat('en-US', {
+    // Target: we want the clock in `timezone` to show `hour:minute` on that date.
+    // We make a first guess assuming UTC-5 (EST) which is what NY is in winter.
+    // Then we measure the actual offset and correct.
+    const guessUTC = new Date(Date.UTC(year, month - 1, day, hour, minute))
+
+    const fmt = new Intl.DateTimeFormat('en-US', {
         timeZone: timezone,
         year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', hour12: false,
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false,
     })
-    const parts = formatter.formatToParts(assumedUTC)
-    const tzHour = parseInt(parts.find(p => p.type === 'hour')!.value)
-    const tzMinute = parseInt(parts.find(p => p.type === 'minute')!.value)
 
-    const wantedMinutes = hour * 60 + minute
-    const gotMinutes = tzHour * 60 + tzMinute
-    let offsetMinutes = wantedMinutes - gotMinutes
-    if (offsetMinutes > 12 * 60) offsetMinutes -= 24 * 60
-    if (offsetMinutes < -12 * 60) offsetMinutes += 24 * 60
+    // Helper: given a UTC Date, what does the clock show in `timezone`?
+    function getLocalParts(utc: Date) {
+        const parts = fmt.formatToParts(utc)
+        const get = (type: string) => parseInt(parts.find(p => p.type === type)?.value ?? '0')
+        return { h: get('hour'), m: get('minute'), yr: get('year'), mo: get('month'), d: get('day') }
+    }
 
-    return new Date(assumedUTC.getTime() - offsetMinutes * 60 * 1000)
+    // Iteratively correct: measure offset from first guess, apply, then verify
+    let utc = guessUTC
+    for (let i = 0; i < 3; i++) {
+        const local = getLocalParts(utc)
+        // Difference in minutes between what clock shows and what we want
+        const localMinutesOfDay = local.h * 60 + local.m
+        const wantedMinutesOfDay = hour * 60 + minute
+        let diff = wantedMinutesOfDay - localMinutesOfDay
+        // Handle midnight boundary
+        if (diff > 12 * 60) diff -= 24 * 60
+        if (diff < -12 * 60) diff += 24 * 60
+        // Also check if the date itself shifted
+        const localDateMs = Date.UTC(local.yr, local.mo - 1, local.d)
+        const wantDateMs = Date.UTC(year, month - 1, day)
+        const dayShiftMs = wantDateMs - localDateMs
+        utc = new Date(utc.getTime() + diff * 60_000 + dayShiftMs)
+    }
+
+    return utc
 }
+
