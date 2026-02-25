@@ -13,6 +13,50 @@ import {
 
 const MAX_SMS_LENGTH = 160
 
+// ─────────────────────── SMS Content Linter ───────────────────────
+interface LintIssue {
+    level: 'danger' | 'warning' | 'tip'
+    word: string
+    reason: string
+}
+
+const SMS_RULES: { pattern: RegExp; level: LintIssue['level']; reason: string }[] = [
+    { pattern: /\bfree\b/gi, level: 'danger', reason: '运营商垃圾过滤高风险词，会导致短信屏蔽' },
+    { pattern: /\bwin\b/gi, level: 'danger', reason: '运营商垃圾过滤高风险词（获奖类），会导致屏蔽' },
+    { pattern: /\bwinner\b/gi, level: 'danger', reason: '运营商垃圾过滤高风险词，会导致屏蔽' },
+    { pattern: /\bprice\b/gi, level: 'warning', reason: '中风险垃圾词，可能被过滤' },
+    { pattern: /\bcash\b/gi, level: 'danger', reason: '运营商垃圾过滤高风险词，会导致屏蔽' },
+    { pattern: /\bcongratulations\b/gi, level: 'danger', reason: '运营商垃圾过滤高风险词（中奖类），会导致屏蔽' },
+    { pattern: /\byou.ve been selected\b/gi, level: 'danger', reason: '典型诈骗短信词语，会导致屏蔽' },
+    { pattern: /bit\.ly|tinyurl\.com|goo\.gl/gi, level: 'danger', reason: '短链接会导致屏蔽，建议用完整 URL（如 https://updeal.com/...）' },
+    { pattern: /[A-Z]{6,}/g, level: 'warning', reason: '连续大写字母（≥6个）会被运营商标记为垃圾短信' },
+    { pattern: /!!!+/g, level: 'warning', reason: '连续感叹号会增加屏蔽风险' },
+    { pattern: /！！！+/g, level: 'warning', reason: '连续感叹号会增加屏蔽风险' },
+    { pattern: /\d{10,}/g, level: 'warning', reason: '长串数字（像电话号码）会增加被运营商过滤的风险' },
+]
+
+const SMS_TIP_MISSING_STOP = {
+    level: 'tip' as const,
+    word: 'STOP 退订提示',
+    reason: '建议在短信末尾加上“回复 STOP 可退订”，部分运营商要求合规短信必须包含这个提示，缺少会屏蔽。',
+}
+
+function lintSms(body: string): LintIssue[] {
+    const issues: LintIssue[] = []
+    for (const rule of SMS_RULES) {
+        rule.pattern.lastIndex = 0
+        const match = rule.pattern.exec(body)
+        if (match) {
+            issues.push({ level: rule.level, word: match[0], reason: rule.reason })
+        }
+    }
+    // Suggest STOP opt-out if not present
+    if (!/stop|退订|unsubscribe/i.test(body)) {
+        issues.push(SMS_TIP_MISSING_STOP)
+    }
+    return issues
+}
+
 // ─────────────────────── Step Indicator ───────────────────────
 function StepBadge({ step, current }: { step: number; current: number }) {
     const done = current > step
@@ -69,6 +113,15 @@ export default function MerchantSmsPage() {
 
     // Step 2 state
     const [message, setMessage] = useState('')
+    const [lintIssues, setLintIssues] = useState<LintIssue[] | null>(null)
+    const [lintChecked, setLintChecked] = useState(false)
+
+    const handleLint = () => {
+        const issues = lintSms(message)
+        setLintIssues(issues)
+        setLintChecked(true)
+    }
+    const handleMessageChange = (v: string) => { setMessage(v); setLintChecked(false); setLintIssues(null) }
 
     // Step 3 state
     const [sending, setSending] = useState(false)
@@ -371,8 +424,8 @@ export default function MerchantSmsPage() {
                             </label>
                             <textarea
                                 value={message}
-                                onChange={e => setMessage(e.target.value)}
-                                placeholder={`您好！感谢您领取 ${merchantName} 的优惠券，欢迎到店使用。期待您的光临！`}
+                                onChange={e => handleMessageChange(e.target.value)}
+                                placeholder={`您好！感谢您领取 ${merchantName} 的优惠券，欢迎到店使用。期待您的光临！回复 STOP 可退订。`}
                                 rows={5}
                                 maxLength={500}
                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none leading-relaxed"
@@ -383,6 +436,70 @@ export default function MerchantSmsPage() {
                                     {message.length} / {MAX_SMS_LENGTH}
                                 </span>
                             </div>
+                        </div>
+
+                        {/* ── Content Lint Panel ── */}
+                        <div className="mt-4">
+                            <button
+                                onClick={handleLint}
+                                disabled={!message.trim()}
+                                className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 text-amber-700 text-sm font-semibold rounded-xl hover:bg-amber-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                🔍 检查短信内容
+                            </button>
+
+                            {lintChecked && lintIssues !== null && (
+                                <div className={`mt-3 rounded-xl border p-4 ${lintIssues.every(i => i.level === 'tip')
+                                        ? 'bg-blue-50 border-blue-200'
+                                        : lintIssues.some(i => i.level === 'danger')
+                                            ? 'bg-red-50 border-red-200'
+                                            : lintIssues.some(i => i.level === 'warning')
+                                                ? 'bg-amber-50 border-amber-200'
+                                                : 'bg-green-50 border-green-200'
+                                    }`}>
+                                    {lintIssues.filter(i => i.level !== 'tip').length === 0 && !lintIssues.some(i => i.level === 'danger') ? (
+                                        <>
+                                            <div className="flex items-center gap-2 text-green-700 font-semibold text-sm mb-2">
+                                                ✅ 内容检查通过！未发现屏蔽词汇。
+                                            </div>
+                                            {lintIssues.filter(i => i.level === 'tip').map((issue, i) => (
+                                                <div key={i} className="flex gap-3 text-sm p-3 rounded-lg bg-blue-100 mt-2">
+                                                    <span className="flex-shrink-0">💡</span>
+                                                    <div>
+                                                        <div className="font-semibold text-blue-800">{issue.word}</div>
+                                                        <div className="text-xs text-blue-700 mt-0.5">{issue.reason}</div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="text-sm font-bold text-gray-800 mb-3">
+                                                发现 {lintIssues.filter(i => i.level !== 'tip').length} 个问题，建议修改后再发送：
+                                            </div>
+                                            <div className="space-y-2">
+                                                {lintIssues.map((issue, i) => (
+                                                    <div key={i} className={`flex gap-3 text-sm p-3 rounded-lg ${issue.level === 'danger' ? 'bg-red-100' :
+                                                            issue.level === 'warning' ? 'bg-amber-100' : 'bg-blue-100'
+                                                        }`}>
+                                                        <span className="flex-shrink-0 mt-0.5">
+                                                            {issue.level === 'danger' ? '🚫' : issue.level === 'warning' ? '⚠️' : '💡'}
+                                                        </span>
+                                                        <div>
+                                                            <div className="font-semibold text-gray-800">
+                                                                <span className={`px-1.5 py-0.5 rounded font-mono text-xs mr-1 ${issue.level === 'danger' ? 'bg-red-200 text-red-800' :
+                                                                        issue.level === 'warning' ? 'bg-amber-200 text-amber-800' : 'bg-blue-200 text-blue-800'
+                                                                    }`}>{issue.word}</span>
+                                                            </div>
+                                                            <div className="text-xs text-gray-600 mt-0.5">{issue.reason}</div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div className="mt-6 flex gap-3">

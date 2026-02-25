@@ -8,6 +8,55 @@ import {
     type EmailRecipient,
     type SendResult,
 } from '@/actions/merchant-email'
+import { getEmailLogs, type EmailLog } from '@/actions/email-logs'
+
+// ─────────────────────── Content Linter ───────────────────────
+interface LintIssue {
+    level: 'danger' | 'warning' | 'tip'
+    field: string
+    word: string
+    reason: string
+}
+
+const EMAIL_RULES: { pattern: RegExp; level: LintIssue['level']; reason: string }[] = [
+    { pattern: /\bfree\b/gi, level: 'danger', reason: '高风险垃圾词，会被阿里云邮件过滤器拦截' },
+    { pattern: /\bact now\b/gi, level: 'danger', reason: '高风险垃圾词（紧迫感促销语），会被拦截' },
+    { pattern: /\bfinal call\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+    { pattern: /\blimited time\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+    { pattern: /\burgent\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+    { pattern: /\blast chance\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+    { pattern: /\bwin\b/gi, level: 'danger', reason: '高风险垃圾词（获奖类），会被拦截' },
+    { pattern: /\bprize\b/gi, level: 'danger', reason: '高风险垃圾词（奖品类），会被拦截' },
+    { pattern: /\bcash\b/gi, level: 'danger', reason: '高风险垃圾词（现金类），会被拦截' },
+    { pattern: /\bcongratulations\b/gi, level: 'danger', reason: '高风险垃圾词（中奖类通知），会被拦截' },
+    { pattern: /\b100% free\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+    { pattern: /\bclick here\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+    { pattern: /\bearn money\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+    { pattern: /!!!+/g, level: 'danger', reason: '连续多个感叹号会触发垃圾邮件过滤' },
+    { pattern: /！！！+/g, level: 'danger', reason: '连续多个感叹号会触发垃圾邮件过滤' },
+    { pattern: /\bdiscount\b/gi, level: 'warning', reason: '促销词（中风险），尽量用「优惠」代替' },
+    { pattern: /\boffer\b/gi, level: 'warning', reason: '促销词（中风险），尽量用「特惠」代替' },
+    { pattern: /\bdeal\b/gi, level: 'warning', reason: '促销词（中风险）' },
+    { pattern: /\bsale\b/gi, level: 'warning', reason: '促销词（中风险），可能触发过滤' },
+    { pattern: /[A-Z]{6,}/g, level: 'warning', reason: '连续大写字母（≥6个）会触发垃圾邮件过滤' },
+    { pattern: /bit\.ly|tinyurl|goo\.gl/gi, level: 'warning', reason: '短链接容易被标记为垃圾邮件，建议用完整 URL' },
+]
+
+function lintEmail(subject: string, body: string): LintIssue[] {
+    const issues: LintIssue[] = []
+    const checkField = (text: string, fieldName: string) => {
+        for (const rule of EMAIL_RULES) {
+            rule.pattern.lastIndex = 0
+            const match = rule.pattern.exec(text)
+            if (match) {
+                issues.push({ level: rule.level, field: fieldName, word: match[0], reason: rule.reason })
+            }
+        }
+    }
+    checkField(subject, '邮件主题')
+    checkField(body, '邮件正文')
+    return issues
+}
 
 // ─────────────────────── Step Indicator ───────────────────────
 function StepBadge({ step, current }: { step: number; current: number }) {
@@ -66,11 +115,30 @@ export default function MerchantEmailPage() {
     // Step 2 state
     const [subject, setSubject] = useState('')
     const [bodyText, setBodyText] = useState('')
+    const [lintIssues, setLintIssues] = useState<LintIssue[] | null>(null)
+    const [lintChecked, setLintChecked] = useState(false)
+
+    const handleLint = () => {
+        const issues = lintEmail(subject, bodyText)
+        setLintIssues(issues)
+        setLintChecked(true)
+    }
+
+    // Clear lint when content changes
+    const handleSubjectChange = (v: string) => { setSubject(v); setLintChecked(false); setLintIssues(null) }
+    const handleBodyChange = (v: string) => { setBodyText(v); setLintChecked(false); setLintIssues(null) }
 
     // Step 3 state
     const [sending, setSending] = useState(false)
     const [sendResults, setSendResults] = useState<SendResult[] | null>(null)
     const [sendError, setSendError] = useState('')
+
+    // Email logs state
+    const [merchantId, setMerchantId] = useState('')
+    const [logs, setLogs] = useState<EmailLog[]>([])
+    const [logsLoading, setLogsLoading] = useState(false)
+    const [showLogs, setShowLogs] = useState(false)
+    const [logsStats, setLogsStats] = useState<{ total: number; success: number; failed: number } | null>(null)
 
     // ── Load recipients
     useEffect(() => {
@@ -81,12 +149,27 @@ export default function MerchantEmailPage() {
             } else {
                 setRecipients(res.recipients || [])
                 setMerchantName(res.merchantName || '')
-                // Pre-fill subject with merchant name
                 setSubject(`来自 ${res.merchantName || '商家'} 的消息`)
+                if (res.merchantId) setMerchantId(res.merchantId)
             }
             setLoadingRecipients(false)
         })
     }, [])
+
+    // ── Load email logs
+    const loadLogs = useCallback(async (id: string) => {
+        setLogsLoading(true)
+        const res = await getEmailLogs({ merchantId: id, limit: 100 })
+        if (res.success) {
+            setLogs(res.logs)
+            setLogsStats(res.stats)
+        }
+        setLogsLoading(false)
+    }, [])
+
+    useEffect(() => {
+        if (merchantId) loadLogs(merchantId)
+    }, [merchantId, loadLogs])
 
     // ── Filtered list
     const filtered = recipients.filter(r =>
@@ -136,6 +219,8 @@ export default function MerchantEmailPage() {
         setSending(false)
         if (res.success) {
             setSendResults(res.results || [])
+            // Refresh logs after send
+            if (merchantId) loadLogs(merchantId)
         } else {
             setSendError(res.error || '发送失败')
         }
@@ -295,7 +380,7 @@ export default function MerchantEmailPage() {
                                 <input
                                     type="text"
                                     value={subject}
-                                    onChange={e => setSubject(e.target.value)}
+                                    onChange={e => handleSubjectChange(e.target.value)}
                                     placeholder="例如：我们有新优惠，欢迎回来！"
                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
@@ -307,13 +392,65 @@ export default function MerchantEmailPage() {
                                 </label>
                                 <textarea
                                     value={bodyText}
-                                    onChange={e => setBodyText(e.target.value)}
+                                    onChange={e => handleBodyChange(e.target.value)}
                                     placeholder={`您好！\n\n感谢您一直以来的支持！我们的最新活动正在进行中...\n\n期待您的光临！\n${merchantName} 团队`}
                                     rows={10}
                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none leading-relaxed"
                                 />
                                 <p className="text-xs text-gray-400 mt-1.5">支持换行，系统会自动套用品牌模板样式发送</p>
                             </div>
+                        </div>
+
+                        {/* ── Content Lint Panel ── */}
+                        <div className="mt-4">
+                            <button
+                                onClick={handleLint}
+                                disabled={!subject.trim() && !bodyText.trim()}
+                                className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 text-amber-700 text-sm font-semibold rounded-xl hover:bg-amber-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                🔍 检查邮件内容
+                            </button>
+
+                            {lintChecked && lintIssues !== null && (
+                                <div className={`mt-3 rounded-xl border p-4 ${lintIssues.length === 0
+                                        ? 'bg-green-50 border-green-200'
+                                        : lintIssues.some(i => i.level === 'danger')
+                                            ? 'bg-red-50 border-red-200'
+                                            : 'bg-amber-50 border-amber-200'
+                                    }`}>
+                                    {lintIssues.length === 0 ? (
+                                        <div className="flex items-center gap-2 text-green-700 font-semibold text-sm">
+                                            ✅ 内容检查通过！未发现高风险词汇，可以安全发送。
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="text-sm font-bold text-gray-800 mb-3">
+                                                发现 {lintIssues.length} 个问题，建议修改后再发送：
+                                            </div>
+                                            <div className="space-y-2">
+                                                {lintIssues.map((issue, i) => (
+                                                    <div key={i} className={`flex gap-3 text-sm p-3 rounded-lg ${issue.level === 'danger' ? 'bg-red-100' : 'bg-amber-100'
+                                                        }`}>
+                                                        <span className="flex-shrink-0 mt-0.5">
+                                                            {issue.level === 'danger' ? '🚫' : '⚠️'}
+                                                        </span>
+                                                        <div>
+                                                            <div className="font-semibold text-gray-800">
+                                                                <span className={`px-1.5 py-0.5 rounded font-mono text-xs mr-1 ${issue.level === 'danger'
+                                                                        ? 'bg-red-200 text-red-800'
+                                                                        : 'bg-amber-200 text-amber-800'
+                                                                    }`}>{issue.word}</span>
+                                                                <span className="text-xs text-gray-500">在「{issue.field}」中</span>
+                                                            </div>
+                                                            <div className="text-xs text-gray-600 mt-0.5">{issue.reason}</div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div className="mt-6 flex gap-3">
@@ -460,6 +597,69 @@ export default function MerchantEmailPage() {
                         )}
                     </div>
                 )}
+                {/* ──────── EMAIL HISTORY ──────── */}
+                <div className="mt-6 bg-white rounded-2xl shadow">
+                    <button
+                        onClick={() => setShowLogs(v => !v)}
+                        className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 rounded-2xl transition"
+                    >
+                        <div className="flex items-center gap-3">
+                            <span className="text-lg">📋</span>
+                            <span className="font-bold text-gray-900">发送记录</span>
+                            {logsStats && (
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                                    共 {logsStats.total} 条 · 成功率 {logsStats.total > 0 ? ((logsStats.success / logsStats.total) * 100).toFixed(0) : 0}%
+                                </span>
+                            )}
+                        </div>
+                        <span className="text-gray-400 text-sm">{showLogs ? '收起 ▲' : '展开 ▼'}</span>
+                    </button>
+
+                    {showLogs && (
+                        <div className="px-6 pb-6">
+                            {logsLoading ? (
+                                <div className="text-center py-8 text-gray-400 text-sm">加载中...</div>
+                            ) : logs.length === 0 ? (
+                                <div className="text-center py-8 text-gray-400 text-sm">暂无发送记录</div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full text-sm">
+                                        <thead>
+                                            <tr className="border-b border-gray-100">
+                                                <th className="pb-2 text-left text-xs font-bold text-gray-500 uppercase">时间</th>
+                                                <th className="pb-2 text-left text-xs font-bold text-gray-500 uppercase pl-4">收件人</th>
+                                                <th className="pb-2 text-left text-xs font-bold text-gray-500 uppercase pl-4">主题</th>
+                                                <th className="pb-2 text-left text-xs font-bold text-gray-500 uppercase pl-4">状态</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-50">
+                                            {logs.map(log => (
+                                                <tr key={log.id} className="hover:bg-gray-50">
+                                                    <td className="py-2.5 text-xs text-gray-400 whitespace-nowrap">
+                                                        {new Date(log.sent_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                    </td>
+                                                    <td className="py-2.5 pl-4">
+                                                        <div className="font-medium text-gray-800">{log.recipient_name || '—'}</div>
+                                                        <div className="text-xs text-gray-400">{log.recipient_email}</div>
+                                                    </td>
+                                                    <td className="py-2.5 pl-4 max-w-[200px]">
+                                                        <div className="text-gray-700 truncate">{log.subject}</div>
+                                                    </td>
+                                                    <td className="py-2.5 pl-4 whitespace-nowrap">
+                                                        {log.status === 'success'
+                                                            ? <span className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-medium">✅ 成功</span>
+                                                            : <span className="text-xs px-2 py-0.5 bg-red-100 text-red-600 rounded-full font-medium">❌ 失败</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </main>
         </div>
     )
