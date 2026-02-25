@@ -1428,7 +1428,10 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
               <span className="flex items-center gap-2">
                 📋 发送记录
                 {smsLogStats && (
-                  <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">共 {smsLogStats.total} 条 · 成功 {smsLogStats.success}</span>
+                  <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                    共 {smsLogStats.total} 条 · 成功 {smsLogStats.success}
+                    {(smsLogStats as any).scheduled > 0 && ` · 定时 ${(smsLogStats as any).scheduled}`}
+                  </span>
                 )}
               </span>
               <span className="text-gray-400">{showSmsLogs ? '▲' : '▼'}</span>
@@ -1442,14 +1445,28 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
                 ) : (
                   <div className="space-y-1.5 max-h-64 overflow-y-auto">
                     {smsLogs.map((log: any) => (
-                      <div key={log.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${log.status === 'success' ? 'bg-green-50' : 'bg-red-50'}`}>
-                        <span>{log.status === 'success' ? '✅' : '❌'}</span>
+                      <div key={log.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${log.status === 'scheduled' ? 'bg-orange-50 border border-orange-200' :
+                          log.status === 'success' ? 'bg-green-50' : 'bg-red-50'
+                        }`}>
+                        <span>{log.status === 'scheduled' ? '⏰' : log.status === 'success' ? '✅' : '❌'}</span>
                         <div className="flex-1 min-w-0">
                           <span className="font-medium text-gray-800">{log.recipient_name || log.recipient_phone}</span>
+                          {log.status === 'scheduled' && (
+                            <span className="ml-1 text-orange-600 font-medium">定时发送</span>
+                          )}
                         </div>
                         <div className="text-gray-500 truncate max-w-[100px] hidden sm:block text-xs">{log.message?.slice(0, 20)}...</div>
                         <div className="text-gray-400 whitespace-nowrap flex-shrink-0">
-                          {new Date(log.sent_at).toLocaleString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })}
+                          {log.status === 'scheduled' ? (
+                            <span className="text-orange-500">
+                              {new Date(log.scheduled_at || log.sent_at).toLocaleString('zh-CN', {
+                                timeZone: merchantTimezone || 'America/New_York',
+                                month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
+                              })}
+                            </span>
+                          ) : (
+                            new Date(log.sent_at).toLocaleString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })
+                          )}
                         </div>
                       </div>
                     ))}
