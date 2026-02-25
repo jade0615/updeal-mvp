@@ -5,6 +5,96 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatToNYTime, getNYLastUpdatedMessage } from '@/lib/utils/date'
 
+// ─────────────────────── Content Lint Helpers ───────────────────────
+interface LintIssue { level: 'danger' | 'warning' | 'tip'; field?: string; word: string; reason: string }
+
+const EMAIL_LINT_RULES: { pattern: RegExp; level: 'danger' | 'warning'; reason: string }[] = [
+  { pattern: /\bfree\b/gi, level: 'danger', reason: '高风险垃圾词，会被邮件服务拦截' },
+  { pattern: /\bact now\b/gi, level: 'danger', reason: '高风险垃圾词（紧迫感促销），会被拦截' },
+  { pattern: /\bfinal call\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+  { pattern: /\blimited time\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+  { pattern: /\burgent\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+  { pattern: /\blast chance\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+  { pattern: /\bwin\b/gi, level: 'danger', reason: '高风险垃圾词（获奖类），会被拦截' },
+  { pattern: /\bprize\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+  { pattern: /\bcash\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+  { pattern: /\bcongratulations\b/gi, level: 'danger', reason: '高风险垃圾词（中奖类），会被拦截' },
+  { pattern: /\bclick here\b/gi, level: 'danger', reason: '高风险垃圾词，会被拦截' },
+  { pattern: /!!!+/g, level: 'danger', reason: '连续感叹号会触发垃圾邮件过滤' },
+  { pattern: /！！！+/g, level: 'danger', reason: '连续感叹号会触发垃圾邮件过滤' },
+  { pattern: /\bdiscount\b/gi, level: 'warning', reason: '促销词（中风险），尽量用「优惠」代替' },
+  { pattern: /\boffer\b/gi, level: 'warning', reason: '促销词（中风险），尽量用「特惠」代替' },
+  { pattern: /\bsale\b/gi, level: 'warning', reason: '促销词（中风险），可能触发过滤' },
+  { pattern: /[A-Z]{6,}/g, level: 'warning', reason: '连续大写字母（≥6个）会触发垃圾邮件过滤' },
+  { pattern: /bit\.ly|tinyurl|goo\.gl/gi, level: 'warning', reason: '短链接容易被标记为垃圾邮件' },
+]
+function lintEmail(subject: string, body: string): LintIssue[] {
+  const issues: LintIssue[] = []
+  const check = (text: string, fieldName: string) => {
+    for (const r of EMAIL_LINT_RULES) { r.pattern.lastIndex = 0; const m = r.pattern.exec(text); if (m) issues.push({ level: r.level, field: fieldName, word: m[0], reason: r.reason }) }
+  }
+  check(subject, '邮件主题'); check(body, '邮件正文')
+  return issues
+}
+
+const SMS_LINT_RULES: { pattern: RegExp; level: 'danger' | 'warning'; reason: string }[] = [
+  { pattern: /\bfree\b/gi, level: 'danger', reason: '运营商垃圾过滤高风险词，会屏蔽短信' },
+  { pattern: /\bwin\b/gi, level: 'danger', reason: '运营商垃圾过滤高风险词，会屏蔽短信' },
+  { pattern: /\bwinner\b/gi, level: 'danger', reason: '运营商垃圾过滤高风险词，会屏蔽短信' },
+  { pattern: /\bcash\b/gi, level: 'danger', reason: '运营商垃圾过滤高风险词，会屏蔽短信' },
+  { pattern: /\bcongratulations\b/gi, level: 'danger', reason: '典型诈骗短信词，会屏蔽短信' },
+  { pattern: /bit\.ly|tinyurl\.com|goo\.gl/gi, level: 'danger', reason: '短链接会导致屏蔽，建议用完整 URL' },
+  { pattern: /[A-Z]{6,}/g, level: 'warning', reason: '连续大写字母（≥6个）会被运营商标记为垃圾短信' },
+  { pattern: /!!!+/g, level: 'warning', reason: '连续感叹号会增加屏蔽风险' },
+  { pattern: /！！！+/g, level: 'warning', reason: '连续感叹号会增加屏蔽风险' },
+  { pattern: /\d{10,}/g, level: 'warning', reason: '长串数字（像电话号码）会增加被运营商过滤的风险' },
+  { pattern: /\bprice\b/gi, level: 'warning', reason: '中风险垃圾词，可能被过滤' },
+]
+function lintSmsContent(body: string): LintIssue[] {
+  const issues: LintIssue[] = []
+  for (const r of SMS_LINT_RULES) { r.pattern.lastIndex = 0; const m = r.pattern.exec(body); if (m) issues.push({ level: r.level, word: m[0], reason: r.reason }) }
+  if (!/stop|退订|unsubscribe/i.test(body)) issues.push({ level: 'tip', word: 'STOP 退订提示', reason: '建议在短信末尾加「回复 STOP 可退订」，缺少会屏蔽。' })
+  return issues
+}
+
+function LintPanel({ issues }: { issues: LintIssue[] }) {
+  const errors = issues.filter(i => i.level !== 'tip')
+  const tips = issues.filter(i => i.level === 'tip')
+  const hasDanger = issues.some(i => i.level === 'danger')
+  const bg = errors.length === 0 ? 'bg-green-50 border-green-200' : hasDanger ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'
+  return (
+    <div className={`mt-3 rounded-xl border p-3 ${bg}`}>
+      {errors.length === 0 ? (
+        <>
+          <div className="flex items-center gap-2 text-green-700 font-semibold text-sm">✅ 内容检查通过！</div>
+          {tips.map((t, i) => (
+            <div key={i} className="flex gap-2 text-xs p-2 rounded-lg bg-blue-100 mt-2">
+              <span>💡</span>
+              <div><span className="font-semibold text-blue-800">{t.word}</span><div className="text-blue-700 mt-0.5">{t.reason}</div></div>
+            </div>
+          ))}
+        </>
+      ) : (
+        <>
+          <div className="text-sm font-bold text-gray-800 mb-2">发现 {errors.length} 个问题，建议修改：</div>
+          <div className="space-y-1.5">
+            {issues.map((issue, i) => (
+              <div key={i} className={`flex gap-2 text-xs p-2 rounded-lg ${issue.level === 'danger' ? 'bg-red-100' : issue.level === 'warning' ? 'bg-amber-100' : 'bg-blue-100'}`}>
+                <span className="flex-shrink-0">{issue.level === 'danger' ? '🚫' : issue.level === 'warning' ? '⚠️' : '💡'}</span>
+                <div>
+                  <span className={`px-1 py-0.5 rounded font-mono text-xs mr-1 ${issue.level === 'danger' ? 'bg-red-200 text-red-800' : issue.level === 'warning' ? 'bg-amber-200 text-amber-800' : 'bg-blue-200 text-blue-800'}`}>{issue.word}</span>
+                  {issue.field && <span className="text-gray-400 mr-1">在「{issue.field}」</span>}
+                  <span className="text-gray-600">{issue.reason}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 interface RedeemResult {
   success: boolean
   message: string
@@ -39,6 +129,7 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
   const [pinLoading, setPinLoading] = useState(false)
   const [merchantName, setMerchantName] = useState('')
   const [merchantId, setMerchantId] = useState('')
+  const [merchantTimezone, setMerchantTimezone] = useState('America/New_York')
 
   const [couponCode, setCouponCode] = useState('')
   const [loading, setLoading] = useState(false)
@@ -73,6 +164,303 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
   // Claims List State
   const [claims, setClaims] = useState<any[]>([])
   const [claimsLoading, setClaimsLoading] = useState(false)
+
+  // Email Panel State
+  const [showEmailPanel, setShowEmailPanel] = useState(false)
+  const [emailSelected, setEmailSelected] = useState<Set<string>>(new Set())
+  const [emailSubject, setEmailSubject] = useState('')
+  const [emailBody, setEmailBody] = useState('')
+  const [emailSending, setEmailSending] = useState(false)
+  const [emailResults, setEmailResults] = useState<{ email: string; name: string | null; status: string; error?: string }[] | null>(null)
+
+  // Email Logs State
+  const [emailLogs, setEmailLogs] = useState<any[]>([])
+  const [emailLogsLoading, setEmailLogsLoading] = useState(false)
+  const [emailLogStats, setEmailLogStats] = useState<{ total: number; success: number } | null>(null)
+  const [showEmailLogs, setShowEmailLogs] = useState(false)
+
+  // SMS Panel State
+  const [showSmsPanel, setShowSmsPanel] = useState(false)
+  const [smsSelected, setSmsSelected] = useState<Set<string>>(new Set())
+  const [smsMessage, setSmsMessage] = useState('')
+  const [smsSending, setSmsSending] = useState(false)
+  const [smsResults, setSmsResults] = useState<{ phone: string; name: string | null; status: string; error?: string }[] | null>(null)
+  const [smsLogs, setSmsLogs] = useState<any[]>([])
+  const [smsLogsLoading, setSmsLogsLoading] = useState(false)
+  const [smsLogStats, setSmsLogStats] = useState<{ total: number; success: number } | null>(null)
+  const [showSmsLogs, setShowSmsLogs] = useState(false)
+
+  // Scheduled Send State (shared)
+  const [emailScheduleMode, setEmailScheduleMode] = useState<'now' | 'later'>('now')
+  const [emailScheduleTime, setEmailScheduleTime] = useState('')
+  const [smsScheduleMode, setSmsScheduleMode] = useState<'now' | 'later'>('now')
+  const [smsScheduleTime, setSmsScheduleTime] = useState('')
+  const [pendingTasks, setPendingTasks] = useState<any[]>([])
+  const [pendingTasksLoading, setPendingTasksLoading] = useState(false)
+  const [showPendingTasks, setShowPendingTasks] = useState(false)
+  const [schedulingEmail, setSchedulingEmail] = useState(false)
+  const [schedulingSms, setSchedulingSms] = useState(false)
+
+  // Content Lint State
+  const [emailLintIssues, setEmailLintIssues] = useState<LintIssue[] | null>(null)
+  const [emailLintChecked, setEmailLintChecked] = useState(false)
+  const [smsLintIssues, setSmsLintIssues] = useState<LintIssue[] | null>(null)
+  const [smsLintChecked, setSmsLintChecked] = useState(false)
+
+  const emailRecipients = claims.filter(c => c.customerEmail)
+
+  const smsRecipients = claims.filter(c => c.customerPhone)
+
+  const toggleEmailAll = () => {
+    if (emailSelected.size === emailRecipients.length) {
+      setEmailSelected(new Set())
+    } else {
+      setEmailSelected(new Set(emailRecipients.map((c: any) => c.customerEmail)))
+    }
+  }
+
+  const toggleEmailOne = (email: string) => {
+    setEmailSelected(prev => {
+      const next = new Set(prev)
+      next.has(email) ? next.delete(email) : next.add(email)
+      return next
+    })
+  }
+
+  const toggleSmsAll = () => {
+    if (smsSelected.size === smsRecipients.length) {
+      setSmsSelected(new Set())
+    } else {
+      setSmsSelected(new Set(smsRecipients.map((c: any) => c.customerPhone)))
+    }
+  }
+
+  const toggleSmsOne = (phone: string) => {
+    setSmsSelected(prev => {
+      const next = new Set(prev)
+      next.has(phone) ? next.delete(phone) : next.add(phone)
+      return next
+    })
+  }
+
+  const handleSendSms = async () => {
+    if (!smsMessage.trim() || smsSelected.size === 0) return
+    setSmsSending(true)
+    setSmsResults(null)
+    const selected = smsRecipients
+      .filter((c: any) => smsSelected.has(c.customerPhone))
+      .map((c: any) => ({ phone: c.customerPhone, name: c.customerName || null }))
+    try {
+      const res = await fetch('/api/store/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantSlug, merchantId, recipients: selected, message: smsMessage }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setSmsResults(data.results)
+      } else {
+        setSmsResults([{ phone: '', name: null, status: 'failed', error: data.error || '发送失败' }])
+      }
+    } catch (e: any) {
+      setSmsResults([{ phone: '', name: null, status: 'failed', error: e.message }])
+    } finally {
+      setSmsSending(false)
+      if (merchantId) loadSmsLogs()
+    }
+  }
+
+  const loadSmsLogs = async () => {
+    if (!merchantId) return
+    setSmsLogsLoading(true)
+    try {
+      const res = await fetch(`/api/store/sms-logs?merchantId=${merchantId}&merchantSlug=${merchantSlug}`)
+      const data = await res.json()
+      if (data.success) {
+        setSmsLogs(data.logs)
+        setSmsLogStats(data.stats)
+      }
+    } catch { /* ignore */ } finally {
+      setSmsLogsLoading(false)
+    }
+  }
+
+  // --- Scheduled Send helpers ---
+  /** Format a UTC date as local time in the merchant's timezone */
+  const formatLocalTime = (utcStr: string) => {
+    try {
+      return new Date(utcStr).toLocaleString('zh-CN', {
+        timeZone: merchantTimezone,
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false,
+      })
+    } catch { return utcStr }
+  }
+
+  /** Get min datetime value for the merchant's time picker (now + 5 min in merchant TZ) */
+  const getMinScheduleTime = () => {
+    const d = new Date(Date.now() + 5 * 60 * 1000)
+    try {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: merchantTimezone,
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false,
+      }).formatToParts(d)
+      const get = (t: string) => parts.find(p => p.type === t)?.value || '00'
+      return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}`
+    } catch {
+      const pad = (n: number) => String(n).padStart(2, '0')
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+    }
+  }
+
+  /** Show current time in merchant timezone as HH:MM string */
+  const getCurrentMerchantTime = () => {
+    try {
+      return new Date().toLocaleString('zh-CN', {
+        timeZone: merchantTimezone,
+        month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false,
+      }).replace(/\//g, '-')
+    } catch { return '' }
+  }
+
+  const scheduleEmail = async () => {
+    if (!emailSubject.trim() || !emailBody.trim() || emailSelected.size === 0 || !emailScheduleTime) return
+    setSchedulingEmail(true)
+    const recipients = emailRecipients
+      .filter((c: any) => emailSelected.has(c.customerEmail))
+      .map((c: any) => ({ email: c.customerEmail, name: c.customerName || null }))
+    try {
+      const res = await fetch('/api/store/schedule-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          merchantSlug, merchantId,
+          type: 'email', recipients,
+          subject: emailSubject, body: emailBody,
+          scheduledLocalTime: emailScheduleTime, // naked merchant-TZ string; API does localToUTC
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert(`✅ 定时邮件已设置！将在 ${formatLocalTime(data.scheduledAt)} 发送`)
+        setEmailScheduleMode('now')
+        setEmailScheduleTime('')
+        loadPendingTasks()
+      } else {
+        alert('❌ ' + (data.error || '设置失败'))
+      }
+    } catch (e: any) {
+      alert('❌ ' + e.message)
+    } finally {
+      setSchedulingEmail(false)
+    }
+  }
+
+  const scheduleSms = async () => {
+    if (!smsMessage.trim() || smsSelected.size === 0 || !smsScheduleTime) return
+    setSchedulingSms(true)
+    const recipients = smsRecipients
+      .filter((c: any) => smsSelected.has(c.customerPhone))
+      .map((c: any) => ({ phone: c.customerPhone, name: c.customerName || null }))
+    try {
+      const res = await fetch('/api/store/schedule-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          merchantSlug, merchantId,
+          type: 'sms', recipients,
+          body: smsMessage,
+          scheduledLocalTime: smsScheduleTime, // naked merchant-TZ string; API does localToUTC
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert(`✅ 定时短信已设置！将在 ${formatLocalTime(data.scheduledAt)} 发送`)
+        setSmsScheduleMode('now')
+        setSmsScheduleTime('')
+        loadPendingTasks()
+      } else {
+        alert('❌ ' + (data.error || '设置失败'))
+      }
+    } catch (e: any) {
+      alert('❌ ' + e.message)
+    } finally {
+      setSchedulingSms(false)
+    }
+  }
+
+  const loadPendingTasks = async () => {
+    if (!merchantId) return
+    setPendingTasksLoading(true)
+    try {
+      const res = await fetch(`/api/store/scheduled-messages?merchantId=${merchantId}&merchantSlug=${merchantSlug}`)
+      const data = await res.json()
+      if (data.success) setPendingTasks(data.tasks || [])
+    } catch { /* ignore */ } finally {
+      setPendingTasksLoading(false)
+    }
+  }
+
+  const cancelTask = async (taskId: string) => {
+    await fetch(`/api/store/scheduled-messages?id=${taskId}&merchantId=${merchantId}`, { method: 'DELETE' })
+    loadPendingTasks()
+  }
+
+
+  const handleSendEmail = async () => {
+    if (!emailSubject.trim() || !emailBody.trim() || emailSelected.size === 0) return
+    setEmailSending(true)
+    setEmailResults(null)
+    const selected = emailRecipients
+      .filter((c: any) => emailSelected.has(c.customerEmail))
+      .map((c: any) => ({ email: c.customerEmail, name: c.customerName || null, couponCode: c.code || undefined, expectedVisitDate: c.expectedVisitDate || undefined }))
+    try {
+      const res = await fetch('/api/store/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchantSlug, merchantId, recipients: selected, subject: emailSubject, bodyText: emailBody }),
+      })
+      const data = await res.json()
+      if (data.success && data.queued) {
+        // Large batch — queued for background processing
+        setEmailResults([{
+          email: '',
+          name: null,
+          status: 'queued',
+          error: `📤 已进入后台队列，共 ${data.total} 封邮件正在逐批发送（每分钟约 15 封）。请在"待发队列"中查看进度。`,
+        }])
+        setShowPendingTasks(true)
+        loadPendingTasks()
+      } else if (data.success) {
+        setEmailResults(data.results)
+      } else {
+        setEmailResults([{ email: '', name: null, status: 'failed', error: data.error || '发送失败' }])
+      }
+    } catch (e: any) {
+      setEmailResults([{ email: '', name: null, status: 'failed', error: e.message }])
+    } finally {
+      setEmailSending(false)
+      if (merchantId) loadEmailLogs()
+    }
+  }
+
+
+  const loadEmailLogs = async () => {
+    if (!merchantId) return
+    setEmailLogsLoading(true)
+    try {
+      const res = await fetch(`/api/store/email-logs?merchantId=${merchantId}&merchantSlug=${merchantSlug}`)
+      const data = await res.json()
+      if (data.success) {
+        setEmailLogs(data.logs)
+        setEmailLogStats(data.stats)
+      }
+    } catch { /* ignore */ } finally {
+      setEmailLogsLoading(false)
+    }
+  }
 
   const fetchClaims = async () => {
     setClaimsLoading(true)
@@ -115,12 +503,13 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
     const authKey = `store_auth_${merchantSlug}`
     const stored = sessionStorage.getItem(authKey)
     if (stored) {
-      const { authenticated, merchantName: name, merchantId: id, timestamp } = JSON.parse(stored)
+      const { authenticated, merchantName: name, merchantId: id, timezone, timestamp } = JSON.parse(stored)
       // Session valid for 8 hours
       if (authenticated && Date.now() - timestamp < 8 * 60 * 60 * 1000) {
         setIsAuthenticated(true)
         setMerchantName(name)
         setMerchantId(id)
+        if (timezone) setMerchantTimezone(timezone)
       } else {
         sessionStorage.removeItem(authKey)
       }
@@ -171,12 +560,14 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
           authenticated: true,
           merchantName: data.merchantName,
           merchantId: data.merchantId,
+          timezone: data.timezone || 'America/New_York',
           timestamp: Date.now()
         }))
 
         setIsAuthenticated(true)
         setMerchantName(data.merchantName)
         setMerchantId(data.merchantId)
+        if (data.timezone) setMerchantTimezone(data.timezone)
         setPin('')
       } else {
         setPinError(data.message || '密码错误')
@@ -612,6 +1003,435 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
             </table>
           </div>
         </div>
+
+        {/* Email Panel */}
+        <div className="bg-white rounded-2xl shadow-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <span>✉️</span> 主动发邮件
+            </h2>
+            <button
+              onClick={() => {
+                const next = !showEmailPanel
+                setShowEmailPanel(next)
+                setEmailResults(null)
+                if (next && emailLogs.length === 0) loadEmailLogs()
+              }}
+              className="text-sm px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 font-medium hover:bg-blue-100 transition-colors"
+            >
+              {showEmailPanel ? '收起 ▲' : '展开 ▼'}
+            </button>
+          </div>
+
+          {showEmailPanel && (
+            <div className="space-y-4">
+              {emailResults ? (
+                <div className="space-y-2">
+                  {emailResults[0]?.status === 'queued' ? (
+                    // Large batch queued — show info banner
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+                      <p className="font-bold mb-1">📤 后台发送中</p>
+                      <p>{emailResults[0].error}</p>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-sm font-bold text-gray-700 mb-2">
+                        发送完成：✅ {emailResults.filter(r => r.status === 'success').length} 成功 / ❌ {emailResults.filter(r => r.status === 'failed').length} 失败
+                      </p>
+                      {emailResults.filter(r => r.email).map((r, i) => (
+                        <div key={i} className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg ${r.status === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                          <span>{r.status === 'success' ? '✅' : '❌'}</span>
+                          <span>{r.name || r.email}</span>
+                          <span className="text-xs opacity-60">{r.email}</span>
+                          {r.error && <span className="text-xs text-red-500">{r.error}</span>}
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  <button
+                    onClick={() => { setEmailResults(null); setEmailSubject(''); setEmailBody(''); setEmailSelected(new Set()) }}
+                    className="w-full mt-2 py-2 rounded-xl bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 text-sm"
+                  >
+                    再发一封
+                  </button>
+                </div>
+
+              ) : (
+                <>
+                  {/* Recipient Selection */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">选择收件人（{emailSelected.size}/{emailRecipients.length}）</span>
+                      <button onClick={toggleEmailAll} className="text-xs text-blue-600 underline">
+                        {emailSelected.size === emailRecipients.length ? '取消全选' : '全选'}
+                      </button>
+                    </div>
+                    {emailRecipients.length === 0 ? (
+                      <p className="text-sm text-gray-400 py-2">暂无有邮箱的客户</p>
+                    ) : (
+                      <div className="max-h-40 overflow-y-auto space-y-1 border border-gray-100 rounded-xl p-2">
+                        {emailRecipients.map((c: any, i: number) => (
+                          <label key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={emailSelected.has(c.customerEmail)}
+                              onChange={() => toggleEmailOne(c.customerEmail)}
+                              className="accent-blue-600"
+                            />
+                            <span className="text-sm font-medium text-gray-800">{c.customerName}</span>
+                            <span className="text-xs text-gray-400">{c.customerEmail}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Subject */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">邮件主题</label>
+                    <input
+                      type="text"
+                      value={emailSubject}
+                      onChange={e => setEmailSubject(e.target.value)}
+                      placeholder="例：感谢您的光临！"
+                      className={`w-full px-3 py-2 border rounded-xl text-sm focus:outline-none transition-colors ${(() => {
+                        const SPAM = ['FREE', 'FINAL CALL', 'ACT NOW', 'LIMITED TIME', 'URGENT', 'CLICK HERE', 'WINNER', 'PRIZE', 'CASH'];
+                        const txt = (emailSubject + ' ' + emailBody).toUpperCase();
+                        return SPAM.some(w => txt.includes(w)) ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-400';
+                      })()
+                        }`}
+                    />
+                  </div>
+
+                  {/* Spam check button */}
+                  <div>
+                    <button
+                      onClick={() => { setEmailLintIssues(lintEmail(emailSubject, emailBody)); setEmailLintChecked(true) }}
+                      disabled={!emailSubject.trim() && !emailBody.trim()}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold rounded-lg hover:bg-amber-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      🔍 检查邮件内容
+                    </button>
+                    {emailLintChecked && emailLintIssues && <LintPanel issues={emailLintIssues} />}
+                  </div>
+
+                  {/* Body */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">邮件正文</label>
+                    <textarea
+                      value={emailBody}
+                      onChange={e => setEmailBody(e.target.value)}
+                      placeholder="输入你想发给客户的内容..."
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:border-blue-400 resize-none"
+                    />
+                  </div>
+
+                  {/* Schedule Mode Toggle + Send */}
+                  <div className="border border-gray-100 rounded-xl p-3 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setEmailScheduleMode('now')}
+                        className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-all ${emailScheduleMode === 'now'
+                          ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                          : 'bg-gray-50 text-gray-500 border border-gray-200'
+                          }`}
+                      >
+                        ⚡ 立即发送
+                      </button>
+                      <button
+                        onClick={() => setEmailScheduleMode('later')}
+                        className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-all ${emailScheduleMode === 'later'
+                          ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
+                          : 'bg-gray-50 text-gray-500 border border-gray-200'
+                          }`}
+                      >
+                        🕐 定时发送
+                      </button>
+                    </div>
+
+                    {emailScheduleMode === 'later' && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-xs text-gray-500">发送时间（请输入{merchantTimezone}时区时间）</label>
+                          <span className="text-xs text-indigo-500 font-medium">当前门店时间：{getCurrentMerchantTime()}</span>
+                        </div>
+                        <input
+                          type="datetime-local"
+                          value={emailScheduleTime}
+                          onChange={e => setEmailScheduleTime(e.target.value)}
+                          className="w-full px-3 py-2 border border-indigo-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400"
+                        />
+                        <button
+                          onClick={scheduleEmail}
+                          disabled={schedulingEmail || emailSelected.size === 0 || !emailSubject.trim() || !emailBody.trim() || !emailScheduleTime}
+                          className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-sm shadow hover:from-indigo-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        >
+                          {schedulingEmail ? '排队中...' : `🕐 定时发送给 ${emailSelected.size} 位客户`}
+                        </button>
+                      </div>
+                    )}
+
+                    {emailScheduleMode === 'now' && (
+                      <button
+                        onClick={handleSendEmail}
+                        disabled={emailSending || emailSelected.size === 0 || !emailSubject.trim() || !emailBody.trim()}
+                        className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-sm shadow hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      >
+                        {emailSending ? `发送中...` : `✉️ 发送给 ${emailSelected.size} 位客户`}
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Email Send History */}
+          <div className="mt-4 border-t border-gray-100 pt-4">
+            <button
+              onClick={() => {
+                setShowEmailLogs(v => !v)
+                if (!showEmailLogs && emailLogs.length === 0) loadEmailLogs()
+              }}
+              className="w-full flex items-center justify-between text-sm text-gray-600 font-medium hover:text-gray-900 transition-colors py-1"
+            >
+              <span className="flex items-center gap-2">
+                📋 发送记录
+                {emailLogStats && (
+                  <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">共 {emailLogStats.total} 条 · 成功 {emailLogStats.success}</span>
+                )}
+              </span>
+              <span className="text-gray-400">{showEmailLogs ? '▲' : '▼'}</span>
+            </button>
+            {showEmailLogs && (
+              <div className="mt-3">
+                {emailLogsLoading ? (
+                  <p className="text-center text-sm text-gray-400 py-4">加载中...</p>
+                ) : emailLogs.length === 0 ? (
+                  <p className="text-center text-sm text-gray-400 py-4">暂无发送记录</p>
+                ) : (
+                  <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                    {emailLogs.map((log: any) => (
+                      <div key={log.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${log.status === 'success' ? 'bg-green-50' : 'bg-red-50'}`}>
+                        <span>{log.status === 'success' ? '✅' : '❌'}</span>
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-gray-800">{log.recipient_name || log.recipient_email}</span>
+                        </div>
+                        <div className="text-gray-500 truncate max-w-[100px] hidden sm:block">{log.subject}</div>
+                        <div className="text-gray-400 whitespace-nowrap flex-shrink-0">
+                          {new Date(log.sent_at).toLocaleString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* SMS Panel */}
+        <div className="bg-white rounded-2xl shadow-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <span>💬</span> 主动发短信
+            </h2>
+            <button
+              onClick={() => {
+                const next = !showSmsPanel
+                setShowSmsPanel(next)
+                setSmsResults(null)
+                if (next && smsLogs.length === 0) loadSmsLogs()
+              }}
+              className="text-sm px-3 py-1.5 rounded-lg bg-green-50 text-green-600 font-medium hover:bg-green-100 transition-colors"
+            >
+              {showSmsPanel ? '收起 ▲' : '展开 ▼'}
+            </button>
+          </div>
+
+          {showSmsPanel && (
+            <div className="space-y-4">
+              {smsResults ? (
+                <div className="space-y-2">
+                  <p className="text-sm font-bold text-gray-700 mb-2">
+                    发送完成：✅ {smsResults.filter(r => r.status === 'success').length} 成功 / ❌ {smsResults.filter(r => r.status === 'failed').length} 失败
+                  </p>
+                  {smsResults.filter(r => r.phone).map((r, i) => (
+                    <div key={i} className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg ${r.status === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                      <span>{r.status === 'success' ? '✅' : '❌'}</span>
+                      <span>{r.name || r.phone}</span>
+                      <span className="text-xs opacity-60 font-mono">{r.phone}</span>
+                      {r.error && <span className="text-xs text-red-500">{r.error}</span>}
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => { setSmsResults(null); setSmsMessage(''); setSmsSelected(new Set()) }}
+                    className="w-full mt-2 py-2 rounded-xl bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 text-sm"
+                  >
+                    再发一条
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* SMS Recipient Selection */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">选择收件人（{smsSelected.size}/{smsRecipients.length}）</span>
+                      <button onClick={toggleSmsAll} className="text-xs text-green-600 underline">
+                        {smsSelected.size === smsRecipients.length ? '取消全选' : '全选'}
+                      </button>
+                    </div>
+                    {smsRecipients.length === 0 ? (
+                      <p className="text-sm text-gray-400 py-2">暂无留有手机号的客户</p>
+                    ) : (
+                      <div className="max-h-40 overflow-y-auto space-y-1 border border-gray-100 rounded-xl p-2">
+                        {smsRecipients.map((c: any, i: number) => (
+                          <label key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={smsSelected.has(c.customerPhone)}
+                              onChange={() => toggleSmsOne(c.customerPhone)}
+                              className="accent-green-600"
+                            />
+                            <span className="text-sm font-medium text-gray-800">{c.customerName}</span>
+                            <span className="text-xs text-gray-400 font-mono">{c.customerPhone}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Message */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">短信内容</label>
+                    <textarea
+                      value={smsMessage}
+                      onChange={e => setSmsMessage(e.target.value)}
+                      placeholder="输入你想发给客户的短信内容..."
+                      rows={3}
+                      maxLength={500}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:border-green-400 resize-none"
+                    />
+                    <div className="text-right text-xs text-gray-400 mt-0.5">{smsMessage.length}/160{smsMessage.length > 160 ? '（超出将按多条计费）' : ''}</div>
+                  </div>
+
+                  {/* SMS lint check button */}
+                  <div>
+                    <button
+                      onClick={() => { setSmsLintIssues(lintSmsContent(smsMessage)); setSmsLintChecked(true) }}
+                      disabled={!smsMessage.trim()}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold rounded-lg hover:bg-amber-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      🔍 检查短信内容
+                    </button>
+                    {smsLintChecked && smsLintIssues && <LintPanel issues={smsLintIssues} />}
+                  </div>
+
+                  {/* Schedule Mode Toggle + Send */}
+                  <div className="border border-gray-100 rounded-xl p-3 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setSmsScheduleMode('now')}
+                        className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-all ${smsScheduleMode === 'now'
+                          ? 'bg-green-100 text-green-700 border border-green-300'
+                          : 'bg-gray-50 text-gray-500 border border-gray-200'
+                          }`}
+                      >
+                        ⚡ 立即发送
+                      </button>
+                      <button
+                        onClick={() => setSmsScheduleMode('later')}
+                        className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-all ${smsScheduleMode === 'later'
+                          ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                          : 'bg-gray-50 text-gray-500 border border-gray-200'
+                          }`}
+                      >
+                        🕐 定时发送
+                      </button>
+                    </div>
+
+                    {smsScheduleMode === 'later' && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-xs text-gray-500">发送时间（请输入{merchantTimezone}时区时间）</label>
+                          <span className="text-xs text-emerald-500 font-medium">当前门店时间：{getCurrentMerchantTime()}</span>
+                        </div>
+                        <input
+                          type="datetime-local"
+                          value={smsScheduleTime}
+                          onChange={e => setSmsScheduleTime(e.target.value)}
+                          className="w-full px-3 py-2 border border-emerald-200 rounded-xl text-sm focus:outline-none focus:border-emerald-400"
+                        />
+                        <button
+                          onClick={scheduleSms}
+                          disabled={schedulingSms || smsSelected.size === 0 || !smsMessage.trim() || !smsScheduleTime}
+                          className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm shadow hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        >
+                          {schedulingSms ? '排队中...' : `🕐 定时发送给 ${smsSelected.size} 位客户`}
+                        </button>
+                      </div>
+                    )}
+
+                    {smsScheduleMode === 'now' && (
+                      <button
+                        onClick={handleSendSms}
+                        disabled={smsSending || smsSelected.size === 0 || !smsMessage.trim()}
+                        className="w-full py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-sm shadow hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      >
+                        {smsSending ? `发送中...` : `💬 发送给 ${smsSelected.size} 位客户`}
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* SMS Send History */}
+          <div className="mt-4 border-t border-gray-100 pt-4">
+            <button
+              onClick={() => {
+                setShowSmsLogs(v => !v)
+                if (!showSmsLogs && smsLogs.length === 0) loadSmsLogs()
+              }}
+              className="w-full flex items-center justify-between text-sm text-gray-600 font-medium hover:text-gray-900 transition-colors py-1"
+            >
+              <span className="flex items-center gap-2">
+                📋 发送记录
+                {smsLogStats && (
+                  <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">共 {smsLogStats.total} 条 · 成功 {smsLogStats.success}</span>
+                )}
+              </span>
+              <span className="text-gray-400">{showSmsLogs ? '▲' : '▼'}</span>
+            </button>
+            {showSmsLogs && (
+              <div className="mt-3">
+                {smsLogsLoading ? (
+                  <p className="text-center text-sm text-gray-400 py-4">加载中...</p>
+                ) : smsLogs.length === 0 ? (
+                  <p className="text-center text-sm text-gray-400 py-4">暂无发送记录</p>
+                ) : (
+                  <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                    {smsLogs.map((log: any) => (
+                      <div key={log.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${log.status === 'success' ? 'bg-green-50' : 'bg-red-50'}`}>
+                        <span>{log.status === 'success' ? '✅' : '❌'}</span>
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-gray-800">{log.recipient_name || log.recipient_phone}</span>
+                        </div>
+                        <div className="text-gray-500 truncate max-w-[100px] hidden sm:block text-xs">{log.message?.slice(0, 20)}...</div>
+                        <div className="text-gray-400 whitespace-nowrap flex-shrink-0">
+                          {new Date(log.sent_at).toLocaleString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
 
       </div>
 
