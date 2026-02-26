@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email'
 import { sendSms } from '@/lib/sms'
+import { sendWalletPush } from '@/lib/wallet/apns'
 
 const BATCH_SIZE = 15    // emails to send per cron run
 const DELAY_MS = 500   // ms between each email within a batch
@@ -243,8 +244,6 @@ export async function GET(request: NextRequest) {
                     let failed = 0;
 
                     if (registrations && registrations.length > 0) {
-                        const { sendWalletPush } = await import('@/lib/wallet/apns');
-                        
                         for (const reg of registrations) {
                             const success = await sendWalletPush(reg.push_token);
                             if (success) {
