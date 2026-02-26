@@ -1479,7 +1479,7 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
         </div>
 
         {/* Apple Wallet Push Panel */}
-        {merchantId && (
+        {isAuthenticated && (
           <WalletPushPanel merchantId={merchantId} merchantSlug={merchantSlug} timezone={merchantTimezone || 'America/New_York'} />
         )}
 
