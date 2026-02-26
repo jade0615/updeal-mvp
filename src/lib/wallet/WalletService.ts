@@ -15,6 +15,9 @@ export interface MerchantData {
     logoText?: string;
     relevantText?: string;
     walletMessage?: string;
+    // For Apple Wallet web service registration
+    couponCode?: string;       // Used as the pass serialNumber
+    walletAuthToken?: string;  // Secret token for Apple callbacks (authenticationToken)
 }
 
 export interface UserData {
@@ -68,24 +71,32 @@ export class WalletService {
         try {
             console.log("🔧 Starting pass generation (Aggressive Removal Mode)");
             const certificates = await this.getCertificates();
-            const serialNumber = `${merchantData.merchantId}-${userData.userId}-${Date.now()}`;
+            // Use couponCode as serial number so registration API can find it by code
+            const serialNumber = merchantData.couponCode || `${merchantData.merchantId}-${userData.userId}-${Date.now()}`;
 
-            const pass = await PKPass.from({
-                model: this.templateDir,
-                certificates
-            }, {
+            const overrides: any = {
                 serialNumber: serialNumber,
                 passTypeIdentifier: (process.env.APPLE_PASS_TYPE_ID || "pass.hiraccoon.app.coupon").trim(),
                 teamIdentifier: (process.env.APPLE_TEAM_ID || "ULZM5FW53S").trim(),
                 organizationName: "HiRaccoon",
                 description: "HiRaccoon Coupon",
-                backgroundColor: "rgb(99, 0, 0)", // Hardcoded as per user request to override DB
+                backgroundColor: "rgb(99, 0, 0)",
                 foregroundColor: "rgb(255, 255, 255)",
                 labelColor: "rgb(218, 165, 32)",
                 logoText: (merchantData.logoText === "" ? " " : merchantData.logoText) || " ",
-                // Provide empty array to prevent any default barcodes from the template
                 barcodes: []
-            } as any);
+            };
+
+            // Set Apple Wallet Web Service fields so iOS registers devices for push
+            if (merchantData.walletAuthToken) {
+                overrides.authenticationToken = merchantData.walletAuthToken;
+                overrides.webServiceURL = "https://hiraccoon.com/api/wallet/";
+            }
+
+            const pass = await PKPass.from({
+                model: this.templateDir,
+                certificates
+            }, overrides);
 
             console.log("✅ PKPass instance created");
 

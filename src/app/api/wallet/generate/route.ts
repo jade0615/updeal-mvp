@@ -81,9 +81,13 @@ async function handlePassGeneration(couponCode: string | null) {
             longitude: lng ? parseFloat(lng) : undefined,
             address: merchant.content?.address?.fullAddress || merchant.content?.address || "",
             expirationDate: new Date(coupon.expires_at),
-            primaryColor: merchant.content?.brand?.primaryColor || "rgb(99, 0, 0)", // Wine Red
-            logoText: " ", // Use a single space to effectively hide it safely
+            primaryColor: merchant.content?.brand?.primaryColor || "rgb(99, 0, 0)",
+            logoText: " ",
+            // Required for Apple Wallet web service registration
+            couponCode: coupon.code,
+            walletAuthToken: authenticationToken,
         };
+
 
         const userData: UserData = {
             userId: user.id,
