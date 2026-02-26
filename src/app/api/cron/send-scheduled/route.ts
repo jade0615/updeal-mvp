@@ -4,6 +4,9 @@ import { sendEmail } from '@/lib/email'
 import { sendSms } from '@/lib/sms'
 import { sendWalletPush } from '@/lib/wallet/apns'
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 const BATCH_SIZE = 15    // emails to send per cron run
 const DELAY_MS = 500   // ms between each email within a batch
 
