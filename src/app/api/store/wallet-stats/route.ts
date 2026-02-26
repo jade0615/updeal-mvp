@@ -12,29 +12,39 @@ export async function GET(req: NextRequest) {
 
         const supabase = createAdminClient();
 
-        // Count Wallet Registrations mapped to this merchant's coupons
+        // Get all coupons for this merchant
         const { data: coupons } = await supabase
             .from("coupons")
-            .select("id")
+            .select("id, customer_name")
             .eq("merchant_id", merchantId);
 
         if (!coupons || coupons.length === 0) {
-            return NextResponse.json({ success: true, count: 0 });
+            return NextResponse.json({ success: true, count: 0, customers: [] });
         }
 
         const couponIds = coupons.map((c: any) => c.id);
+        const couponMap = Object.fromEntries(coupons.map((c: any) => [c.id, c.customer_name]));
 
-        const { count, error } = await supabase
+        // Get all wallet registrations for those coupons
+        const { data: registrations, error } = await supabase
             .from("wallet_registrations")
-            .select("*", { count: "exact", head: true })
+            .select("id, push_token, coupon_id")
             .in("coupon_id", couponIds);
 
         if (error) {
             return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
-        return NextResponse.json({ success: true, count: count || 0 });
+        const customers = (registrations || []).map((r: any) => ({
+            registrationId: r.id,
+            pushToken: r.push_token,
+            couponId: r.coupon_id,
+            customerName: couponMap[r.coupon_id] || "Unknown",
+        }));
+
+        return NextResponse.json({ success: true, count: customers.length, customers });
     } catch (e: any) {
         return NextResponse.json({ success: false, error: e.message }, { status: 500 });
     }
 }
+
