@@ -36,6 +36,7 @@ export async function GET(
                 code,
                 expires_at,
                 authentication_token,
+                wallet_message,
                 merchant:merchants (
                     id,
                     name,
@@ -77,6 +78,7 @@ export async function GET(
             expirationDate: new Date(coupon.expires_at),
             primaryColor: merchant.content?.brand?.primaryColor || "rgb(99, 0, 0)",
             logoText: " ",
+            walletMessage: coupon.wallet_message || undefined,
         };
 
         const userData: UserData = {

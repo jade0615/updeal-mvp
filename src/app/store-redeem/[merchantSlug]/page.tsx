@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatToNYTime, getNYLastUpdatedMessage } from '@/lib/utils/date'
+import WalletPushPanel from '@/components/merchant/WalletPushPanel'
 
 // ─────────────────────── Content Lint Helpers ───────────────────────
 interface LintIssue { level: 'danger' | 'warning' | 'tip'; field?: string; word: string; reason: string }
@@ -1477,6 +1478,10 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
           </div>
         </div>
 
+        {/* Apple Wallet Push Panel */}
+        {merchantId && (
+          <WalletPushPanel merchantId={merchantId} merchantSlug={merchantSlug} timezone={merchantTimezone || 'America/New_York'} />
+        )}
 
       </div>
 

@@ -14,6 +14,7 @@ export interface MerchantData {
     secondaryColor?: string;
     logoText?: string;
     relevantText?: string;
+    walletMessage?: string;
 }
 
 export interface UserData {
@@ -142,6 +143,15 @@ export class WalletService {
                     latitude: Number(merchantData.latitude),
                     longitude: Number(merchantData.longitude),
                     relevantText: merchantData.relevantText || "You are near the store! Show your code to redeem."
+                });
+            }
+
+            if (merchantData.walletMessage) {
+                pass.backFields.push({
+                    key: "wallet_message",
+                    label: "MESSAGE FROM STORE",
+                    value: merchantData.walletMessage,
+                    changeMessage: "%@"
                 });
             }
 
