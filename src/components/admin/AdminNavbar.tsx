@@ -17,6 +17,7 @@ export default function AdminNavbar() {
         { name: 'Dashboard', path: '/admin' },
         { name: 'Merchants', path: '/admin/merchants' },
         { name: 'Customers', path: '/admin/customers' },
+        { name: '推荐记录', path: '/admin/referrals' },
         { name: 'Wallet Downloads', path: '/admin/wallet-downloads' },
         // { name: 'Analytics', path: '/admin/analytics' }, // Future
     ]

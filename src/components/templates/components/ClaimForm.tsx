@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +28,7 @@ interface ClaimFormProps {
 }
 
 export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps) {
+    const searchParams = useSearchParams();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successData, setSuccessData] = useState<any | null>(null);
@@ -47,6 +49,7 @@ export default function ClaimForm({ merchantId, onClaimSuccess }: ClaimFormProps
                     merchantId,
                     phone: data.phone,
                     name: data.name,
+                    referralCode: searchParams.get('uid') || undefined,
                 }),
             });
 

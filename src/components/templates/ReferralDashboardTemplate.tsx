@@ -40,7 +40,7 @@ export default function ReferralDashboardTemplate({ merchant, userId = 'mock-use
 
     // Construct the referral link
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
-    const referralLink = `${origin}/${merchant.slug}?ref=${referralCode}&utm_source=copyLink`
+    const referralLink = `${origin}/${merchant.slug}?uid=${referralCode}&utm_source=copyLink`
 
     const handleCopyLink = async () => {
         try {
