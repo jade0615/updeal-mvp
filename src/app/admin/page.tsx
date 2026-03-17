@@ -5,18 +5,17 @@ import { getNYLastUpdatedMessage } from '@/lib/utils/date'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboard() {
-  const merchants = await getAllMerchantsStats()
+  // Admin dashboard requirement: show cumulative totals by default
+  const merchantsAll = await getAllMerchantsStats('all')
 
-  // Calculate totals
-  const totalMerchants = merchants.length
+  const totalMerchants = merchantsAll.length
+  const allViews = merchantsAll.reduce((acc, m) => acc + (m.real_stats?.views || 0), 0)
+  const allClaims = merchantsAll.reduce((acc, m) => acc + (m.real_stats?.claims || 0), 0)
+  const allRedemptions = merchantsAll.reduce((acc, m) => acc + (m.real_stats?.redemptions || 0), 0)
+  const allReferrals = 0 // placeholder, can be added if referrals table has count
 
-  const totalViews = merchants.reduce((acc, m) => acc + (m.real_stats?.views || 0), 0)
-  const totalClaims = merchants.reduce((acc, m) => acc + (m.real_stats?.claims || 0), 0)
-  const totalRedemptions = merchants.reduce((acc, m) => acc + (m.real_stats?.redemptions || 0), 0)
-  const todayRedemptions = merchants.reduce((acc, m) => acc + (m.real_stats?.today_redemptions || 0), 0)
-
-  // Calculate overall conversion rate
-  const redemptionRate = totalClaims > 0 ? ((totalRedemptions / totalClaims) * 100).toFixed(1) + '%' : '0%'
+  // Conversion rates
+  const allRate = allClaims > 0 ? ((allRedemptions / allClaims) * 100).toFixed(1) + '%' : '0%'
 
   return (
     <div className="min-h-screen bg-[#f8fbff]">
@@ -41,37 +40,43 @@ export default async function AdminDashboard() {
             </div>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <DashboardCard
-              title="入驻商家"
-              value={totalMerchants}
-              icon="🏪"
-              subtitle="个活跃商户"
-              color="blue"
-            />
-            <DashboardCard
-              title="累计访问"
-              value={totalViews}
-              icon="👁️"
-              subtitle="人次浏览落地页"
-              color="indigo"
-            />
-            <DashboardCard
-              title="优惠领取"
-              value={totalClaims}
-              icon="🎟️"
-              subtitle="份已发放优惠券"
-              color="purple"
-            />
-            <DashboardCard
-              title="今日核销"
-              value={todayRedemptions}
-              icon="✅"
-              subtitle={`累计已核销 ${totalRedemptions}`}
-              highlight={redemptionRate}
-              color="emerald"
-            />
+          {/* ── All-Time Cumulative Stats (Default) ── */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xs font-bold text-amber-500 uppercase tracking-widest">累计总量</span>
+              <div className="flex-1 h-px bg-amber-100" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <DashboardCard
+                title="入驻商家"
+                value={totalMerchants}
+                icon="🏪"
+                subtitle="个活跃商户"
+                color="blue"
+              />
+              <DashboardCard
+                title="累计访问"
+                value={allViews}
+                icon="📊"
+                subtitle="历史总访问人次"
+                color="amber"
+              />
+              <DashboardCard
+                title="累计领取"
+                value={allClaims}
+                icon="🎁"
+                subtitle="历史总发券量"
+                color="orange"
+              />
+              <DashboardCard
+                title="累计核销"
+                value={allRedemptions}
+                icon="🏆"
+                subtitle={`核销转化率 ${allRate}`}
+                highlight={allRate}
+                color="rose"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -102,18 +107,18 @@ export default async function AdminDashboard() {
             {/* Success Rate */}
             <div className="bg-slate-900 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
               <div className="relative z-10">
-                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-2">平均核销率</p>
-                <div className="text-5xl font-black mb-6">{redemptionRate}</div>
+                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-2">平均核销率（累计）</p>
+                <div className="text-5xl font-black mb-6">{allRate}</div>
 
                 <div className="space-y-4">
                   <div className="flex justify-between text-sm font-medium">
                     <span className="text-slate-400">核销 / 领取 转化</span>
-                    <span className="text-emerald-400">{totalRedemptions} / {totalClaims}</span>
+                    <span className="text-emerald-400">{allRedemptions} / {allClaims}</span>
                   </div>
                   <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-emerald-500 rounded-full transition-all duration-1000"
-                      style={{ width: redemptionRate }}
+                      style={{ width: allRate }}
                     />
                   </div>
                 </div>
@@ -128,12 +133,16 @@ export default async function AdminDashboard() {
   )
 }
 
-function DashboardCard({ title, value, icon, subtitle, highlight, color }: any) {
+function DashboardCard({ title, value, icon, subtitle, highlight, color, isText }: any) {
   const colors: any = {
     blue: 'text-blue-600 bg-blue-50',
     indigo: 'text-indigo-600 bg-indigo-50',
     purple: 'text-purple-600 bg-purple-50',
     emerald: 'text-emerald-600 bg-emerald-50',
+    amber: 'text-amber-600 bg-amber-50',
+    orange: 'text-orange-600 bg-orange-50',
+    rose: 'text-rose-600 bg-rose-50',
+    teal: 'text-teal-600 bg-teal-50',
   }
   return (
     <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 hover:scale-[1.02] transition-transform">
@@ -147,7 +156,9 @@ function DashboardCard({ title, value, icon, subtitle, highlight, color }: any) 
           </span>
         )}
       </div>
-      <div className="text-3xl font-black text-slate-900 mb-1">{value.toLocaleString()}</div>
+      <div className="text-3xl font-black text-slate-900 mb-1">
+        {isText ? value : (typeof value === 'number' ? value.toLocaleString() : value)}
+      </div>
       <div className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-1">{title}</div>
       <div className="text-xs text-slate-400">{subtitle}</div>
     </div>
@@ -165,4 +176,3 @@ function QuickLink({ href, title, desc, icon, bg }: any) {
     </a>
   )
 }
-
