@@ -62,6 +62,10 @@ export function getNYPeriodRange(period: string) {
     let endDate: string | null = null;
 
     switch (period) {
+        case '24h':
+            // Rolling last 24 hours (not NY start-of-day based)
+            startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+            break;
         case 'today':
             startDate = getNYStartOfDay(now);
             break;

@@ -5,10 +5,18 @@ import { getNYLastUpdatedMessage } from '@/lib/utils/date'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboard() {
-  // Admin dashboard requirement: show cumulative totals by default
-  const merchantsAll = await getAllMerchantsStats('all')
+  const [merchants24h, merchantsAll] = await Promise.all([
+    getAllMerchantsStats('24h'),
+    getAllMerchantsStats('all'),
+  ])
 
   const totalMerchants = merchantsAll.length
+
+  const views24h = merchants24h.reduce((acc, m) => acc + (m.real_stats?.views || 0), 0)
+  const claims24h = merchants24h.reduce((acc, m) => acc + (m.real_stats?.claims || 0), 0)
+  const redemptions24h = merchants24h.reduce((acc, m) => acc + (m.real_stats?.redemptions || 0), 0)
+  const rate24h = claims24h > 0 ? ((redemptions24h / claims24h) * 100).toFixed(1) + '%' : '0%'
+
   const allViews = merchantsAll.reduce((acc, m) => acc + (m.real_stats?.views || 0), 0)
   const allClaims = merchantsAll.reduce((acc, m) => acc + (m.real_stats?.claims || 0), 0)
   const allRedemptions = merchantsAll.reduce((acc, m) => acc + (m.real_stats?.redemptions || 0), 0)
@@ -37,6 +45,46 @@ export default async function AdminDashboard() {
               <a href="/admin/analytics" className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-blue-200 shadow-lg">
                 详细报表
               </a>
+            </div>
+          </div>
+
+          {/* ── Last 24 Hours (Rolling) ── */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">过去 24 小时</span>
+              <div className="flex-1 h-px bg-slate-200" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <DashboardCard
+                title="24h 访问"
+                value={views24h}
+                icon="🕒"
+                subtitle="近 24h 浏览量"
+                color="indigo"
+              />
+              <DashboardCard
+                title="24h 领取"
+                value={claims24h}
+                icon="🎟️"
+                subtitle="近 24h 发券量"
+                color="purple"
+              />
+              <DashboardCard
+                title="24h 核销"
+                value={redemptions24h}
+                icon="✅"
+                subtitle={`核销转化率 ${rate24h}`}
+                highlight={rate24h}
+                color="emerald"
+              />
+              <DashboardCard
+                title="24h 核销率"
+                value={rate24h}
+                icon="📈"
+                subtitle={`${redemptions24h} / ${claims24h}`}
+                color="teal"
+                isText
+              />
             </div>
           </div>
 
