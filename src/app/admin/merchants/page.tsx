@@ -1,4 +1,3 @@
-import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import DeleteMerchantButton from '@/components/admin/DeleteMerchantButton'
 import { CopyButton, ExportMerchantsButton } from '@/components/admin/MerchantUtilityButtons'
@@ -34,6 +33,32 @@ export default async function MerchantsPage({ searchParams }: Props) {
       (m.redeem_pin?.toLowerCase() || '').includes(lowerQ)
     )
   }
+
+  type MerchantRow = any
+
+  const groupKeyOf = (m: MerchantRow) => {
+    // internal_id is the most reliable way to identify "same store"
+    return (m.internal_id && String(m.internal_id).trim()) || (m.name && String(m.name).trim()) || m.id
+  }
+
+  const grouped = new Map<string, MerchantRow[]>()
+  for (const m of merchants) {
+    const key = groupKeyOf(m)
+    const list = grouped.get(key) || []
+    list.push(m)
+    grouped.set(key, list)
+  }
+
+  const merchantGroups = Array.from(grouped.entries())
+    .map(([key, items]) => ({
+      key,
+      items: items.sort((a, b) => String(a.slug || '').localeCompare(String(b.slug || ''))),
+    }))
+    .sort((a, b) => {
+      const aName = String(a.items[0]?.name || '')
+      const bName = String(b.items[0]?.name || '')
+      return aName.localeCompare(bName)
+    })
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://hiraccoon.com'
 
@@ -112,8 +137,17 @@ export default async function MerchantsPage({ searchParams }: Props) {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {merchants.map((merchant) => (
-                  <tr key={merchant.id} className="hover:bg-gray-50">
+                {merchantGroups.map(({ key, items }) => {
+                  const merchant = items[0]
+                  const offerCount = items.length
+
+                  const groupViews = items.reduce((acc, m) => acc + (m.real_stats?.views || 0), 0)
+                  const groupClaims = items.reduce((acc, m) => acc + (m.real_stats?.claims || 0), 0)
+                  const groupRedemptions = items.reduce((acc, m) => acc + (m.real_stats?.redemptions || 0), 0)
+                  const groupRate = groupClaims > 0 ? ((groupRedemptions / groupClaims) * 100).toFixed(1) : '0.0'
+
+                  return (
+                    <tr key={key} className="hover:bg-gray-50">
                     {/* Merchant Info Column */}
                     <td className="px-6 py-4">
                       <div className="flex items-center">
@@ -134,6 +168,55 @@ export default async function MerchantsPage({ searchParams }: Props) {
                           <div className="text-xs text-gray-400 mt-1">
                             PIN: <span className="font-mono text-gray-600 font-medium">{merchant.redeem_pin || 'N/A'}</span>
                           </div>
+
+                          {offerCount > 1 && (
+                            <div className="mt-2">
+                              <details className="group">
+                                <summary className="cursor-pointer select-none text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">
+                                  <span className="transition-transform group-open:rotate-90">▶</span>
+                                  同一家店的更多折扣（{offerCount - 1}）
+                                </summary>
+                                <div className="mt-2 space-y-2 rounded-lg border border-slate-100 bg-slate-50 p-3">
+                                  {items.map((o) => (
+                                    <div key={o.id} className="flex flex-col gap-1">
+                                      <div className="flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                          <span className="text-[11px] text-gray-500 font-mono bg-white px-1.5 py-0.5 rounded border border-slate-100 truncate">
+                                            {o.slug}
+                                          </span>
+                                          <span className="text-[11px] text-gray-400">
+                                            ✅ {(o.real_stats?.redemptions || 0).toLocaleString()} · 🎟️ {(o.real_stats?.claims || 0).toLocaleString()} · 👁️ {(o.real_stats?.views || 0).toLocaleString()}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                          <a
+                                            href={`/${o.slug}`}
+                                            target="_blank"
+                                            className="text-[11px] text-blue-600 hover:underline"
+                                          >
+                                            C端
+                                          </a>
+                                          <a
+                                            href={`/store-redeem/${o.slug}`}
+                                            target="_blank"
+                                            className="text-[11px] text-purple-600 hover:underline"
+                                          >
+                                            B端
+                                          </a>
+                                          <Link
+                                            href={`/admin/merchants/${o.id}/edit`}
+                                            className="text-[11px] text-gray-700 hover:text-gray-900"
+                                          >
+                                            编辑
+                                          </Link>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </details>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -149,7 +232,7 @@ export default async function MerchantsPage({ searchParams }: Props) {
                           </div>
                           <div className="text-right">
                             <span className="text-sm font-bold text-orange-600 block">
-                              {(merchant.real_stats?.redemptions || 0).toLocaleString()}
+                              {groupRedemptions.toLocaleString()}
                             </span>
                           </div>
                         </div>
@@ -162,7 +245,7 @@ export default async function MerchantsPage({ searchParams }: Props) {
                           </div>
                           <div className="text-right">
                             <span className="text-sm font-medium text-orange-600 block">
-                              {(merchant.real_stats?.claims || 0).toLocaleString()}
+                              {groupClaims.toLocaleString()}
                             </span>
                           </div>
                         </div>
@@ -175,7 +258,7 @@ export default async function MerchantsPage({ searchParams }: Props) {
                           </div>
                           <div className="text-right">
                             <span className="text-sm font-medium text-gray-500 block">
-                              {(merchant.real_stats?.views || 0).toLocaleString()}
+                              {groupViews.toLocaleString()}
                             </span>
                           </div>
                         </div>
@@ -183,7 +266,7 @@ export default async function MerchantsPage({ searchParams }: Props) {
                         {/* Rate */}
                         <div className="mt-1 text-right">
                           <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                            核销率: {merchant.real_stats?.redemption_rate}%
+                            核销率: {groupRate}%
                           </span>
                         </div>
                       </div>
@@ -230,7 +313,8 @@ export default async function MerchantsPage({ searchParams }: Props) {
                       <DeleteMerchantButton merchantId={merchant.id} />
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>
