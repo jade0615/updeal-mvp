@@ -305,6 +305,7 @@ export async function getAllMerchantsStats(period: string = 'today') {
       id,
       name,
       slug,
+      content,
       internal_id,
       redeem_pin,
       template_type,

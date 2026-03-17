@@ -36,11 +36,26 @@ export default async function MerchantsPage({ searchParams }: Props) {
 
   type MerchantRow = any
 
+  const normalizeAddress = (addr?: string | null) => {
+    if (!addr) return null
+    const s = String(addr).toLowerCase().trim()
+    if (!s) return null
+    // normalize punctuation/spacing for stable grouping
+    return s
+      .replace(/\s+/g, ' ')
+      .replace(/[.,#]/g, '')
+      .trim()
+  }
+
   const groupKeyOf = (m: MerchantRow) => {
-    // Only group when internal_id exists (same store, multiple offers).
-    // Do NOT group by name to avoid merging different stores with similar names.
+    // Group priority:
+    // 1) internal_id (strongest)
+    // 2) fullAddress (same store, multiple offers)
+    // Fallback to id to avoid accidental merges.
     const internalId = m.internal_id && String(m.internal_id).trim()
     if (internalId) return `internal:${internalId}`
+    const addr = normalizeAddress(m.content?.address?.fullAddress)
+    if (addr) return `addr:${addr}`
     return `id:${m.id}`
   }
 
