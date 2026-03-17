@@ -37,8 +37,11 @@ export default async function MerchantsPage({ searchParams }: Props) {
   type MerchantRow = any
 
   const groupKeyOf = (m: MerchantRow) => {
-    // internal_id is the most reliable way to identify "same store"
-    return (m.internal_id && String(m.internal_id).trim()) || (m.name && String(m.name).trim()) || m.id
+    // Only group when internal_id exists (same store, multiple offers).
+    // Do NOT group by name to avoid merging different stores with similar names.
+    const internalId = m.internal_id && String(m.internal_id).trim()
+    if (internalId) return `internal:${internalId}`
+    return `id:${m.id}`
   }
 
   const grouped = new Map<string, MerchantRow[]>()
