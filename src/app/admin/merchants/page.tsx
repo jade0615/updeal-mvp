@@ -71,8 +71,17 @@ export default async function MerchantsPage({ searchParams }: Props) {
     .map(([key, items]) => ({
       key,
       items: items.sort((a, b) => String(a.slug || '').localeCompare(String(b.slug || ''))),
+      totals: {
+        views: items.reduce((acc, m) => acc + (m.real_stats?.views || 0), 0),
+        claims: items.reduce((acc, m) => acc + (m.real_stats?.claims || 0), 0),
+        redemptions: items.reduce((acc, m) => acc + (m.real_stats?.redemptions || 0), 0),
+      },
     }))
     .sort((a, b) => {
+      // Default ordering: highest redemptions first (within selected period)
+      const diff = (b.totals.redemptions || 0) - (a.totals.redemptions || 0)
+      if (diff !== 0) return diff
+      // Tie-breaker: name asc
       const aName = String(a.items[0]?.name || '')
       const bName = String(b.items[0]?.name || '')
       return aName.localeCompare(bName)
@@ -155,13 +164,13 @@ export default async function MerchantsPage({ searchParams }: Props) {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {merchantGroups.map(({ key, items }) => {
+                {merchantGroups.map(({ key, items, totals }) => {
                   const merchant = items[0]
                   const offerCount = items.length
 
-                  const groupViews = items.reduce((acc, m) => acc + (m.real_stats?.views || 0), 0)
-                  const groupClaims = items.reduce((acc, m) => acc + (m.real_stats?.claims || 0), 0)
-                  const groupRedemptions = items.reduce((acc, m) => acc + (m.real_stats?.redemptions || 0), 0)
+                  const groupViews = totals.views
+                  const groupClaims = totals.claims
+                  const groupRedemptions = totals.redemptions
                   const groupRate = groupClaims > 0 ? ((groupRedemptions / groupClaims) * 100).toFixed(1) : '0.0'
 
                   return (
