@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getMerchantSession } from '@/lib/merchant-auth'
 import { sendSms } from '@/lib/sms'
+import { fetchMergedSmsLogsForMerchant, type MergedSmsLogRow, type MergedSmsLogStats } from '@/lib/sms-logs-merge'
 
 // ─────────────────────────────────────────────
 // Types
@@ -155,23 +156,13 @@ export async function sendMerchantSmsAction(params: {
 // Fetch SMS logs for a merchant
 // ─────────────────────────────────────────────
 
-export interface SmsLog {
-    id: string
-    merchant_id: string | null
-    recipient_phone: string
-    recipient_name: string | null
-    message: string
-    status: 'success' | 'failed'
-    error_message: string | null
-    campaign_name: string | null
-    sent_at: string
-    created_at: string
-}
+/** 与核销页 /api/store/sms-logs 一致：含待发送的定时展开行 */
+export type SmsLog = MergedSmsLogRow
 
 export async function getMerchantSmsLogs(): Promise<{
     success: boolean
     logs?: SmsLog[]
-    stats?: { total: number; success: number; failed: number }
+    stats?: MergedSmsLogStats
     error?: string
 }> {
     try {
@@ -181,21 +172,11 @@ export async function getMerchantSmsLogs(): Promise<{
         }
 
         const supabase = createAdminClient()
-        const { data: logs, error } = await supabase
-            .from('sms_logs')
-            .select('*')
-            .eq('merchant_id', session.merchants.id)
-            .order('sent_at', { ascending: false })
-            .limit(100)
+        const { logs, stats } = await fetchMergedSmsLogsForMerchant(supabase, session.merchants.id, 100)
 
-        if (error) throw error
-
-        const total = logs?.length || 0
-        const success = logs?.filter(l => l.status === 'success').length || 0
-        const failed = logs?.filter(l => l.status === 'failed').length || 0
-
-        return { success: true, logs: logs || [], stats: { total, success, failed } }
+        return { success: true, logs, stats }
     } catch (e: any) {
-        return { success: false, error: e.message, logs: [], stats: { total: 0, success: 0, failed: 0 } }
+        const empty: MergedSmsLogStats = { total: 0, success: 0, failed: 0, scheduled: 0, sentRecords: 0 }
+        return { success: false, error: e.message, logs: [], stats: empty }
     }
 }

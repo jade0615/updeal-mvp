@@ -1,41 +1,43 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getMerchantSession } from '@/lib/merchant-auth'
 
-export interface ReferralRecord {
-    // 被推荐人信息
+export interface MerchantReferralRecord {
+    // 被推荐人（领券者）
     invitee_coupon_id: string
     invitee_name: string | null
     invitee_phone: string
     invitee_email: string | null
     invitee_coupon_code: string
     invitee_claimed_at: string
-    invitee_merchant_name: string
-    // 推荐人信息
-    referral_code: string        // REF-xxxxxx
+    // 推荐人（分享者）
+    referral_code: string
     referrer_name: string | null
     referrer_phone: string | null
     referrer_email: string | null
     referrer_coupon_code: string | null
 }
 
-/**
- * 获取所有推荐关系（谁分享给谁）
- * Logic:
- *   - coupons.referred_by = "REF-xxxxxx" (用户A user_id 前6位大写)
- *   - users.id LIKE xxxxxx% 即为推荐人
- */
-export async function getReferralChains(merchantId?: string): Promise<{
+export async function getMerchantReferrals(): Promise<{
     success: boolean
-    records: ReferralRecord[]
+    records: MerchantReferralRecord[]
     total: number
+    merchantName: string
     error?: string
 }> {
-    const supabase = createAdminClient()
-
     try {
-        // 1. 拿所有有 referred_by 的 coupon（即被推荐人的 coupon）
-        let inviteeQuery = supabase
+        const session = await getMerchantSession()
+        if (!session || !session.merchants) {
+            return { success: false, records: [], total: 0, merchantName: '', error: '未登录，请先登录商家账号' }
+        }
+
+        const merchant = session.merchants
+        const merchantId = merchant.id
+        const supabase = createAdminClient()
+
+        // 1. 获取该商家下所有有 referred_by 的 coupon（被推荐人领的券）
+        const { data: invitees, error } = await supabase
             .from('coupons')
             .select(`
                 id,
@@ -48,35 +50,22 @@ export async function getReferralChains(merchantId?: string): Promise<{
                     phone,
                     email,
                     name
-                ),
-                merchants!inner (
-                    id,
-                    name
                 )
             `)
+            .eq('merchant_id', merchantId)
             .not('referred_by', 'is', null)
             .order('created_at', { ascending: false })
 
-        if (merchantId) {
-            inviteeQuery = inviteeQuery.eq('merchant_id', merchantId)
-        }
-
-        const { data: invitees, error: inviteesError } = await inviteeQuery
-
-        if (inviteesError) {
-            console.error('getReferralChains invitees error:', inviteesError)
-            return { success: false, records: [], total: 0, error: inviteesError.message }
+        if (error) {
+            return { success: false, records: [], total: 0, merchantName: merchant.name, error: error.message }
         }
 
         if (!invitees || invitees.length === 0) {
-            return { success: true, records: [], total: 0 }
+            return { success: true, records: [], total: 0, merchantName: merchant.name }
         }
 
-        // 2. 收集所有不重复的 referral codes
+        // 2. 反查推荐人信息（REF-XXXXXX → user_id 前缀，内存匹配）
         const referralCodes = [...new Set(invitees.map((i: any) => i.referred_by as string))]
-
-        // 3. 根据 referral code 反查推荐人
-        // ilike 对 UUID 字段无效，改为内存匹配
         const referrerMap: Record<string, {
             name: string | null
             phone: string | null
@@ -84,20 +73,17 @@ export async function getReferralChains(merchantId?: string): Promise<{
             coupon_code: string | null
         }> = {}
 
-        // 先获取所有相关 coupons（限该商家，或全量）
-        let allCouponsQuery = supabase
+        // 先拉该商家所有 coupons（用来内存内匹配 user_id 前缀）
+        const { data: allMerchantCoupons } = await supabase
             .from('coupons')
             .select('id, code, user_id, created_at')
+            .eq('merchant_id', merchantId)
             .order('created_at', { ascending: true })
-        if (merchantId) {
-            allCouponsQuery = allCouponsQuery.eq('merchant_id', merchantId)
-        }
-        const { data: allCoupons } = await allCouponsQuery
 
         for (const refCode of referralCodes) {
             const prefix = refCode.replace('REF-', '').toLowerCase()
 
-            const matchingCoupon = (allCoupons || []).find(
+            const matchingCoupon = (allMerchantCoupons || []).find(
                 (c: any) => c.user_id && c.user_id.toLowerCase().startsWith(prefix)
             )
 
@@ -120,11 +106,10 @@ export async function getReferralChains(merchantId?: string): Promise<{
             }
         }
 
-        // 4. 组装结果
-        const records: ReferralRecord[] = invitees.map((item: any) => {
+        // 3. 组装
+        const records: MerchantReferralRecord[] = invitees.map((item: any) => {
             const refCode = item.referred_by as string
             const referrer = referrerMap[refCode]
-
             return {
                 invitee_coupon_id: item.id,
                 invitee_name: item.users?.name || null,
@@ -132,7 +117,6 @@ export async function getReferralChains(merchantId?: string): Promise<{
                 invitee_email: item.users?.email || null,
                 invitee_coupon_code: item.code,
                 invitee_claimed_at: item.created_at,
-                invitee_merchant_name: item.merchants?.name || '',
                 referral_code: refCode,
                 referrer_name: referrer?.name || null,
                 referrer_phone: referrer?.phone || null,
@@ -141,10 +125,9 @@ export async function getReferralChains(merchantId?: string): Promise<{
             }
         })
 
-        return { success: true, records, total: records.length }
-
+        return { success: true, records, total: records.length, merchantName: merchant.name }
     } catch (err: any) {
-        console.error('getReferralChains error:', err)
-        return { success: false, records: [], total: 0, error: 'Internal Server Error' }
+        console.error('getMerchantReferrals error:', err)
+        return { success: false, records: [], total: 0, merchantName: '', error: '获取推荐记录失败' }
     }
 }

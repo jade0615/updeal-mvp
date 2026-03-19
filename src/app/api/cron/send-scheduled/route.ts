@@ -58,6 +58,12 @@ function buildCampaignHtml(name: string | null, bodyText: string, merchantName: 
 
 export async function GET(request: NextRequest) {
     try {
+        // Match /api/cron/reminders — Vercel Cron sends Authorization: Bearer CRON_SECRET
+        const authHeader = request.headers.get('authorization')
+        if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
         const supabase = createAdminClient()
 
         // Pick tasks that are due and still pending

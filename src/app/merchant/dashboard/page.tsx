@@ -219,6 +219,35 @@ export default function MerchantDashboardPage() {
                     <div className="text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all text-xl">→</div>
                 </a>
 
+                {/* Manual SMS Card */}
+                <a
+                    href="/merchant/dashboard/sms"
+                    className="mt-4 flex items-center gap-4 p-5 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl shadow-lg shadow-green-200 hover:shadow-xl hover:from-green-600 hover:to-emerald-700 transition-all group"
+                >
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                        💬
+                    </div>
+                    <div className="flex-1">
+                        <div className="font-bold text-white text-base">主动发短信</div>
+                        <div className="text-green-100 text-sm mt-0.5">勾选客户，自定义内容，一键群发短信</div>
+                    </div>
+                    <div className="text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all text-xl">→</div>
+                </a>
+
+                {/* 推荐记录 Card */}
+                <a
+                    href="/merchant/dashboard/referrals"
+                    className="mt-4 flex items-center gap-4 p-5 bg-gradient-to-r from-purple-500 to-violet-600 rounded-2xl shadow-lg shadow-purple-200 hover:shadow-xl hover:from-purple-600 hover:to-violet-700 transition-all group"
+                >
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                        🔗
+                    </div>
+                    <div className="flex-1">
+                        <div className="font-bold text-white text-base">推荐记录</div>
+                        <div className="text-purple-100 text-sm mt-0.5">查看哪位客户分享了链接，让谁领取了优惠</div>
+                    </div>
+                    <div className="text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all text-xl">→</div>
+                </a>
                 {/* Additional Info */}
                 <div className="bg-white rounded-lg shadow p-6">
                     <h2 className="text-lg font-semibold text-gray-900 mb-4">使用说明</h2>
