@@ -188,13 +188,7 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
   const [smsResults, setSmsResults] = useState<{ phone: string; name: string | null; status: string; error?: string }[] | null>(null)
   const [smsLogs, setSmsLogs] = useState<any[]>([])
   const [smsLogsLoading, setSmsLogsLoading] = useState(false)
-  const [smsLogStats, setSmsLogStats] = useState<{
-    total: number
-    success: number
-    failed?: number
-    scheduled?: number
-    sentRecords?: number
-  } | null>(null)
+  const [smsLogStats, setSmsLogStats] = useState<{ total: number; success: number } | null>(null)
   const [showSmsLogs, setShowSmsLogs] = useState(false)
 
   // Scheduled Send State (shared)
@@ -213,11 +207,6 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
   const [emailLintChecked, setEmailLintChecked] = useState(false)
   const [smsLintIssues, setSmsLintIssues] = useState<LintIssue[] | null>(null)
   const [smsLintChecked, setSmsLintChecked] = useState(false)
-
-  // Referral Records State
-  const [referrals, setReferrals] = useState<any[]>([])
-  const [referralsLoading, setReferralsLoading] = useState(false)
-  const [showReferrals, setShowReferrals] = useState(false)
 
   const emailRecipients = claims.filter(c => c.customerEmail)
 
@@ -514,21 +503,6 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
       console.error(e)
     } finally {
       setClaimsLoading(false)
-    }
-  }
-
-  const fetchReferrals = async () => {
-    setReferralsLoading(true)
-    try {
-      const res = await fetch(`/api/store/referrals?slug=${merchantSlug}`)
-      const data = await res.json()
-      if (data.success) {
-        setReferrals(data.referrals || [])
-      }
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setReferralsLoading(false)
     }
   }
 
@@ -1059,94 +1033,6 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
           </div>
         </div>
 
-        {/* 🔗 推荐记录 Panel */}
-        <div className="bg-white rounded-2xl shadow-xl p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <span>🔗</span> 推荐记录
-              {referrals.length > 0 && (
-                <span className="text-xs font-normal bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
-                  共 {referrals.length} 条
-                </span>
-              )}
-            </h2>
-            <button
-              onClick={() => {
-                const next = !showReferrals
-                setShowReferrals(next)
-                if (next && referrals.length === 0) fetchReferrals()
-              }}
-              className="text-sm px-3 py-1.5 rounded-lg bg-purple-50 text-purple-600 font-medium hover:bg-purple-100 transition-colors"
-            >
-              {showReferrals ? '收起 ▲' : '展开 ▼'}
-            </button>
-          </div>
-          <p className="text-xs text-gray-400 mb-3">查看谁把优惠链接分享给了朋友，以及朋友何时填写信息领取</p>
-
-          {showReferrals && (
-            <div>
-              {referralsLoading ? (
-                <div className="py-8 text-center text-gray-400 text-sm">加载中...</div>
-              ) : referrals.length === 0 ? (
-                <div className="py-8 text-center">
-                  <p className="text-gray-400 text-sm">暂无推荐记录</p>
-                  <p className="text-xs text-gray-300 mt-1">客户通过分享链接带来新用户后，会在这里显示</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {referrals.map((r: any, idx: number) => (
-                    <div key={idx} className="border border-gray-100 rounded-xl overflow-hidden">
-                      <div className="grid grid-cols-[1fr_auto_1fr]">
-                        {/* 分享者 */}
-                        <div className="p-4 bg-purple-50/60">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-purple-500 mb-2">📤 分享者（推荐人）</p>
-                          <p className="font-semibold text-gray-900 text-sm">{r.referrer_name || '姓名未填'}</p>
-                          <p className="text-xs text-gray-500 font-mono mt-0.5">{r.referrer_phone || '—'}</p>
-                          {r.referrer_coupon_code && (
-                            <p className="text-xs font-mono bg-white text-gray-600 inline-block px-1.5 py-0.5 rounded mt-1">券:{r.referrer_coupon_code}</p>
-                          )}
-                          {r.referrer_claimed_at && (
-                            <p className="text-[10px] text-purple-400 mt-1">
-                              领券时间：{new Date(r.referrer_claimed_at).toLocaleString('zh-CN', {
-                                month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
-                              })}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* 中间箭头 */}
-                        <div className="flex flex-col items-center justify-center px-2 bg-white">
-                          <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center">
-                            <svg className="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </div>
-                          <span className="text-[9px] text-gray-300 mt-1">分享</span>
-                        </div>
-
-                        {/* 领取者 */}
-                        <div className="p-4 bg-green-50/60">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-green-600 mb-2">🎁 领取者（朋友）</p>
-                          <p className="font-semibold text-gray-900 text-sm">{r.invitee_name || '姓名未填'}</p>
-                          <p className="text-xs text-gray-500 font-mono mt-0.5">{r.invitee_phone || '—'}</p>
-                          {r.invitee_coupon_code && (
-                            <p className="text-xs font-mono bg-white text-green-600 border border-green-200 inline-block px-1.5 py-0.5 rounded mt-1">券:{r.invitee_coupon_code}</p>
-                          )}
-                          <p className="text-[10px] text-green-500 mt-1">
-                            领券时间：{new Date(r.invitee_claimed_at).toLocaleString('zh-CN', {
-                              month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
         {/* Email Panel */}
         <div className="bg-white rounded-2xl shadow-xl p-6">
           <div className="flex items-center justify-between mb-4">
@@ -1544,9 +1430,8 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
                 📋 发送记录
                 {smsLogStats && (
                   <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                    共 {smsLogStats.total} 条 · 已成功 {smsLogStats.success}
-                    {(smsLogStats.failed ?? 0) > 0 ? ` · 失败 ${smsLogStats.failed}` : ''}
-                    {(smsLogStats.scheduled ?? 0) > 0 ? ` · 待发送 ${smsLogStats.scheduled}` : ''}
+                    共 {smsLogStats.total} 条 · 成功 {smsLogStats.success}
+                    {(smsLogStats as any).scheduled > 0 && ` · 定时 ${(smsLogStats as any).scheduled}`}
                   </span>
                 )}
               </span>
@@ -1562,7 +1447,7 @@ export default function MerchantStoreRedeemPage({ params }: MerchantPageProps) {
                   <div className="space-y-1.5 max-h-64 overflow-y-auto">
                     {smsLogs.map((log: any) => (
                       <div key={log.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${log.status === 'scheduled' ? 'bg-orange-50 border border-orange-200' :
-                        log.status === 'success' ? 'bg-green-50' : 'bg-red-50'
+                          log.status === 'success' ? 'bg-green-50' : 'bg-red-50'
                         }`}>
                         <span>{log.status === 'scheduled' ? '⏰' : log.status === 'success' ? '✅' : '❌'}</span>
                         <div className="flex-1 min-w-0">

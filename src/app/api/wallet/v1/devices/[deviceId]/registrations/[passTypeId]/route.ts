@@ -4,11 +4,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 /**
  * Apple Wallet Web Service: Serial Numbers
  * GET /v1/devices/{deviceId}/registrations/{passTypeId}?passesUpdatedSince={tag}
- * 
- * Apple calls this after receiving a push signal to ask:
- * "Which passes for this device need to be updated?"
- * We always return all serial numbers for the device, so Apple always
- * fetches the latest pass (which may contain a new wallet_message).
  */
 
 interface Params {
@@ -22,33 +17,39 @@ export async function GET(
 ) {
     try {
         const { deviceId, passTypeId } = await params;
+        const { searchParams } = new URL(req.url);
+        const tag = searchParams.get("passesUpdatedSince");
 
         const supabase = createAdminClient();
 
-        // Return ALL serial numbers for this device + pass type.
-        // We do NOT filter by updated_at (that column doesn't exist in our schema).
-        // Always returning all serials ensures Apple always re-fetches the latest pass,
-        // which is how we deliver wallet_message updates and changeMessage notifications.
-        const { data, error } = await supabase
+        // Query for updated serial numbers for this device and pass type
+        let query = supabase
             .from("wallet_registrations")
-            .select("serial_number")
+            .select("serial_number, coupons(updated_at)")
             .eq("device_id", deviceId)
             .eq("pass_type_id", passTypeId);
 
-        if (error) {
-            console.error("WWS Serial Numbers Error:", error);
-            return new NextResponse(null, { status: 500 });
+        if (tag) {
+            // tag is the last updated timestamp we sent
+            query = query.gt("coupons.updated_at", tag);
         }
 
-        if (!data || data.length === 0) {
+        const { data, error } = await query;
+
+        if (error || !data || data.length === 0) {
             return new NextResponse(null, { status: 204 });
         }
 
+        // Prepare the response in Apple's format
         const serialNumbers = data.map(reg => reg.serial_number);
+        const lastUpdated = data.reduce((max, reg) => {
+            const updatedAt = (reg.coupons as any)?.updated_at;
+            return updatedAt > max ? updatedAt : max;
+        }, tag || "");
 
         return NextResponse.json({
-            lastUpdated: new Date().toISOString(), // current time as the new tag
-            serialNumbers,
+            lastUpdated: lastUpdated,
+            serialNumbers: serialNumbers
         });
 
     } catch (error) {

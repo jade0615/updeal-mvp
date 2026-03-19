@@ -7,8 +7,6 @@ interface WalletCustomer {
   pushToken: string;
   couponId: string;
   customerName: string;
-  customerEmail: string | null;
-  couponCode: string | null;
 }
 
 interface Props {
@@ -73,27 +71,8 @@ export default function WalletPushPanel({ merchantId, merchantSlug, timezone }: 
         .filter(c => selected.has(c.registrationId))
         .map(c => c.pushToken);
 
-      if (scheduleMode === 'now') {
-        // ── 立即推送：调用专用 wallet-push API ──
-        const res = await fetch('/api/store/wallet-push', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ merchantId, merchantSlug, pushTokens: selectedTokens, message })
-        });
-        const data = await res.json();
-        if (data.success) {
-          setResult({ success: true, message: `已向 ${data.successCount} 位客户发送推送！${data.failCount > 0 ? `（${data.failCount} 失败）` : ''}` });
-          setMessage('');
-        } else {
-          setResult({ success: false, message: data.error || '推送失败' });
-        }
-      } else {
-        // ── 定时推送：走 schedule-message ──
-        if (!scheduleTime) {
-          setResult({ success: false, message: '请选择发送时间' });
-          setLoading(false);
-          return;
-        }
+      let sendAt = null;
+      if (scheduleMode === 'later' && scheduleTime) {
         const [datePart, timePart] = scheduleTime.split('T');
         const naiveString = `${datePart} ${timePart}:00`;
         const localDate = new Date(naiveString);
@@ -101,26 +80,28 @@ export default function WalletPushPanel({ merchantId, merchantSlug, timezone }: 
         const offsetMatch = tzOffset.match(/GMT([+-]\d+)/);
         const hoursOffset = offsetMatch ? parseInt(offsetMatch[1], 10) : 0;
         localDate.setHours(localDate.getHours() - hoursOffset);
-        const sendAt = localDate.toISOString();
+        sendAt = localDate.toISOString();
+      }
 
-        const res = await fetch('/api/store/schedule-message', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            merchantId, merchantSlug,
-            type: 'wallet_push',
-            body: message,
-            scheduledAtUTC: sendAt,
-            recipients: selectedTokens.map(token => ({ token })),
-          })
-        });
-        const data = await res.json();
-        if (data.success) {
-          setResult({ success: true, message: `定时推送已安排！` });
-          setMessage('');
-        } else {
-          setResult({ success: false, message: data.error || '推送失败' });
-        }
+      const res = await fetch('/api/store/schedule-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          merchantId,
+          merchantSlug,
+          type: 'wallet_push',
+          body: message,
+          scheduledAt: sendAt,
+          recipients: selectedTokens.map(token => ({ token })),
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setResult({ success: true, message: scheduleMode === 'now' ? `已向 ${selected.size} 位客户提交推送！` : `定时推送已安排！` });
+        setMessage('');
+      } else {
+        setResult({ success: false, message: data.error || '推送失败' });
       }
     } catch (e: any) {
       setResult({ success: false, message: e.message });
@@ -181,17 +162,9 @@ export default function WalletPushPanel({ merchantId, merchantSlug, timezone }: 
                           type="checkbox"
                           checked={selected.has(c.registrationId)}
                           onChange={() => toggleOne(c.registrationId)}
-                          className="accent-red-600 flex-shrink-0"
+                          className="accent-red-600"
                         />
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-800 truncate">{c.customerName}</p>
-                          {c.customerEmail && (
-                            <p className="text-xs text-gray-400 truncate">{c.customerEmail}</p>
-                          )}
-                          {c.couponCode && (
-                            <p className="text-[10px] font-mono text-gray-300 truncate">{c.couponCode}</p>
-                          )}
-                        </div>
+                        <span className="text-sm font-medium text-gray-800">{c.customerName}</span>
                       </label>
                     ))}
                   </div>

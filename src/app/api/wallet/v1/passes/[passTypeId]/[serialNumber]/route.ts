@@ -78,9 +78,6 @@ export async function GET(
             expirationDate: new Date(coupon.expires_at),
             primaryColor: merchant.content?.brand?.primaryColor || "rgb(99, 0, 0)",
             logoText: " ",
-            // serialNumber must match the original pass so Apple treats it as an UPDATE (not new card)
-            couponCode: coupon.code,
-            walletAuthToken: coupon.authentication_token,
             walletMessage: coupon.wallet_message || undefined,
         };
 
@@ -89,8 +86,9 @@ export async function GET(
             userName: user.name || "Customer",
         };
 
-        // 3. Generate the updated pass
-        const passBuffer = await WalletService.generatePass(merchantData, userData, coupon.code);
+        // 3. Generate the pass
+        // Pass the authenticationToken as well to ensure it's embedded in the updated pass
+        const passBuffer = await WalletService.generatePass(merchantData, userData, coupon.authentication_token);
 
         return new NextResponse(passBuffer as any, {
             status: 200,

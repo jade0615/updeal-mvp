@@ -10,7 +10,6 @@ import {
     type SmsSendResult,
     type SmsLog,
 } from '@/actions/merchant-sms'
-import type { MergedSmsLogStats } from '@/lib/sms-logs-merge'
 
 const MAX_SMS_LENGTH = 160
 
@@ -143,7 +142,7 @@ export default function MerchantSmsPage() {
     const [logs, setLogs] = useState<SmsLog[]>([])
     const [logsLoading, setLogsLoading] = useState(false)
     const [showLogs, setShowLogs] = useState(false)
-    const [logsStats, setLogsStats] = useState<MergedSmsLogStats | null>(null)
+    const [logsStats, setLogsStats] = useState<{ total: number; success: number; failed: number } | null>(null)
 
     // ── Load recipients + merchant info
     useEffect(() => {
@@ -751,12 +750,7 @@ export default function MerchantSmsPage() {
                             <span className="font-bold text-gray-900">发送记录</span>
                             {logsStats && (
                                 <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-                                    共 {logsStats.total} 条 · 已成功 {logsStats.success}
-                                    {logsStats.failed > 0 ? ` · 失败 ${logsStats.failed}` : ''}
-                                    {logsStats.scheduled > 0 ? ` · 待定时 ${logsStats.scheduled}` : ''}
-                                    {logsStats.sentRecords > 0
-                                        ? ` · 送达率 ${((logsStats.success / logsStats.sentRecords) * 100).toFixed(0)}%`
-                                        : ''}
+                                    共 {logsStats.total} 条 · 成功率 {logsStats.total > 0 ? ((logsStats.success / logsStats.total) * 100).toFixed(0) : 0}%
                                 </span>
                             )}
                         </div>
@@ -784,12 +778,7 @@ export default function MerchantSmsPage() {
                                             {logs.map(log => (
                                                 <tr key={log.id} className="hover:bg-gray-50">
                                                     <td className="py-2.5 text-xs text-gray-400 whitespace-nowrap">
-                                                        {log.status === 'scheduled'
-                                                            ? new Date(log.scheduled_at || log.sent_at).toLocaleString('zh-CN', {
-                                                                timeZone: merchantTimezone,
-                                                                month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
-                                                            })
-                                                            : new Date(log.sent_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                        {new Date(log.sent_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                                     </td>
                                                     <td className="py-2.5 pl-4">
                                                         <div className="font-medium text-gray-800">{log.recipient_name || '—'}</div>
@@ -801,9 +790,7 @@ export default function MerchantSmsPage() {
                                                     <td className="py-2.5 pl-4 whitespace-nowrap">
                                                         {log.status === 'success'
                                                             ? <span className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-medium">✅ 成功</span>
-                                                            : log.status === 'scheduled'
-                                                                ? <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full font-medium">⏰ 待定时</span>
-                                                                : <span className="text-xs px-2 py-0.5 bg-red-100 text-red-600 rounded-full font-medium">❌ 失败</span>
+                                                            : <span className="text-xs px-2 py-0.5 bg-red-100 text-red-600 rounded-full font-medium">❌ 失败</span>
                                                         }
                                                     </td>
                                                 </tr>

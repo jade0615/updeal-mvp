@@ -76,46 +76,40 @@ export async function getReferralChains(merchantId?: string): Promise<{
         const referralCodes = [...new Set(invitees.map((i: any) => i.referred_by as string))]
 
         // 3. 根据 referral code 反查推荐人
-        // ilike 对 UUID 字段无效，改为内存匹配
+        // referral code 格式: REF-XXXXXX，XXXXXX 是 user_id 前6位（大写）
+        // 找每个 ref code 对应的 user
         const referrerMap: Record<string, {
             name: string | null
-            phone: string | null
+            phone: string
             email: string | null
             coupon_code: string | null
         }> = {}
 
-        // 先获取所有相关 coupons（限该商家，或全量）
-        let allCouponsQuery = supabase
-            .from('coupons')
-            .select('id, code, user_id, created_at')
-            .order('created_at', { ascending: true })
-        if (merchantId) {
-            allCouponsQuery = allCouponsQuery.eq('merchant_id', merchantId)
-        }
-        const { data: allCoupons } = await allCouponsQuery
-
         for (const refCode of referralCodes) {
+            // 提取 user_id 前缀：REF-XXXXXX → xxxxxx（小写）
             const prefix = refCode.replace('REF-', '').toLowerCase()
 
-            const matchingCoupon = (allCoupons || []).find(
-                (c: any) => c.user_id && c.user_id.toLowerCase().startsWith(prefix)
-            )
+            // 查找 user_id 以该前缀开头的用户
+            const { data: referrerUsers } = await supabase
+                .from('users')
+                .select('id, name, phone, email')
+                .ilike('id', `${prefix}%`)
+                .limit(1)
 
-            if (matchingCoupon) {
-                const { data: userRows } = await supabase
-                    .from('users')
-                    .select('id, name, phone, email')
-                    .eq('id', matchingCoupon.user_id)
+            if (referrerUsers && referrerUsers.length > 0) {
+                const referrer = referrerUsers[0]
+                // 查找该推荐人的 coupon（同商家或任意）
+                const { data: referrerCoupons } = await supabase
+                    .from('coupons')
+                    .select('code')
+                    .eq('user_id', referrer.id)
                     .limit(1)
 
-                const referrer = userRows?.[0]
-                if (referrer) {
-                    referrerMap[refCode] = {
-                        name: referrer.name,
-                        phone: referrer.phone,
-                        email: referrer.email,
-                        coupon_code: matchingCoupon.code,
-                    }
+                referrerMap[refCode] = {
+                    name: referrer.name,
+                    phone: referrer.phone,
+                    email: referrer.email,
+                    coupon_code: referrerCoupons?.[0]?.code || null
                 }
             }
         }
