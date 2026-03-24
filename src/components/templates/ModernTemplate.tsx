@@ -39,7 +39,7 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
     // Client-side only random names to avoid hydration mismatch
     const [socialNames, setSocialNames] = useState<string[]>([])
     const collectBirthday = (content as any).requirements?.collectBirthday ?? false
-    const birthdayHint = (content as any).customLabels?.birthday_hint || '填写你的生日，在你生日的时候有额外的大惊喜。'
+    const birthdayHint = (content as any).customLabels?.birthday_hint || 'Enter your birthday to receive an exclusive birthday reward!'
 
     useEffect(() => {
         setSocialNames(generateRandomNames(3))

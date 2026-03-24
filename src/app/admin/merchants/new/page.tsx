@@ -445,7 +445,7 @@ export default function NewMerchantPage() {
                                     type="text"
                                     value={formData.content.customLabels?.birthday_hint || ''}
                                     onChange={(e) => updateContent('customLabels.birthday_hint', e.target.value)}
-                                    placeholder="默认: 填写你的生日，在你生日的时候有额外的大惊喜。"
+                                    placeholder="默认: Enter your birthday to receive an exclusive birthday reward!"
                                     className="w-full border rounded px-3 py-2"
                                 />
                             </div>

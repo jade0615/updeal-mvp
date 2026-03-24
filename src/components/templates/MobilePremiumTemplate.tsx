@@ -205,7 +205,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
         expectedVisitTime: '',
     });
     const collectBirthday = content.requirements?.collectBirthday ?? false;
-    const birthdayHint = content.customLabels?.birthday_hint || '填写你的生日，在你生日的时候有额外的大惊喜。';
+    const birthdayHint = content.customLabels?.birthday_hint || 'Enter your birthday to receive an exclusive birthday reward!';
 
     const [loading, setLoading] = useState(false);
     const [successOpen, setSuccessOpen] = useState(false);
