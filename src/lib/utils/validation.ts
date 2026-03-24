@@ -95,6 +95,7 @@ export const merchantSchema = z.object({
     requirements: z.object({
       collectName: z.boolean().default(true),
       collectEmail: z.boolean().default(false),
+      collectBirthday: z.boolean().default(false),
     }).optional(),
 
     // === Custom Labels (Frontend Text Control) ===
@@ -113,6 +114,7 @@ export const merchantSchema = z.object({
       section_title_call: z.string().optional(),
       social_proof_text: z.string().optional(),
       social_proof_claimed: z.string().optional(),
+      birthday_hint: z.string().optional(),
     }).optional(),
   })
 })

@@ -13,7 +13,7 @@ const generateSuffix = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 4)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { merchantId, phone, name, email, expectedVisitDate, referralCode } = body;
+    const { merchantId, phone, name, email, birthday, expectedVisitDate, referralCode } = body;
 
     // Server-side validation for expectedVisitDate (max 7 days)
     if (expectedVisitDate) {
@@ -72,12 +72,20 @@ export async function POST(request: NextRequest) {
       const updates: any = {};
       if (name) updates.name = name;
       if (email) updates.email = email;
+      if (birthday) updates.birthday = birthday;
 
       if (Object.keys(updates).length > 0) {
-        await supabase
+        const { error: updateUserError } = await supabase
           .from('users')
           .update(updates)
           .eq('id', userId);
+        if (updateUserError && birthday) {
+          // Backward compatible: some environments may not have users.birthday yet.
+          const { birthday: _dropBirthday, ...fallbackUpdates } = updates;
+          if (Object.keys(fallbackUpdates).length > 0) {
+            await supabase.from('users').update(fallbackUpdates).eq('id', userId);
+          }
+        }
       }
 
       // Check if user already claimed this coupon
@@ -162,6 +170,17 @@ export async function POST(request: NextRequest) {
         );
       }
       userId = newUser.id;
+
+      // Store optional birthday if schema supports it.
+      if (birthday) {
+        const { error: birthdayError } = await supabase
+          .from('users')
+          .update({ birthday })
+          .eq('id', userId);
+        if (birthdayError) {
+          console.warn('[Claim API] users.birthday unavailable, skip birthday save');
+        }
+      }
     }
 
     // 3. Generate Coupon Code

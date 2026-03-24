@@ -31,12 +31,15 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
     const [phone, setPhone] = useState('')
     const [email, setEmail] = useState('')
     const [name, setName] = useState('') // Added Name field as per design
+    const [birthday, setBirthday] = useState('')
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [couponData, setCouponData] = useState<any>(null)
 
     // Client-side only random names to avoid hydration mismatch
     const [socialNames, setSocialNames] = useState<string[]>([])
+    const collectBirthday = (content as any).requirements?.collectBirthday ?? false
+    const birthdayHint = (content as any).customLabels?.birthday_hint || '填写你的生日，在你生日的时候有额外的大惊喜。'
 
     useEffect(() => {
         setSocialNames(generateRandomNames(3))
@@ -54,7 +57,8 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
                     merchantId: merchant.id,
                     phone,
                     email,
-                    name // Pass name if backend supports it, otherwise it's just frontend UX
+                    name, // Pass name if backend supports it, otherwise it's just frontend UX
+                    birthday: collectBirthday ? (birthday || undefined) : undefined
                 })
             })
 
@@ -331,6 +335,23 @@ export default function ModernTemplate({ merchant, claimedCount }: TemplateProps
                                         />
                                     </div>
                                 </div>
+                                {collectBirthday && (
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-theme-tertiary">
+                                            <span className="material-symbols-outlined text-[20px]">cake</span>
+                                        </div>
+                                        <input
+                                            className="w-full bg-white border border-transparent focus:bg-white ring-1 ring-theme-border rounded-xl pl-11 pr-4 py-3.5 text-theme-primary placeholder-theme-tertiary text-sm focus:ring-2 focus:ring-theme-accent/20 focus:border-theme-accent outline-none transition-all shadow-sm"
+                                            placeholder="Birthday (Optional)"
+                                            aria-label="Birthday (optional)"
+                                            type="date"
+                                            max={new Date().toISOString().split('T')[0]}
+                                            value={birthday}
+                                            onChange={(e) => setBirthday(e.target.value)}
+                                        />
+                                        <p className="text-[11px] text-theme-accent mt-1">🎁 {birthdayHint}</p>
+                                    </div>
+                                )}
 
                                 <button
                                     type="submit"

@@ -59,7 +59,8 @@ export default function NewMerchantPage() {
             customLabels: {},
             requirements: {
                 collectName: true,
-                collectEmail: false
+                collectEmail: false,
+                collectBirthday: false
             }
         }
     })
@@ -421,11 +422,32 @@ export default function NewMerchantPage() {
                                         />
                                         <span className="text-sm">收集邮箱 (Email)</span>
                                     </label>
+                                    <label className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border cursor-pointer hover:bg-gray-50">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.content.requirements?.collectBirthday ?? false}
+                                            onChange={(e) => updateContent('requirements.collectBirthday', e.target.checked)}
+                                            className="h-4 w-4 text-blue-600 rounded"
+                                        />
+                                        <span className="text-sm">收集生日 (可选)</span>
+                                    </label>
                                     <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg border">
                                         <input type="checkbox" checked disabled className="h-4 w-4 rounded" />
                                         <span className="text-sm text-gray-500">电话号码 (必填)</span>
                                     </div>
                                 </div>
+                            </div>
+                            <div className="col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    🎂 生日提示文案 <span className="text-gray-400 font-normal">(birthday_hint)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.content.customLabels?.birthday_hint || ''}
+                                    onChange={(e) => updateContent('customLabels.birthday_hint', e.target.value)}
+                                    placeholder="默认: 填写你的生日，在你生日的时候有额外的大惊喜。"
+                                    className="w-full border rounded px-3 py-2"
+                                />
                             </div>
                         </div>
                     </div>

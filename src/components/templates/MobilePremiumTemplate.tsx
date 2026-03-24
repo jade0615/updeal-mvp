@@ -200,9 +200,12 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
         phone: verifiedPhone || '',
         name: '',
         email: '',
+        birthday: '',
         expectedVisitDate: '',
         expectedVisitTime: '',
     });
+    const collectBirthday = content.requirements?.collectBirthday ?? false;
+    const birthdayHint = content.customLabels?.birthday_hint || '填写你的生日，在你生日的时候有额外的大惊喜。';
 
     const [loading, setLoading] = useState(false);
     const [successOpen, setSuccessOpen] = useState(false);
@@ -238,6 +241,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                     phone: formData.phone,
                     name: formData.name || undefined,
                     email: formData.email || undefined,
+                    birthday: collectBirthday ? (formData.birthday || undefined) : undefined,
                     // Merge Date and Time if both provided, otherwise use just date (which defaults to 00:00 UTC usually, or local)
                     // If time is provided, we construct a full local date string
                     expectedVisitDate: formData.expectedVisitTime
@@ -687,6 +691,21 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
                                     className="w-full h-12 px-4 rounded-xl input-field text-slate-800 placeholder:text-slate-400 outline-none transition-all font-medium"
                                 />
                             </div>
+
+                            {collectBirthday && (
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">生日（可选）</label>
+                                    <input
+                                        type="date"
+                                        aria-label="Birthday (optional)"
+                                        max={new Date().toISOString().split('T')[0]}
+                                        value={formData.birthday}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, birthday: e.target.value }))}
+                                        className="w-full h-12 px-4 rounded-xl input-field text-slate-800 placeholder:text-slate-400 outline-none transition-all font-medium"
+                                    />
+                                    <p className="text-[11px] text-orange-600 mt-1.5 ml-1">🎁 {birthdayHint}</p>
+                                </div>
+                            )}
 
                             {/* Expected Visit Date */}
                             <div className="bg-orange-50/50 p-4 rounded-2xl border border-orange-100/50">

@@ -56,6 +56,7 @@ export interface MerchantContent {
     requirements?: {
         collectName: boolean;
         collectEmail: boolean;
+        collectBirthday?: boolean;
     };
 
     // === Custom Labels (Frontend Text Control) ===
@@ -72,6 +73,7 @@ export interface MerchantContent {
         section_title_hours?: string;
         section_title_website?: string;
         section_title_call?: string;
+        birthday_hint?: string;
     };
 
     // === Reviews ===
