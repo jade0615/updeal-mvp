@@ -694,7 +694,7 @@ export default function MobilePremiumTemplate({ merchant: initialMerchant, claim
 
                             {collectBirthday && (
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">生日（可选）</label>
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Birthday (optional)</label>
                                     <input
                                         type="date"
                                         aria-label="Birthday (optional)"
