@@ -277,12 +277,14 @@ function HeaderBar() {
     <header className="bg-white/95 backdrop-blur border-b border-dp-divider sticky top-0 z-30">
       <div className="mx-auto max-w-[1280px] px-4 lg:px-8 h-16 sm:h-[68px] flex items-center gap-6">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <span
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white text-lg font-bold"
-            style={{ background: 'linear-gradient(135deg,#FF503C 0%,#FF8800 100%)' }}
-          >
-            H
-          </span>
+          <Image
+            src="/raccoon-logo-transparent.png"
+            alt="Hiraccoon"
+            width={40}
+            height={40}
+            priority
+            className="h-10 w-10 object-contain"
+          />
           <span className="text-[19px] sm:text-[20px] font-bold tracking-tight">Hiraccoon</span>
         </Link>
 
@@ -778,13 +780,14 @@ function DashboardMockup() {
     <div className="w-full max-w-[460px] rounded-3xl ring-1 ring-black/10 shadow-2xl bg-white overflow-hidden">
       <div className="bg-[#1F2024] text-white px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span
+          <Image
+            src="/raccoon-logo-transparent.png"
+            alt=""
             aria-hidden
-            className="inline-flex h-6 w-6 items-center justify-center rounded text-white text-[11px] font-bold"
-            style={{ background: 'linear-gradient(135deg,#FF503C 0%,#FF8800 100%)' }}
-          >
-            H
-          </span>
+            width={24}
+            height={24}
+            className="h-6 w-6 object-contain"
+          />
           <span className="text-[12px] font-bold">Hiraccoon · Owner</span>
         </div>
         <span className="text-[11px] opacity-70">Today · live</span>
@@ -1010,12 +1013,13 @@ function HomeFooter() {
         <div className="mx-auto max-w-[1280px] px-5 lg:px-8 py-5 text-[12px] text-white/50 flex flex-wrap items-center justify-between gap-3">
           <span>© 2026 Hiraccoon · All rights reserved. Hiraccoon is operated by A-MANI Holdings Management Inc.</span>
           <div className="flex items-center gap-2">
-            <span
-              className="inline-flex h-6 w-6 items-center justify-center rounded text-white text-[11px] font-bold"
-              style={{ background: 'linear-gradient(135deg,#FF503C 0%,#FF8800 100%)' }}
-            >
-              H
-            </span>
+            <Image
+              src="/raccoon-logo-transparent.png"
+              alt=""
+              width={24}
+              height={24}
+              className="h-6 w-6 object-contain"
+            />
             <span>Built for local merchants.</span>
           </div>
         </div>

@@ -22,6 +22,7 @@
  * NOTE: Effective date is wired through `LEGAL_EFFECTIVE_DATE` below. Update
  *       it to the real launch day before going live (PDF checklist item 4).
  */
+import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -67,12 +68,13 @@ export default function LegalPage({
             href="/"
             className="inline-flex items-center gap-2 text-[13px] font-semibold text-dp-ink hover:text-dp-red transition"
           >
-            <span
-              className="inline-flex h-7 w-7 items-center justify-center rounded text-white text-[12px] font-bold"
-              style={{ background: 'linear-gradient(135deg,#FF503C 0%,#FF8800 100%)' }}
-            >
-              H
-            </span>
+            <Image
+              src="/raccoon-logo-transparent.png"
+              alt="Hiraccoon"
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain"
+            />
             <span>Hiraccoon</span>
           </Link>
           <Link

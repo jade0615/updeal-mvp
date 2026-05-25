@@ -5,6 +5,7 @@
  * operator line, the support contact, and a low-key B2B link back to `/`
  * (the existing partner-showcase landing page).
  */
+import Image from 'next/image';
 import Link from 'next/link';
 
 const LEGAL_LINKS = [
@@ -22,12 +23,13 @@ export default function FooterC() {
         {/* Brand + operator line */}
         <div>
           <div className="inline-flex items-center gap-2 text-white mb-3">
-            <span
-              className="inline-flex h-7 w-7 items-center justify-center rounded text-white text-[12px] font-bold"
-              style={{ background: 'linear-gradient(135deg,#FF503C 0%,#FF8800 100%)' }}
-            >
-              H
-            </span>
+            <Image
+              src="/raccoon-logo-transparent.png"
+              alt="Hiraccoon"
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain"
+            />
             <span className="font-bold text-[15px]">Hiraccoon</span>
           </div>
           <p className="text-white/60 text-[12.5px] leading-relaxed">

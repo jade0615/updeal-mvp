@@ -4,6 +4,7 @@
  * Deliberately separate from the B2B partner-showcase header at `/`
  * (which speaks to restaurant owners). This one speaks to diners.
  */
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function HeaderC() {
@@ -14,12 +15,14 @@ export default function HeaderC() {
           href="/restaurants"
           className="inline-flex items-center gap-2 text-dp-ink hover:text-dp-red transition"
         >
-          <span
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white text-[13px] font-bold"
-            style={{ background: 'linear-gradient(135deg,#FF503C 0%,#FF8800 100%)' }}
-          >
-            H
-          </span>
+          <Image
+            src="/raccoon-logo-transparent.png"
+            alt="Hiraccoon"
+            width={36}
+            height={36}
+            priority
+            className="h-9 w-9 object-contain"
+          />
           <span className="font-bold text-[15px]">Hiraccoon</span>
         </Link>
 
