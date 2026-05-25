@@ -980,22 +980,35 @@ function HomeFooter() {
           <ul className="space-y-2">
             <li><a href="/terms-of-service" className="hover:text-white">Terms of service</a></li>
             <li><a href="/privacy-policy" className="hover:text-white">Privacy policy</a></li>
+            <li><a href="/refund-policy" className="hover:text-white">Refund policy</a></li>
+            <li><a href="/cancellation-policy" className="hover:text-white">Cancellation policy</a></li>
+            <li><a href="/dispute-policy" className="hover:text-white">Dispute resolution</a></li>
           </ul>
         </div>
         <div className="col-span-2 md:col-span-1">
           <p className="text-white font-bold mb-3 text-[14px]">Talk to us</p>
-          <p className="text-[12.5px] text-white/60 mb-3">We reply within 24 hours.</p>
+          <p className="text-[12.5px] text-white/60 mb-3">Partners — we reply within 24 hours.</p>
           <a
             href={MAILTO_HREF}
             className="inline-flex items-center px-4 h-10 rounded-lg bg-dp-red text-white text-[13px] font-semibold hover:bg-dp-red-dark transition"
           >
             partners@hiraccoon.com
           </a>
+          <div className="mt-5 text-[12px] text-white/60 leading-relaxed">
+            <p className="text-white/80 font-semibold mb-1">Customer support</p>
+            <p>
+              <a href="mailto:support@hiraccoon.com" className="hover:text-white">support@hiraccoon.com</a>
+            </p>
+            <p>
+              <a href="tel:2173186661" className="hover:text-white">217-318-6661</a>
+            </p>
+            <p className="mt-1">14639 Booth Memorial Avenue, Flushing, NY 11355</p>
+          </div>
         </div>
       </div>
       <div className="border-t border-white/10">
         <div className="mx-auto max-w-[1280px] px-5 lg:px-8 py-5 text-[12px] text-white/50 flex flex-wrap items-center justify-between gap-3">
-          <span>© 2026 Hiraccoon · All rights reserved.</span>
+          <span>© 2026 Hiraccoon · All rights reserved. Hiraccoon is operated by A-MANI Holdings Management Inc.</span>
           <div className="flex items-center gap-2">
             <span
               className="inline-flex h-6 w-6 items-center justify-center rounded text-white text-[11px] font-bold"
