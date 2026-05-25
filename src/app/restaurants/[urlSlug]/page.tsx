@@ -78,7 +78,7 @@ export default async function RestaurantDetailPage(
       <RestaurantHero restaurant={r} />
       <RestaurantIntro restaurant={r} />
       <RestaurantFacts restaurant={r} />
-      <RestaurantGallery restaurant={r} />
+      <PopularDishes restaurant={r} />
       <OrderCTA restaurant={r} />
       <JsonLd restaurant={r} />
       <FooterC />
@@ -191,34 +191,46 @@ function RestaurantFacts({ restaurant: r }: { restaurant: Restaurant }) {
   );
 }
 
-// ─── Gallery ─────────────────────────────────────────────────────────────────
-function RestaurantGallery({ restaurant: r }: { restaurant: Restaurant }) {
-  if (r.galleryImages.length === 0) return null;
+// ─── Popular dishes ──────────────────────────────────────────────────────────
+function PopularDishes({ restaurant: r }: { restaurant: Restaurant }) {
+  if (r.popularDishes.length === 0) return null;
   return (
     <section className="mx-auto max-w-5xl px-5 lg:px-8 mt-12">
-      <h2 className="text-[12px] uppercase tracking-[0.15em] font-bold text-dp-muted mb-4">
-        From the kitchen
-      </h2>
-      <div
-        className={`grid gap-3 sm:gap-4 ${
-          r.galleryImages.length >= 3
-            ? 'grid-cols-2 sm:grid-cols-3'
-            : 'grid-cols-1 sm:grid-cols-2'
-        }`}
-      >
-        {r.galleryImages.map((src, i) => (
-          <div
-            key={src}
-            className="relative aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-dp-divider bg-dp-divider"
+      <div className="flex items-end justify-between mb-4">
+        <h2 className="text-[12px] uppercase tracking-[0.15em] font-bold text-dp-muted">
+          Popular dishes
+        </h2>
+        <a
+          href={`${r.orderUrl}/menu/`}
+          target="_blank"
+          rel="noopener"
+          className="text-[12.5px] font-medium text-dp-muted hover:text-dp-red transition"
+        >
+          See full menu →
+        </a>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+        {r.popularDishes.map((dish) => (
+          <article
+            key={dish.image}
+            className="group bg-dp-surface rounded-2xl ring-1 ring-dp-divider overflow-hidden hover:shadow-md transition"
           >
-            <Image
-              src={src}
-              alt={`${r.name} — dish ${i + 1}`}
-              fill
-              sizes="(min-width: 640px) 320px, 100vw"
-              className="object-cover"
-            />
-          </div>
+            <div className="relative aspect-[4/3] bg-dp-divider">
+              <Image
+                src={dish.image}
+                alt={`${dish.name} — ${r.name}`}
+                fill
+                sizes="(min-width: 640px) 280px, 50vw"
+                className="object-cover group-hover:scale-[1.03] transition-transform"
+              />
+            </div>
+            <div className="px-3 py-2.5">
+              <p className="text-[13px] font-semibold text-dp-ink leading-tight">
+                {dish.name}
+              </p>
+            </div>
+          </article>
         ))}
       </div>
     </section>

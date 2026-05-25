@@ -27,6 +27,14 @@ export type CuisineSlug =
 /** A flat, human-readable schedule line. Edit by hand; no parsing layer. */
 export type HoursLine = string;
 
+/** One representative dish shown on the detail page's "Popular dishes" grid. */
+export interface PopularDish {
+  /** Public path, e.g. `/restaurants/best-buffet-general-tsos.jpg` */
+  image: string;
+  /** Display name shown as caption (Title Case, no price). */
+  name: string;
+}
+
 export interface Restaurant {
   /**
    * Internal id. Must match (1) the `/partners-grid/<slug>` logo if any,
@@ -59,7 +67,8 @@ export interface Restaurant {
   // Visual
   logo?: string;            // /partners/logo-<slug>.{jpg,png}
   heroImage: string;        // /partners/<slug>.{jpg,png}
-  galleryImages: string[];  // /restaurants/<slug>-N.jpg
+  /** 6 representative menu items shown in the "Popular dishes" grid. */
+  popularDishes: PopularDish[];
 
   // Outbound
   orderUrl: string;         // https://bestbuffet.hiraccoon.com
@@ -98,9 +107,13 @@ export const RESTAURANTS: Restaurant[] = [
     ],
     logo: '/partners/logo-bestbuffet.jpg',
     heroImage: '/partners/bestbuffet.jpg',
-    galleryImages: [
-      '/restaurants/best-buffet-1.jpg',
-      '/restaurants/best-buffet-2.jpg',
+    popularDishes: [
+      { image: '/restaurants/best-buffet-general-tsos.jpg', name: "General Tso's Chicken" },
+      { image: '/restaurants/best-buffet-orange-chicken.jpg', name: 'Orange Chicken' },
+      { image: '/restaurants/best-buffet-mongolian-beef.jpg', name: 'Mongolian Beef' },
+      { image: '/restaurants/best-buffet-sesame-shrimp.jpg', name: 'Crispy Sesame Shrimp' },
+      { image: '/restaurants/best-buffet-chicken-lo-mein.jpg', name: 'Chicken Lo Mein' },
+      { image: '/restaurants/best-buffet-beef-fried-rice.jpg', name: 'Beef Fried Rice' },
     ],
     orderUrl: 'https://bestbuffet.hiraccoon.com',
     claimCouponPath: '/best-buffet',
@@ -131,10 +144,13 @@ export const RESTAURANTS: Restaurant[] = [
     ],
     logo: '/partners/logo-mochinut.png',
     heroImage: '/partners/mochinut.png',
-    galleryImages: [
-      '/restaurants/mochinut-1.jpg',
-      '/restaurants/mochinut-2.jpg',
-      '/restaurants/mochinut-3.jpg',
+    popularDishes: [
+      { image: '/restaurants/mochinut-donut-dozen.jpg', name: 'Mochi Donuts (Dozen)' },
+      { image: '/restaurants/mochinut-donut-3pcs.jpg', name: 'Mochi Donut · 3 pcs' },
+      { image: '/restaurants/mochinut-corndog-original.jpg', name: 'Mozzarella Korean Corn Dog' },
+      { image: '/restaurants/mochinut-corndog-hot-cheetos.jpg', name: 'Hot Cheetos Corn Dog' },
+      { image: '/restaurants/mochinut-boba-brown-sugar.jpg', name: 'Brown Sugar Milk Tea' },
+      { image: '/restaurants/mochinut-souffle-fruits.jpg', name: 'Souffle Pancakes · Fresh Fruits' },
     ],
     orderUrl: 'https://mochinut-orlando.hiraccoon.com',
     claimCouponPath: '/mochinut-orlando-millenia',
@@ -166,9 +182,13 @@ export const RESTAURANTS: Restaurant[] = [
     ],
     logo: '/partners/logo-chungwah.png',
     heroImage: '/partners/chungwah.jpg',
-    galleryImages: [
-      '/restaurants/chung-wah-1.jpg',
-      '/restaurants/chung-wah-2.jpg',
+    popularDishes: [
+      { image: '/restaurants/chung-wah-jumbo-shrimp-lo-mein.jpg', name: 'Jumbo Shrimp Lo Mein' },
+      { image: '/restaurants/chung-wah-hunan-shrimp.jpg', name: 'Hunan Shrimp' },
+      { image: '/restaurants/chung-wah-bbq-spare-ribs.jpg', name: 'BBQ Spare Ribs' },
+      { image: '/restaurants/chung-wah-rib-tips.jpg', name: 'Rib Tips' },
+      { image: '/restaurants/chung-wah-vegetable-egg-roll.jpg', name: 'Vegetable Egg Roll' },
+      { image: '/restaurants/chung-wah-shrimp-rolls.jpg', name: 'Shrimp Rolls' },
     ],
     orderUrl: 'https://chungwah.hiraccoon.com',
     claimCouponPath: '/chungwah',
