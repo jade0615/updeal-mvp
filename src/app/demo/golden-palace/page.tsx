@@ -1,0 +1,63 @@
+/**
+ * Golden Palace demo — preserved here because the homepage at `/` is being
+ * rewritten as the Hiraccoon Deals aggregator (Groupon-style, Dianping palette).
+ * Reach it at http://localhost:3015/demo/golden-palace for reference.
+ */
+import React, { Suspense } from 'react';
+import MobilePremiumTemplate from '@/components/templates/MobilePremiumTemplate';
+import { Merchant } from '@/types/merchant';
+
+const DEMO_MERCHANT: Merchant = {
+  id: '127a429d-6122-46e0-9d44-70bf09f6d3a0',
+  name: '上海办公室折扣',
+  slug: 'golden-palace-demo',
+  template_type: 'mobile_premium',
+  virtual_base_count: 128,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  content: {
+    businessName: 'Golden Palace',
+    businessType: 'Fine Dining',
+    priceRange: '$$$',
+    establishedYear: 2024,
+    rating: 4.9,
+    reviewCount: '2.5k',
+    heroTitle: 'GRAND OPENING',
+    heroSubtitle: 'Experience the taste of luxury.',
+    offer: {
+      type: 'Exclusive',
+      value: '20%',
+      unit: 'OFF',
+      description: 'Get 20% OFF your first premium dining experience.',
+      totalLimit: 500,
+      virtual_base_count: 320,
+    },
+    offer_badge_text: 'LIMITED TIME',
+    address: {
+      street: '123 Gold Avenue',
+      area: 'Beverly Hills, CA 90210',
+      fullAddress: '123 Gold Avenue, Beverly Hills, CA 90210',
+    },
+    phone: '+1 (555) 888-9999',
+    openingHours: {
+      isOpen: true,
+      currentStatus: 'Open Now',
+      closingTime: '11 PM',
+      specialHours: 'Mon-Sun 11:00 AM - 11:00 PM',
+    },
+    website: 'https://example.com',
+    requirements: { collectName: true, collectEmail: false },
+    reviews: [
+      { id: 1, rating: 5, text: 'Absolutely stunning atmosphere and delicious food!', authorName: 'Sarah J.', date: '2 days ago' },
+      { id: 2, rating: 5, text: 'The gold theme is beautiful. Highly recommended.', authorName: 'Michael C.', date: '1 week ago' },
+    ],
+  } as any,
+};
+
+export default function GoldenPalaceDemoPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-orange-400">Loading...</div>}>
+      <MobilePremiumTemplate merchant={DEMO_MERCHANT} claimedCount={42} canEdit={false} />
+    </Suspense>
+  );
+}
