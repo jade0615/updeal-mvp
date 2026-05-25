@@ -89,10 +89,6 @@
   color: white;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 /* Reveal: short fade-up that runs on page load. Plays once per element when
    the page is rendered — keeps the design "alive" without depending on
    scroll-linked animations (which interact poorly with fullPage screenshots
