@@ -20,30 +20,97 @@
   --shadow-clean: 0 1px 3px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-float: 0 20px 40px -10px rgba(249, 115, 22, 0.15);
 
-  /* Animations */
+  /* Animations — keyframes themselves are declared outside @theme below so
+     they are registered globally and can be referenced from inline `style`
+     attributes. Tokens here just expose the same animations as
+     `animate-shimmer-gold` etc. Tailwind utilities. */
   --animate-shimmer-gold: shimmer-gold 2s infinite;
-
-  @keyframes shimmer-gold {
-    0% {
-      transform: translateX(-100%);
-    }
-
-    100% {
-      transform: translateX(100%);
-    }
-  }
+  --animate-float-pass: float-pass 5s ease-in-out infinite;
+  --animate-float-store: float-store 6s ease-in-out infinite;
+  --animate-pulse-soft: pulse-soft 3s ease-in-out infinite;
+  --animate-fade-up: fade-up 0.8s ease-out both;
 
   /* Custom Utilities */
   --perspective-2000: 2000px;
+
+  /* === Dianping / Groupon palette (used by aggregator home only) === */
+  --color-dp-red: #FF503C;        /* primary CTA / link / accent */
+  --color-dp-red-dark: #E84030;   /* hover */
+  --color-dp-hot: #FE2D29;        /* discount badge */
+  --color-dp-orange: #FF8800;     /* warm accent / trending flame */
+  --color-dp-orange-soft: #FFF1E6;
+  --color-dp-star: #FFB400;       /* rating stars */
+  --color-dp-ink: #1A1A1A;        /* primary text */
+  --color-dp-ink-soft: #3F3F46;
+  --color-dp-muted: #6B7280;      /* secondary text */
+  --color-dp-bg: #FAFAFA;         /* page background */
+  --color-dp-surface: #FFFFFF;
+  --color-dp-divider: #EFEFEF;
+  --color-dp-utility-bar: #2A2A2A;
 }
 
 .perspective-2000 {
   perspective: var(--perspective-2000);
 }
 
+/* Keyframes — declared at top level (NOT inside @theme) so they are globally
+   registered and reachable from inline `style={{ animation: ... }}` props. */
+@keyframes shimmer-gold {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+@keyframes float-pass {
+  0%, 100% { transform: rotate(6deg)  translateY(0); }
+  50%      { transform: rotate(6deg)  translateY(-10px); }
+}
+@keyframes float-store {
+  0%, 100% { transform: rotate(-3deg) translateY(0); }
+  50%      { transform: rotate(-3deg) translateY(-7px); }
+}
+@keyframes pulse-soft {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(255, 80, 60, 0.25); }
+  50%      { box-shadow: 0 0 0 10px rgba(255, 80, 60, 0); }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes marquee-reverse {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+
 ::selection {
   background: rgba(255, 87, 34, 0.4);
   color: white;
+}
+
+/* Reveal: short fade-up that runs on page load. Plays once per element when
+   the page is rendered — keeps the design "alive" without depending on
+   scroll-linked animations (which interact poorly with fullPage screenshots
+   and are still unevenly supported across browsers). */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    animation: fade-up 0.7s ease-out both;
+  }
+  /* Light stagger so sections don't all pop at once */
+  .reveal-d1 { animation-delay: 0.08s; }
+  .reveal-d2 { animation-delay: 0.16s; }
+  .reveal-d3 { animation-delay: 0.24s; }
+  .reveal-d4 { animation-delay: 0.32s; }
+}
+
+/* Honor explicit reduce-motion users by stopping the looping floats too */
+@media (prefers-reduced-motion: reduce) {
+  .float-pass-anim,
+  .float-store-anim,
+  .pulse-soft-anim {
+    animation: none !important;
+  }
 }
 
 
