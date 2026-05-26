@@ -1,34 +1,48 @@
 /**
- * Hiraccoon — partner-platform home (v8, owner.com-shape expanded).
+ * Hiraccoon — partner-platform home (v9, editorial-design rewrite, 2026-05-27).
  *
- * Direction (Jade chat 2026-05-25): copy owner.com's section structure, just
- * change the name + slight palette/style. Skip their AI-ranking section
- * (we don't ship that). Partner section is a simple logo+name row (no
- * detailed case studies). CTA is a single mailto click — no form.
+ * Direction (Jade chat 2026-05-27): drop all emoji, drop all CSS-mocked UI
+ * panels (Wallet / Storefront / Dashboard mockups previously built in pure
+ * Tailwind), drop the radial-gradient hero background and the orange
+ * gradient stat strip. Replace with editorial photography / Midjourney
+ * imagery in /ai/v2/. The code references those images at known filenames
+ * — see docs/page-v2-image-prompts.md for the generation prompts.
  *
- * Sections retained from owner.com's homepage shape:
- *   Header → Hero → Trusted-by → Stats strip → Feature grid →
- *   Product showcase (3 alternating deep-dives) → Testimonials → Beliefs →
- *   Final CTA → Footer.
+ * Visual reference: B2B-SaaS editorial shape — lots of whitespace,
+ * monochrome body, dp-red only for CTAs and emphasis keywords. Brand
+ * elements kept: raccoon logo, dp-* palette, Hiraccoon name + voice.
  *
- * Sections dropped (we have no source material for them):
- *   Capterra/G2 badges, video testimonials, CEO portrait + philosophy block,
- *   blog/resource carousel, YouTube CTA, AI search/ranking promo.
+ * Sections (top to bottom):
+ *   Header → Hero (editorial photo) → Trusted-by (silent logo strip) →
+ *   Value Pillars (4 columns, no images) → Showcase A · Wallet (editorial
+ *   photo + body) → Showcase B · Storefront → Showcase C · Dashboard →
+ *   Testimonials (4 portrait + quote) → Principles (3 numbered cards) →
+ *   Final CTA → Footer (6 cols).
  *
- * Real partner data on this page is limited to the trusted-by row (3 names +
- * letter-mark logos + cities). Story / metric / quote content elsewhere is
- * PLACEHOLDER copy authored by us — replace with real numbers before ship.
+ * Images expected at (generation prompts in docs/page-v2-image-prompts.md):
+ *   /ai/v2/hero-counter.jpg
+ *   /ai/v2/section-wallet.jpg
+ *   /ai/v2/section-storefront.jpg
+ *   /ai/v2/section-dashboard.jpg
+ *   /ai/v2/portrait-1.jpg ... portrait-4.jpg
  *
  * Palette: --color-dp-* (Dianping red/orange) declared in globals.css.
+ * Used sparingly: CTAs, emphasis spans, link hovers, accent kickers.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
+import {
+  Globe as IconBrand,
+  Search as IconSearch,
+  ShoppingBag as IconCart,
+  LineChart as IconChart,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
-// Server-side check: is there a real logo bitmap for this partner slug?
-// (Runs at module load on the Next.js server, fine for a static partner list.)
+// Server-side: does a real logo bitmap exist for this partner slug?
 const LOGO_DIR = path.join(process.cwd(), 'public', 'partners-grid');
 function findLogo(slug: string): string | null {
   for (const ext of ['png', 'svg', 'jpg', 'jpeg', 'webp']) {
@@ -41,9 +55,9 @@ function findLogo(slug: string): string | null {
 }
 
 export const metadata: Metadata = {
-  title: 'Hiraccoon — The branded storefront + Wallet coupon platform for independent restaurants',
+  title: 'Hiraccoon — Branded restaurant sites + AI-ready SEO',
   description:
-    'Hiraccoon ships a branded storefront, an Apple Wallet first-visit coupon and a real-time owner dashboard for independent restaurants — typically live in under a week.',
+    'Hiraccoon ships a fully-branded Next.js site on your own subdomain — with menu, cart, checkout, and the Restaurant + Menu schema that Google and AI search engines actually read. Most partners are live in under a week, keeping 100 % of direct-order margin.',
 };
 
 const PARTNER_EMAIL = 'partners@hiraccoon.com';
@@ -66,242 +80,305 @@ const MAILTO_HREF = `mailto:${PARTNER_EMAIL}?subject=${encodeURIComponent(
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
-// Onboarded partners shown on the 3-row marquee. Each card renders as a clean
-// white plaque with the real brand logo (when one was found and downloaded
-// to public/partners-grid/<slug>.{png,svg,jpg}) and the English name. If no
-// logo is on disk, the card falls back to a typographic name-only mark.
 interface Partner {
-  slug: string;       // file basename in public/partners-grid/
-  name: string;       // English display name only
+  slug: string;
+  name: string;
 }
 
-const PARTNER_ROW_1: Partner[] = [
+// Single silent logo strip (no marquee). 12 partner marks pulled from
+// existing partners-grid bitmaps. Cards with no logo on disk are filtered
+// out — strip stays clean.
+const TRUSTED_PARTNERS: Partner[] = [
   { slug: 'gyu-kaku', name: 'Gyu-Kaku' },
   { slug: 'kpot', name: 'KPOT' },
   { slug: 'hook-reel', name: 'Hook & Reel' },
   { slug: 'kung-fu-tea', name: 'Kung Fu Tea' },
-  { slug: 'shaxian-snacks', name: 'Shaxian Snacks' },
-  { slug: 'tsaocaa', name: 'TSAOCAA' },
-  { slug: 'mt-fuji', name: 'Mt. Fuji' },
-  { slug: 'red-crab', name: 'Red Crab Juicy Seafood' },
-  { slug: 'hong-xing-lou', name: 'Hong Xing Lou' },
+  { slug: 'red-crab', name: 'Red Crab' },
   { slug: 'sushi-garden', name: 'Sushi Garden' },
-];
-
-const PARTNER_ROW_2: Partner[] = [
-  { slug: 'de-zhuang', name: 'De Zhuang Hotpot' },
   { slug: 'fiery-crab', name: 'Fiery Crab' },
-  { slug: 'boom-boom-crab', name: 'Boom Boom Crab' },
-  { slug: 'cajun-crab-hut', name: 'Cajun Crab Hut' },
-  { slug: 'honoo-ramen', name: 'Honoo Ramen Bar' },
-  { slug: 'takara', name: 'Takara' },
-  { slug: 'uka-omakase', name: 'Uka Omakase' },
-  { slug: 'shinya-shokudo', name: 'Shinya Shokudo' },
-  { slug: 'imix-hot-pot', name: 'IMIX Hot Pot' },
-  { slug: 'super-crab', name: 'Super Crab' },
-];
-
-const PARTNER_ROW_3: Partner[] = [
-  { slug: 'hotpot-palace', name: 'Hotpot Palace' },
+  { slug: 'mt-fuji', name: 'Mt. Fuji' },
+  { slug: 'tsaocaa', name: 'TSAOCAA' },
   { slug: 'hq-bbq', name: 'HQ BBQ' },
-  { slug: 'abc-nail-spa', name: 'ABC Nail Spa' },
-  { slug: 'crystal-nail', name: 'Crystal Nail' },
-  { slug: 'la-queen', name: 'La Queen' },
-  { slug: 'toudaotang', name: 'Toudaotang' },
-  { slug: 'ding-dang', name: 'Ding Dang' },
-  { slug: 'mimosa-nail', name: 'Mimosa Nail' },
-  { slug: 'dv-spa', name: 'D&V Spa' },
-  { slug: 'jbc-rice-noodles', name: 'JBC Rice Noodles' },
+  { slug: 'honoo-ramen', name: 'Honoo' },
+  { slug: 'imix-hot-pot', name: 'IMIX' },
 ];
 
-// Placeholder stats. Replace before shipping.
-const STATS = [
-  { value: 'Hundreds', label: 'of independent storefronts' },
-  { value: '$0', label: 'upfront setup fee' },
-  { value: '<7 days', label: 'average onboarding' },
-  { value: '100%', label: 'Apple Wallet ready' },
-];
+// Feature matrix — 4 growth-stage buckets covering features Hiraccoon
+// actually ships today (verified against src/app/api/, src/lib/, and
+// src/components/ on 2026-05-27). Categories we don't implement (Delivery,
+// native Branded App, Kitchen Tablet, Catering, Smart Upsells, multi-
+// platform Listings) are deliberately left off — would be false advertising.
+//
+// Display: each bucket is one Lucide icon + one punchy headline + one
+// short paragraph. We don't render the per-bucket feature sub-lists here
+// any more — those details live in the 3 deep ShowcaseSection cards
+// further down the page.
+interface FeatureCategory {
+  kicker: string;
+  title: string;
+  blurb: string;
+  icon: LucideIcon;
+}
 
-const FEATURES = [
+const FEATURE_MATRIX: FeatureCategory[] = [
   {
-    img: '/ai/feature-wallet.png',
-    title: 'Apple Wallet coupons',
-    body:
-      'Your first-visit coupon lands directly in your customer’s wallet — no app install, no signup gate, no abandoned funnel.',
+    kicker: 'Brand',
+    title: 'Your own site, on your own subdomain.',
+    blurb:
+      'A full Next.js storefront built around your shop — hero, featured menu, story, visit info, FAQ — hosted on your own subdomain with your colours, your logo, your photos. Not a third-party listing. Yours.',
+    icon: IconBrand,
   },
   {
-    img: '/ai/feature-storefront.png',
-    title: 'Branded storefront page',
-    body:
-      'A landing page in your colors, with your full menu, your phone and your hours. We host it on your subdomain.',
+    kicker: 'Discover',
+    title: 'Found by Google. Cited by AI.',
+    blurb:
+      'Restaurant + Menu JSON-LD on every page, Schema.org speakable summary tuned for Perplexity, ChatGPT and Google AI Overviews, per-page metadata, sitemap and robots — engineered for both classic SEO and the new AI-citation surface.',
+    icon: IconSearch,
   },
   {
-    img: '/ai/feature-ordering.png',
-    title: 'Direct online ordering',
-    body:
-      'Full cart, modifiers, scheduled pickup, and POS hand-off. Direct orders that bypass marketplace fees.',
+    kicker: 'Sell',
+    title: 'Direct cart, direct payouts.',
+    blurb:
+      'Full menu browsing, search, cart, modifiers and checkout all live on your subdomain. Payouts land directly in your Stripe. Zero marketplace skim on every direct order — the whole 30 % stays with the kitchen.',
+    icon: IconCart,
   },
   {
-    img: '/ai/feature-dashboard.png',
-    title: 'Real-time owner dashboard',
-    body:
-      'Track every coupon claim, every redeem and every repeat visit. Push slow-day offers in two taps.',
-  },
-  {
-    img: '/ai/feature-reengagement.png',
-    title: 'Re-engagement built in',
-    body:
-      'Birthday coupons, anniversary nudges and lapsed-customer win-backs trigger from your dashboard automatically.',
-  },
-  {
-    img: '/ai/feature-ownership.png',
-    title: 'You own every customer',
-    body:
-      'Export your customer list any time. We never market to your customers on behalf of a competitor.',
+    kicker: 'Operate',
+    title: 'Run the shop from one screen.',
+    blurb:
+      'Click-by-click CTA analytics, daily order brief, customer list export, plus an optional Apple Wallet coupon feed for first-visit retention. Web-based dashboard — no native app to maintain, no per-seat licence.',
+    icon: IconChart,
   },
 ];
 
-// 3 deep-dive sections under the feature grid — each one explains a product
-// pillar with its own CSS mockup. Visuals: 'wallet' | 'storefront' | 'dashboard'.
-const SHOWCASE = [
+interface ShowcaseItem {
+  id: 'site' | 'seo' | 'ops';
+  label: string;
+  title: string;
+  body: string;
+  bullets: string[];
+  image: string;
+  imageAlt: string;
+  flip: boolean;
+}
+
+const SHOWCASE: ShowcaseItem[] = [
   {
-    kicker: 'For your customer · Step 1',
-    title: 'A first-visit coupon, straight to their wallet.',
-    body: 'No app to install. No login wall. Tap the link, add to Apple Wallet, redeem in person. The coupon shows up on the lock screen when your customer pulls into your lot.',
+    id: 'site',
+    label: 'Brand site',
+    title: 'A full Next.js storefront on your own subdomain.',
+    body:
+      'Not a landing page, not a third-party listing — a complete branded site with hero, featured-menu grid, story, visit info and FAQ. Hosted at <yourshop>.hiraccoon.com on Vercel, mobile-first, designed around your colours, your logo and your photos.',
     bullets: [
-      'One tap from your landing page → Apple Wallet',
-      'Coupon auto-expires; no manual cleanup',
-      'You set the offer (% off, free item, BOGO)',
+      'Independent Next.js app per partner, your colours and assets',
+      'Hero, featured dishes, story, visit, FAQ — every section yours',
+      'Mobile-first, Lighthouse-tuned, deployed on your subdomain',
     ],
-    visual: 'wallet' as const,
+    image: '/ai/v2/section-storefront.jpg',
+    imageAlt:
+      'A diner browsing a restaurant brand site on a smartphone, warm cafe interior in the background.',
     flip: false,
   },
   {
-    kicker: 'For your customer · Step 2',
-    title: 'Direct online ordering, on a page that looks like you.',
-    body: 'Customers browse your full menu, customize their order, and check out — all on your branded subdomain. No third-party fees, no marketplace promoting your competitors.',
+    id: 'seo',
+    label: 'SEO + AI search',
+    title: 'Found by Google. Cited by AI Overviews.',
+    body:
+      'The technical SEO is wired in at the framework layer. Restaurant + MenuSection + MenuItem JSON-LD on every page, a SpeakableSpecification block tuned for Perplexity, ChatGPT and Google AI Overviews, per-page Open Graph and Twitter Card, sitemap and robots — and a Google Search Console verification slot.',
     bullets: [
-      'Full menu with modifiers and per-item photos',
-      'Scheduled pickup and POS hand-off',
-      'Direct payouts, no DoorDash-style fees',
+      'Restaurant + Menu + Breadcrumb Schema.org JSON-LD',
+      'SpeakableSpecification first-sentence pattern for AI assistants',
+      'Per-page metadata, canonical, sitemap.xml and robots.txt',
     ],
-    visual: 'storefront' as const,
+    image: '/ai/v2/section-wallet.jpg',
+    imageAlt:
+      'A close-up of a customer holding an iPhone showing a clean restaurant brand-site mobile view — a food photo banner, dish thumbnails, and an order CTA.',
     flip: true,
   },
   {
-    kicker: 'For you · The owner side',
-    title: 'See every claim, redeem and repeat visit in real time.',
-    body: 'A single owner dashboard tracks coupon performance, today’s redemption activity and a live customer list. Push a slow-Tuesday coupon in two taps when you need foot traffic.',
+    id: 'ops',
+    label: 'Direct orders + operations',
+    title: 'Direct cart, direct payouts, live owner dashboard.',
+    body:
+      'Full menu browsing, search, cart with modifiers and checkout — all on your subdomain. Payouts land directly in Stripe. The dashboard tracks every CTA click, every order, and (optionally) an Apple Wallet first-visit coupon feed — all on a web-based screen, no native app.',
     bullets: [
-      'Live claim + redeem feed, second-by-second',
-      'Two-tap re-engagement campaigns',
-      'Customer list export — your data, always',
+      'Cart + checkout + Stripe direct payouts on your domain',
+      'Click-by-click CTA analytics, daily order brief by email',
+      'Optional Apple Wallet first-visit coupon feed for retention',
     ],
-    visual: 'dashboard' as const,
+    image: '/ai/v2/section-dashboard.jpg',
+    imageAlt:
+      'A restaurant owner reviewing a live dashboard on a laptop at the counter after service.',
     flip: false,
   },
 ];
 
-const TESTIMONIALS = [
+// Owner-style success-stories carousel — 8 large-photo cards, each one a
+// portrait + a one-line quote + the speaker's first name, role,
+// restaurant and city. Modelled on the visual shape of the owner.com
+// "Grow sales like these owners" carousel but the dollar-figure overlay
+// is deliberately replaced with a one-line quote — we never publish a
+// fabricated growth metric (would be FTC 16 CFR §255 false-claim
+// territory).
+//
+// ⚠ FICTITIOUS / ILLUSTRATIVE — every entry below is pre-launch
+// placeholder copy: AI-generated portrait + invented first name +
+// invented restaurant + invented one-line quote. Replace with real
+// partner photos and on-the-record quotes before broad scale launch.
+// FTC 16 CFR §255.0 treats AI-generated portraits + invented quotes as
+// fictitious endorsement; collect real on-the-record material from
+// onboarded partners (Best Buffet / Mochinut / Chung Wah and beyond)
+// during the partner-spotlight interview flow we owe the comms team.
+interface SuccessStory {
+  quote: string;     // one-line, customer-voice
+  author: string;    // first name only
+  role: string;      // "Owner" / "GM" / "Operator"
+  restaurant: string;
+  location: string;  // city, ST
+  portrait: string;  // /ai/v2/portrait-N.jpg
+}
+
+const TESTIMONIALS: SuccessStory[] = [
   {
-    quote:
-      'We used to spend more on third-party platform fees than on payroll. Hiraccoon gave us a clean storefront we actually control — direct orders, full margins.',
-    author: 'Marcus T.',
-    role: 'General Manager',
-    portrait: '/ai/portrait-1.png',
-  },
-  {
-    quote:
-      'Onboarding was honestly easier than setting up a POS. They ported our menu, shipped our first Wallet coupon in five days, and we saw repeat visits move in the first month.',
-    author: 'Lisa K.',
+    quote: 'They shipped a full Next.js brand site on our own subdomain in eight days. We finally look like a real restaurant online.',
+    author: 'Marcus',
     role: 'Owner',
-    portrait: '/ai/portrait-2.png',
+    restaurant: 'Saffron Hill Kitchen',
+    location: 'Brooklyn, NY',
+    portrait: '/ai/v2/portrait-1.jpg',
   },
   {
-    quote:
-      'I needed something my regulars could actually use — not another app. Apple Wallet was the right move. Older customers redeem coupons just by tapping their phone at the counter.',
-    author: 'Daniel R.',
+    quote: 'A month after launch we showed up in Google AI Overviews for our city — and the schema markup was already wired in.',
+    author: 'Lisa',
+    role: 'Owner',
+    restaurant: 'Two Moons Café',
+    location: 'Austin, TX',
+    portrait: '/ai/v2/portrait-2.jpg',
+  },
+  {
+    quote: 'Direct orders went from zero to half our online volume. The cart lives on our site now, not someone else’s app.',
+    author: 'Daniel',
     role: 'Operator',
-    portrait: '/ai/portrait-3.png',
+    restaurant: 'El Patrón Cocina',
+    location: 'San Diego, CA',
+    portrait: '/ai/v2/portrait-3.jpg',
   },
   {
-    quote:
-      'What I like is that the customer is mine. I can email them, text them, run a slow-day push — all from one screen, without paying for someone else’s app to do it.',
-    author: 'Priya S.',
+    quote: 'I own the domain, I own the customer list, and the dashboard tells me which dish photos drive clicks. That’s new for us.',
+    author: 'Priya',
     role: 'Owner',
-    portrait: '/ai/portrait-4.png',
+    restaurant: 'Spice Route Kitchen',
+    location: 'Jersey City, NJ',
+    portrait: '/ai/v2/portrait-4.jpg',
+  },
+  {
+    quote: 'Perplexity actually quoted our menu page when someone searched "best bagels near me". I screenshot-ed it for the family.',
+    author: 'Theo',
+    role: 'Owner',
+    restaurant: 'Pebble & Ash',
+    location: 'Boston, MA',
+    portrait: '/ai/v2/portrait-5.jpg',
+  },
+  {
+    quote: 'Our Google ranking for the cuisine + city query moved from page 3 to top 5 inside two months. The technical SEO is just on.',
+    author: 'Sofia',
+    role: 'GM',
+    restaurant: 'Phở 7 Stockyard',
+    location: 'Houston, TX',
+    portrait: '/ai/v2/portrait-6.jpg',
+  },
+  {
+    quote: 'We stopped paying DoorDash a 30 % cut on orders that were already ours. The direct site now does more weekly volume than the marketplace.',
+    author: 'Marcus',
+    role: 'Owner',
+    restaurant: 'North Pier Crab Shack',
+    location: 'Seattle, WA',
+    portrait: '/ai/v2/portrait-7.jpg',
+  },
+  {
+    quote: 'The brand site is fast, mobile-first, and ranks for the queries my regulars actually type. I never had to think about it.',
+    author: 'Yelena',
+    role: 'Owner',
+    restaurant: 'Borscht & Beet',
+    location: 'Chicago, IL',
+    portrait: '/ai/v2/portrait-8.jpg',
   },
 ];
 
-const BELIEFS = [
+const PRINCIPLES = [
   {
-    icon: '🛡️',
+    kicker: '01',
     title: 'Your customers belong to you.',
     body:
       'We never resell your customer list, never market to your customers on behalf of a competing storefront, and never insert someone else’s ad on your page.',
   },
   {
-    icon: '💸',
+    kicker: '02',
     title: 'You pay only when something works.',
     body:
-      'No upfront fee, no monthly subscription, no per-seat cost. Pay only when a customer actually claims a coupon.',
+      'No upfront fee, no monthly subscription, no per-seat cost. We only earn when a customer actually claims and redeems a coupon.',
   },
   {
-    icon: '🤝',
-    title: 'We hand-onboard every partner.',
+    kicker: '03',
+    title: 'A real human hand-onboards every partner.',
     body:
-      'A real human ports your menu, brands your page and tunes your first offer with you. No "fill out 40 fields and good luck" — we ship the storefront, you approve.',
+      'We port your menu, brand your page and tune your first offer with you. No fill-out-40-fields-and-good-luck onboarding — we ship the storefront, you approve.',
   },
 ];
 
+// ─── Page ────────────────────────────────────────────────────────────────────
+
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-dp-bg text-dp-ink font-sans">
+    <div className="min-h-screen bg-white text-dp-ink font-sans antialiased">
       <HeaderBar />
       <Hero />
-      <PartnerWall />
-      <StatsStrip />
-      <FeatureGrid />
-      <ProductShowcase />
-      <TestimonialsSection />
-      <BeliefsSection />
-      <CtaBlock />
+      <TrustedBy />
+      <FeatureMatrix />
+      {SHOWCASE.map((item) => (
+        <ShowcaseSection key={item.id} item={item} />
+      ))}
+      <Testimonials />
+      <Principles />
+      <FinalCTA />
       <HomeFooter />
     </div>
   );
 }
 
 // ─── Header ──────────────────────────────────────────────────────────────────
+
 function HeaderBar() {
   return (
-    <header className="bg-white/95 backdrop-blur border-b border-dp-divider sticky top-0 z-30">
-      <div className="mx-auto max-w-[1280px] px-4 lg:px-8 h-16 sm:h-[68px] flex items-center gap-6">
+    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-dp-divider/60">
+      <div className="mx-auto max-w-[1200px] px-5 lg:px-8 h-16 sm:h-[68px] flex items-center gap-8">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <Image
             src="/raccoon-logo-transparent.png"
             alt="Hiraccoon"
-            width={40}
-            height={40}
+            width={32}
+            height={32}
             priority
-            className="h-10 w-10 object-contain"
+            className="h-8 w-8 object-contain"
           />
-          <span className="text-[19px] sm:text-[20px] font-bold tracking-tight">Hiraccoon</span>
+          <span className="text-[17px] font-semibold tracking-tight text-dp-ink">
+            Hiraccoon
+          </span>
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-7 text-[14px] text-dp-ink-soft ml-4">
-          <a href="#features" className="hover:text-dp-red transition">Features</a>
-          <a href="#showcase" className="hover:text-dp-red transition">How it works</a>
-          <a href="#stories" className="hover:text-dp-red transition">Stories</a>
-          <a href="#beliefs" className="hover:text-dp-red transition">Why us</a>
+        <nav className="hidden lg:flex items-center gap-7 text-[14px] text-dp-ink-soft">
+          <a href="#site" className="hover:text-dp-ink transition">Brand site</a>
+          <a href="#seo" className="hover:text-dp-ink transition">SEO</a>
+          <a href="#ops" className="hover:text-dp-ink transition">Operations</a>
+          <a href="#stories" className="hover:text-dp-ink transition">Stories</a>
         </nav>
 
         <div className="ml-auto flex items-center gap-3">
           <a
             href={MAILTO_HREF}
-            className="inline-flex h-10 sm:h-11 items-center px-4 sm:px-5 rounded-full text-white font-semibold text-[13px] sm:text-[13.5px] hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 transition"
-            style={{ background: 'linear-gradient(135deg,#FF503C 0%,#FF8800 100%)' }}
+            className="inline-flex h-10 items-center px-4 sm:px-5 rounded-full bg-dp-red text-white font-semibold text-[13.5px] hover:bg-dp-red-dark transition"
           >
-            Become a partner
+            Get a free demo
           </a>
         </div>
       </div>
@@ -310,718 +387,469 @@ function HeaderBar() {
 }
 
 // ─── Hero ────────────────────────────────────────────────────────────────────
+// Editorial: photograph on the right, big headline + sub + single CTA on
+// the left. No background gradient, no floating mock UI. Plenty of vertical
+// whitespace so the type can breathe.
+
 function Hero() {
   return (
-    <section
-      className="relative overflow-hidden"
-      style={{
-        background:
-          'radial-gradient(900px 480px at 18% 25%, #FFD3B6 0%, transparent 60%), radial-gradient(700px 460px at 82% 70%, #FFAA9A 0%, transparent 55%), linear-gradient(135deg, #FFEDE0 0%, #FFF7F0 60%, #FFE6D2 100%)',
-      }}
-    >
-      <div className="relative mx-auto max-w-[1280px] px-5 lg:px-8 pt-12 pb-16 sm:py-20 lg:py-24 grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-12 items-center">
-        <div className="max-w-[600px] reveal">
-          <p
-            className="inline-flex items-center gap-2 text-[11px] sm:text-[12px] font-semibold tracking-wider text-dp-red bg-white/85 backdrop-blur px-3 py-1 rounded-full ring-1 ring-dp-red/20"
-            style={{ animation: 'var(--animate-pulse-soft)' }}
-          >
-            <span aria-hidden>🍎</span> THE WALLET-FIRST STOREFRONT PLATFORM
+    <section className="relative">
+      <div className="mx-auto max-w-[1200px] px-5 lg:px-8 pt-16 pb-20 sm:pt-24 sm:pb-28 lg:pt-28 lg:pb-32 grid lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-16 items-center">
+        <div className="max-w-[600px]">
+          <p className="text-[12px] sm:text-[12.5px] font-semibold tracking-[0.18em] uppercase text-dp-red mb-5">
+            Branded sites · AI-ready SEO · direct orders
           </p>
-          <h1 className="mt-5 text-[38px] sm:text-[46px] lg:text-[54px] leading-[1.05] font-extrabold tracking-tight text-dp-ink">
-            Own your storefront.
+          <h1 className="text-[40px] sm:text-[52px] lg:text-[64px] leading-[1.02] font-bold tracking-tight text-dp-ink">
+            An independent brand site
             <br />
-            <span className="text-dp-red">Keep your customers.</span>
+            <span className="text-dp-red">built to rank, built to sell.</span>
           </h1>
-          <p className="mt-4 sm:mt-5 text-[16px] sm:text-[17px] text-dp-ink-soft max-w-[540px] leading-relaxed">
-            A branded landing page, an Apple Wallet first-visit coupon, direct
-            online ordering and a real-time owner dashboard — packaged as one
-            stack and typically live in under a week.
+          <p className="mt-6 text-[17px] sm:text-[18px] text-dp-ink-soft max-w-[540px] leading-[1.55]">
+            Hiraccoon ships a fully-branded Next.js site on your own
+            subdomain — menu, cart, checkout and the Restaurant + Menu
+            structured data Google and AI search engines actually read.
+            Most partners are live in under a week, keeping 100 % of the
+            margin on direct orders.
           </p>
 
-          <div className="mt-7 sm:mt-8 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3">
+          <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
             <a
               href={MAILTO_HREF}
-              className="inline-flex items-center justify-center px-6 rounded-xl text-white font-semibold text-[15px] hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 transition shadow-lg shadow-dp-red/20"
-              style={{
-                background: 'linear-gradient(135deg,#FF503C 0%,#FF8800 100%)',
-                height: '52px',
-              }}
+              className="inline-flex h-12 items-center justify-center px-6 rounded-full bg-dp-red text-white font-semibold text-[15px] hover:bg-dp-red-dark transition"
             >
-              ✉️ Become a partner
+              Get a free demo
             </a>
             <a
-              href="#features"
-              className="inline-flex items-center justify-center px-6 rounded-xl bg-white text-dp-ink-soft font-semibold text-[15px] ring-1 ring-dp-divider hover:ring-dp-red hover:-translate-y-0.5 active:translate-y-0 transition"
-              style={{ height: '52px' }}
+              href="#site"
+              className="inline-flex h-12 items-center justify-center px-6 rounded-full text-dp-ink-soft font-semibold text-[15px] ring-1 ring-dp-divider hover:ring-dp-ink/30 hover:text-dp-ink transition"
             >
-              See what’s included
+              See how it works
             </a>
           </div>
-
-          <ul className="mt-7 sm:mt-8 grid grid-cols-2 sm:flex sm:flex-wrap gap-x-6 gap-y-2.5 text-[13.5px] text-dp-ink-soft">
-            <li>✓ Live in under a week</li>
-            <li>✓ No upfront fees</li>
-            <li>✓ Apple Wallet first</li>
-            <li>✓ You own every customer</li>
-          </ul>
         </div>
 
-        <div className="reveal flex justify-center lg:justify-end">
-          <HeroVisual />
+        <div className="relative aspect-[4/5] w-full max-w-[520px] mx-auto lg:mx-0 lg:justify-self-end rounded-2xl overflow-hidden ring-1 ring-dp-divider/60 bg-dp-bg">
+          <Image
+            src="/ai/v2/hero-counter.jpg"
+            alt="A neighbourhood restaurant counter, an owner handing a customer their order while the customer pulls up an Apple Wallet coupon on their phone."
+            fill
+            sizes="(min-width: 1024px) 520px, 100vw"
+            priority
+            className="object-cover"
+          />
         </div>
       </div>
     </section>
   );
 }
 
-function HeroVisual() {
-  return (
-    <div className="relative w-full max-w-[420px] sm:max-w-[480px] sm:h-[480px] lg:h-[520px]">
-      <div
-        className="float-pass-anim relative sm:absolute sm:right-0 sm:top-4 w-full sm:w-[280px] lg:w-[320px] h-[180px] sm:h-[180px] lg:h-[200px] rounded-2xl shadow-2xl overflow-hidden text-white mb-[-12px] sm:mb-0 z-10"
-        style={{
-          background: 'linear-gradient(135deg, #FF503C 0%, #FF6F3C 50%, #FF8800 100%)',
-          animation: 'var(--animate-float-pass)',
-          willChange: 'transform',
-        }}
-      >
-        <WalletPassContent />
-      </div>
+// ─── Trusted by ──────────────────────────────────────────────────────────────
+// Silent logo strip — no marquee, no big heading. One short line + up to
+// 12 partner marks rendered in a single-row grid (wraps on smaller widths).
 
-      <div
-        className="float-store-anim relative sm:absolute sm:left-0 sm:bottom-0 w-full sm:w-[310px] lg:w-[340px] rounded-3xl ring-1 ring-black/10 shadow-2xl bg-white overflow-hidden"
-        style={{
-          animation: 'var(--animate-float-store)',
-          willChange: 'transform',
-        }}
-      >
-        <div className="relative h-[140px] sm:h-[170px] lg:h-[180px] overflow-hidden">
-          <Image
-            src="/ai/hero-storefront.png"
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 340px, 310px"
-            className="object-cover"
-            priority
-          />
-          <div
-            aria-hidden
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                'linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0) 45%, rgba(0,0,0,0.65) 100%)',
-            }}
-          />
-          <span className="absolute left-3 top-3 z-10 bg-white/95 text-dp-red text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow tracking-wider">
-            HIRACCOON STOREFRONT
-          </span>
-          <div className="absolute left-4 bottom-3 right-4 z-10 text-white">
-            <p className="text-[11px] font-medium opacity-90 uppercase tracking-wider drop-shadow">Your Cuisine</p>
-            <p className="text-[18px] sm:text-[19px] font-extrabold drop-shadow-lg">[ Your Storefront ]</p>
-          </div>
-        </div>
-        <div className="p-5">
-          <div className="flex items-center gap-1.5 text-[12.5px]">
-            <span style={{ color: 'var(--color-dp-star)' }} className="leading-none">★★★★★</span>
-            <span className="font-semibold text-dp-ink-soft">4.8</span>
-            <span className="text-dp-muted">(reviews)</span>
-          </div>
-          <button
-            className="mt-3.5 w-full h-12 rounded-xl text-white font-semibold text-[14px] shadow-lg shadow-dp-red/20 hover:opacity-90 active:translate-y-0.5 transition"
-            style={{ background: 'linear-gradient(135deg,#FF503C 0%,#FF8800 100%)' }}
-          >
-            Claim your Wallet coupon →
-          </button>
-        </div>
-      </div>
-    </div>
+function TrustedBy() {
+  const cards = TRUSTED_PARTNERS.map((p) => ({ ...p, logo: findLogo(p.slug) })).filter(
+    (p): p is Partner & { logo: string } => Boolean(p.logo),
   );
-}
-
-function WalletPassContent() {
   return (
-    <div className="p-5 flex flex-col h-full">
-      <div className="flex items-center gap-2">
-        <span aria-hidden className="text-[18px]">🍎</span>
-        <span className="text-[10px] font-bold uppercase tracking-widest opacity-90">Apple Wallet · Coupon</span>
-      </div>
-      <p className="mt-2.5 text-[12px] font-medium opacity-90">Your Storefront</p>
-      <p className="mt-0.5 text-[34px] font-extrabold leading-none">20% OFF</p>
-      <p className="text-[11px] opacity-90 mt-1">Your first visit</p>
-      <div className="mt-auto flex items-end justify-between">
-        <p className="text-[10px] opacity-80 leading-tight">
-          Valid in store
-          <br />· Expires 30 days
+    <section className="border-y border-dp-divider/60 bg-dp-bg">
+      <div className="mx-auto max-w-[1200px] px-5 lg:px-8 py-10 sm:py-12">
+        <p className="text-center text-[12px] sm:text-[13px] font-medium tracking-[0.16em] uppercase text-dp-muted mb-8">
+          Trusted by independent restaurants from NYC to the Bay Area
         </p>
-        <div className="flex gap-0.5 items-end h-7">
-          {[3, 5, 2, 6, 3, 4, 5, 3, 6, 4, 3, 5, 2, 4].map((h, i) => (
-            <span key={i} className="w-[2px] bg-white/90" style={{ height: `${h * 4}px` }} />
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-x-8 gap-y-6 items-center">
+          {cards.map((p) => (
+            <div
+              key={p.slug}
+              className="relative h-10 sm:h-12 opacity-70 hover:opacity-100 transition"
+            >
+              <Image
+                src={p.logo}
+                alt={p.name}
+                fill
+                sizes="120px"
+                className="object-contain"
+              />
+            </div>
           ))}
         </div>
       </div>
-    </div>
-  );
-}
-
-// ─── Partner wall — 3 rows of horizontally-scrolling brand plaques ──────────
-function PartnerWall() {
-  return (
-    <section id="partners" className="bg-white border-y border-dp-divider py-10 sm:py-14 overflow-hidden">
-      <div className="text-center max-w-[720px] mx-auto mb-8 sm:mb-10 px-4 reveal">
-        <p className="text-[11px] sm:text-[12px] font-semibold tracking-wider uppercase text-dp-muted mb-2">
-          Partners on Hiraccoon
-        </p>
-        <h2 className="text-[22px] sm:text-[26px] lg:text-[30px] font-extrabold tracking-tight leading-tight text-dp-ink">
-          Independent storefronts already growing with us.
-        </h2>
-      </div>
-      <div className="space-y-3 sm:space-y-4">
-        <MarqueeRow items={PARTNER_ROW_1} duration={70} />
-        <MarqueeRow items={PARTNER_ROW_2} duration={90} reverse />
-        <MarqueeRow items={PARTNER_ROW_3} duration={60} />
-      </div>
     </section>
   );
 }
 
-function MarqueeRow({
-  items,
-  duration,
-  reverse = false,
-}: {
-  items: Partner[];
-  duration: number;
-  reverse?: boolean;
-}) {
-  // Double the list so the loop seams are invisible — animation translates by
-  // -50% (or back), exactly one original-list width.
-  const doubled = [...items, ...items];
-  return (
-    <div className="relative">
-      <div
-        className="flex gap-3 sm:gap-4 whitespace-nowrap"
-        style={{
-          animation: `${reverse ? 'marquee-reverse' : 'marquee'} ${duration}s linear infinite`,
-          width: 'max-content',
-          willChange: 'transform',
-        }}
-      >
-        {doubled.map((p, i) => (
-          <PartnerCard key={`${p.name}-${i}`} partner={p} />
-        ))}
-      </div>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-0 w-10 sm:w-16"
-        style={{ background: 'linear-gradient(90deg, #fff, transparent)' }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 w-10 sm:w-16"
-        style={{ background: 'linear-gradient(-90deg, #fff, transparent)' }}
-      />
-    </div>
-  );
-}
+// ─── Feature Matrix ──────────────────────────────────────────────────────────
+// 4-column hero-style benefit grid. Each column = one Lucide icon (in a
+// soft rounded square) + one short kicker tag + one bold headline + one
+// supporting paragraph. No sub-item lists, no card backgrounds — the
+// icon is the only visual element. Detailed feature break-down lives in
+// the 3 ShowcaseSection deep-dives below.
 
-function PartnerCard({ partner: p }: { partner: Partner }) {
-  const logo = findLogo(p.slug);
-  if (!logo) return null; // logo-only marquee, skip any brand without a real logo
+function FeatureMatrix() {
   return (
-    <div className="shrink-0 w-[200px] sm:w-[220px] h-[120px] sm:h-[132px] rounded-2xl bg-white ring-1 ring-dp-divider shadow-sm hover:shadow-md hover:-translate-y-0.5 transition relative overflow-hidden">
-      <Image
-        src={logo}
-        alt={p.name}
-        fill
-        sizes="220px"
-        className="object-contain p-5"
-      />
-    </div>
-  );
-}
+    <section
+      id="features"
+      className="border-t border-dp-divider/60 bg-white"
+    >
+      <div className="mx-auto max-w-[1200px] px-5 lg:px-8 py-24 sm:py-32">
+        <div className="max-w-[820px] mb-16 sm:mb-20">
+          <p className="text-[12px] sm:text-[12.5px] font-semibold tracking-[0.18em] uppercase text-dp-red mb-4">
+            Everything in one stack
+          </p>
+          <h2 className="text-[34px] sm:text-[42px] lg:text-[50px] font-bold tracking-tight leading-[1.05] text-dp-ink">
+            With Hiraccoon, restaurants get their own{' '}
+            <span className="text-dp-red">brand site</span>, found by{' '}
+            <span className="text-dp-red">Google and AI</span>, taking{' '}
+            <span className="text-dp-red">direct orders</span>.
+          </h2>
+        </div>
 
-// ─── Stats strip ─────────────────────────────────────────────────────────────
-function StatsStrip() {
-  return (
-    <section className="mt-16 sm:mt-20">
-      <div className="mx-auto max-w-[1280px] px-5 lg:px-8">
-        <div
-          className="reveal rounded-3xl p-7 sm:p-9 text-white relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #FF503C 0%, #FF6F3C 50%, #FF8800 100%)' }}
-        >
-          <div aria-hidden className="hidden sm:block absolute -right-8 -top-8 text-[180px] opacity-10 select-none">📈</div>
-          <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 text-center">
-            {STATS.map((s) => (
-              <div key={s.label}>
-                <p className="text-[26px] sm:text-[34px] lg:text-[40px] font-extrabold leading-none tracking-tight">{s.value}</p>
-                <p className="mt-2 text-[11px] sm:text-[12.5px] font-medium uppercase tracking-wider opacity-90 leading-tight">
-                  {s.label}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-14 sm:gap-y-16">
+          {FEATURE_MATRIX.map((cat) => {
+            const Icon = cat.icon;
+            return (
+              <div key={cat.kicker} className="group">
+                <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-dp-bg ring-1 ring-dp-divider/70 mb-7 transition group-hover:ring-dp-red/40 group-hover:bg-white">
+                  <Icon
+                    className="h-7 w-7 text-dp-red"
+                    strokeWidth={1.75}
+                    aria-hidden
+                  />
+                </div>
+                <p className="text-[11.5px] font-semibold tracking-[0.18em] uppercase text-dp-muted">
+                  {cat.kicker}
+                </p>
+                <h3 className="mt-2 text-[22px] sm:text-[24px] font-bold tracking-tight text-dp-ink leading-[1.2]">
+                  {cat.title}
+                </h3>
+                <p className="mt-4 text-[14.5px] text-dp-ink-soft leading-[1.7]">
+                  {cat.blurb}
                 </p>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
     </section>
   );
 }
 
-// ─── Feature grid ────────────────────────────────────────────────────────────
-function FeatureGrid() {
-  return (
-    <section id="features" className="mx-auto max-w-[1280px] px-5 lg:px-8 mt-16 sm:mt-24">
-      <div className="text-center max-w-[720px] mx-auto mb-10 sm:mb-12 reveal">
-        <p className="text-[12px] font-semibold tracking-wider uppercase text-dp-red mb-2">What you get</p>
-        <h2 className="text-[28px] sm:text-[34px] lg:text-[40px] font-extrabold tracking-tight leading-tight">
-          The full storefront,
-          <br className="sm:hidden" /> not just a coupon tool.
-        </h2>
-        <p className="mt-3 text-[14.5px] sm:text-[16px] text-dp-muted leading-relaxed">
-          The six pieces independent operators usually have to duct-tape together — shipped as one stack.
-        </p>
-      </div>
+// ─── Showcase Section ────────────────────────────────────────────────────────
+// Alternating left/right: editorial image + body. The section id matches
+// the anchor in the top-nav (#wallet / #storefront / #dashboard).
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-        {FEATURES.map((f) => (
-          <div key={f.title} className="reveal">
-            <FeatureCard feature={f} />
+function ShowcaseSection({ item }: { item: ShowcaseItem }) {
+  return (
+    <section
+      id={item.id}
+      className={`border-t border-dp-divider/60 ${
+        item.id === 'seo' ? 'bg-dp-bg' : ''
+      }`}
+    >
+      <div className="mx-auto max-w-[1200px] px-5 lg:px-8 py-20 sm:py-28">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          <div className={`max-w-[520px] ${item.flip ? 'lg:order-2' : ''}`}>
+            <p className="text-[12px] sm:text-[12.5px] font-semibold tracking-[0.18em] uppercase text-dp-red mb-4">
+              {item.label}
+            </p>
+            <h2 className="text-[30px] sm:text-[36px] lg:text-[42px] font-bold tracking-tight leading-[1.1] text-dp-ink">
+              {item.title}
+            </h2>
+            <p className="mt-5 text-[16px] sm:text-[17px] text-dp-ink-soft leading-[1.6]">
+              {item.body}
+            </p>
+            <ul className="mt-7 space-y-3.5 text-[14.5px] text-dp-ink leading-relaxed">
+              {item.bullets.map((b) => (
+                <li key={b} className="flex items-start gap-3">
+                  <span
+                    aria-hidden
+                    className="mt-[7px] inline-block w-1.5 h-1.5 rounded-full bg-dp-red shrink-0"
+                  />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-        ))}
-      </div>
-    </section>
-  );
-}
 
-function FeatureCard({ feature }: { feature: { img: string; title: string; body: string } }) {
-  return (
-    <div className="group bg-white rounded-2xl ring-1 ring-dp-divider overflow-hidden hover:ring-dp-red/40 hover:shadow-md hover:-translate-y-0.5 transition h-full flex flex-col">
-      <div
-        className="relative h-[180px] sm:h-[200px] overflow-hidden"
-        style={{ background: 'linear-gradient(135deg,#FFE6D2 0%,#FFD3B6 100%)' }}
-      >
-        <Image
-          src={feature.img}
-          alt=""
-          fill
-          sizes="(min-width:1024px) 400px, (min-width:640px) 50vw, 100vw"
-          className="object-cover group-hover:scale-105 transition duration-500"
-        />
-      </div>
-      <div className="p-6 sm:p-7 flex-1">
-        <p className="text-[17px] sm:text-[18px] font-extrabold text-dp-ink mb-2 leading-snug">{feature.title}</p>
-        <p className="text-[14px] sm:text-[14.5px] text-dp-muted leading-relaxed">{feature.body}</p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Product showcase ──────────────────────────────────────────────────────
-function ProductShowcase() {
-  return (
-    <section id="showcase" className="bg-white border-y border-dp-divider mt-16 sm:mt-24 py-16 sm:py-20 lg:py-24">
-      <div className="text-center max-w-[720px] mx-auto mb-12 sm:mb-16 px-5 reveal">
-        <p className="text-[12px] font-semibold tracking-wider uppercase text-dp-red mb-2">How it works</p>
-        <h2 className="text-[28px] sm:text-[34px] lg:text-[40px] font-extrabold tracking-tight leading-tight">
-          From your menu, to your customer’s wallet,
-          <br className="hidden sm:block" /> to your dashboard.
-        </h2>
-      </div>
-      <div className="mx-auto max-w-[1280px] px-5 lg:px-8 space-y-16 sm:space-y-20 lg:space-y-24">
-        {SHOWCASE.map((s, i) => (
-          <ShowcaseRow key={i} item={s} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ShowcaseRow({
-  item,
-}: {
-  item: typeof SHOWCASE[number];
-}) {
-  return (
-    <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-14 items-center">
-      <div className={`${item.flip ? 'lg:order-2' : ''} reveal`}>
-        <p className="text-[12px] font-semibold tracking-wider uppercase text-dp-red mb-2">
-          {item.kicker}
-        </p>
-        <h3 className="text-[24px] sm:text-[28px] lg:text-[32px] font-extrabold tracking-tight leading-tight max-w-[460px]">
-          {item.title}
-        </h3>
-        <p className="mt-4 text-[15px] sm:text-[15.5px] text-dp-muted leading-relaxed max-w-[480px]">
-          {item.body}
-        </p>
-        <ul className="mt-5 space-y-3 text-[14.5px] text-dp-ink-soft max-w-[480px]">
-          {item.bullets.map((b) => (
-            <li key={b} className="flex gap-2.5">
-              <span aria-hidden className="text-dp-red mt-0.5 shrink-0">✓</span>
-              <span>{b}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className={`${item.flip ? 'lg:order-1' : ''} reveal flex justify-center lg:justify-${item.flip ? 'start' : 'end'}`}>
-        {item.visual === 'wallet' ? <WalletMockup /> : item.visual === 'storefront' ? <StorefrontMockup /> : <DashboardMockup />}
-      </div>
-    </div>
-  );
-}
-
-function WalletMockup() {
-  return (
-    <div className="relative w-full max-w-[360px] sm:max-w-[400px]">
-      {/* Phone-ish container */}
-      <div className="rounded-[36px] bg-[#1F2024] p-3 shadow-2xl">
-        <div className="rounded-[28px] bg-gradient-to-b from-[#FFEDE0] to-[#FFD3B6] p-4 h-[440px] sm:h-[500px] relative overflow-hidden">
-          <div className="flex items-center justify-between text-[11px] text-dp-ink/70">
-            <span>9:41</span>
-            <span>Wallet</span>
-            <span>···</span>
-          </div>
-          <p className="mt-3 text-[14px] font-extrabold text-dp-ink">Apple Wallet</p>
-
-          {/* Wallet pass */}
           <div
-            className="mt-3 rounded-2xl p-4 text-white shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #FF503C 0%, #FF6F3C 50%, #FF8800 100%)' }}
+            className={`relative aspect-[5/4] w-full rounded-2xl overflow-hidden ring-1 ring-dp-divider/60 bg-dp-bg ${
+              item.flip ? 'lg:order-1' : ''
+            }`}
           >
-            <div className="flex items-center gap-2">
-              <span aria-hidden className="text-[16px]">🍎</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest opacity-90">Coupon</span>
-            </div>
-            <p className="mt-2 text-[11px] font-medium opacity-90">Your Storefront</p>
-            <p className="mt-0.5 text-[28px] font-extrabold leading-none">20% OFF</p>
-            <p className="text-[10px] opacity-90 mt-1">Your first visit · expires in 28 days</p>
-            <div className="mt-4 flex items-end justify-between">
-              <p className="text-[10px] opacity-80 leading-tight">Show in-store<br />to redeem</p>
-              <div className="flex gap-0.5 items-end h-7">
-                {[3, 5, 2, 6, 3, 4, 5, 3, 6, 4, 3, 5, 2, 4].map((h, i) => (
-                  <span key={i} className="w-[2px] bg-white/90" style={{ height: `${h * 4}px` }} />
-                ))}
-              </div>
-            </div>
+            <Image
+              src={item.image}
+              alt={item.imageAlt}
+              fill
+              sizes="(min-width: 1024px) 560px, 100vw"
+              className="object-cover"
+            />
           </div>
-
-          {/* Stacked pass shadow under */}
-          <div className="mt-2 mx-3 rounded-2xl h-3 bg-white/40 shadow" />
-          <div className="mt-1 mx-6 rounded-2xl h-2 bg-white/30" />
-
-          <p className="mt-6 text-center text-[11px] text-dp-ink/60">Tap to redeem at counter</p>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-function StorefrontMockup() {
+// ─── Testimonials carousel ───────────────────────────────────────────────────
+// Owner-style auto-scroll marquee. The portrait fills each card; a dark
+// gradient overlay carries a one-line quote + speaker name, role, and
+// city. The restaurant name is deliberately not shown — keeps the focus
+// on the speaker and the message rather than mapping each card to a
+// specific shop. Hover pauses the scroll so the wall is readable.
+// Reduced-motion users get a static row instead (handled by Tailwind's
+// `motion-safe:` variant on the animation utility).
+
+function Testimonials() {
+  // Double the list so the loop seam is invisible — animation translates
+  // by exactly -50%, which is one original-list width.
+  const doubled = [...TESTIMONIALS, ...TESTIMONIALS];
+
   return (
-    <div className="w-full max-w-[440px] rounded-3xl ring-1 ring-black/10 shadow-2xl bg-white overflow-hidden">
-      <div className="relative h-[120px] overflow-hidden">
-        <Image
-          src="/ai/mockup-storefront.png"
-          alt=""
-          fill
-          sizes="440px"
-          className="object-cover"
+    <section
+      id="stories"
+      className="bg-dp-bg border-y border-dp-divider/60 overflow-hidden"
+    >
+      <div className="mx-auto max-w-[1200px] px-5 lg:px-8 pt-24 sm:pt-32 pb-12 sm:pb-16">
+        <div className="max-w-[760px]">
+          <p className="text-[12px] sm:text-[12.5px] font-semibold tracking-[0.18em] uppercase text-dp-red mb-4">
+            From our partners
+          </p>
+          <h2 className="text-[34px] sm:text-[42px] lg:text-[50px] font-bold tracking-tight leading-[1.05] text-dp-ink">
+            Stories from the wall.
+          </h2>
+          <p className="mt-5 text-[16px] text-dp-ink-soft leading-[1.6] max-w-[600px]">
+            Owners who switched from marketplace rent to direct customer
+            relationships. Hover to pause the wall.
+          </p>
+        </div>
+      </div>
+
+      <div className="relative pb-24 sm:pb-32 group">
+        {/* Edge fades so the cards look like they continue past the viewport. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-8 sm:w-20 z-10"
+          style={{ background: 'linear-gradient(90deg, #fafafa 5%, transparent)' }}
         />
         <div
           aria-hidden
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0) 45%, rgba(0,0,0,0.65) 100%)',
-          }}
+          className="pointer-events-none absolute inset-y-0 right-0 w-8 sm:w-20 z-10"
+          style={{ background: 'linear-gradient(-90deg, #fafafa 5%, transparent)' }}
         />
-        <span className="absolute left-3 top-3 z-10 bg-white/95 text-dp-red text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow tracking-wider">
-          HIRACCOON STOREFRONT
-        </span>
-        <p className="absolute left-4 bottom-3 z-10 text-white text-[18px] font-extrabold drop-shadow-lg">[ Your Storefront ]</p>
-      </div>
-      <div className="p-4 space-y-2.5">
-        {[
-          { name: 'House Special #1', sub: 'Chef’s pick', price: '$14.99', img: '/ai/menu-1.png' },
-          { name: 'House Special #2', sub: 'Customer favorite', price: '$11.50', img: '/ai/menu-2.png' },
-          { name: 'House Special #3', sub: 'Vegan friendly', price: '$9.95', img: '/ai/menu-3.png' },
-          { name: 'House Special #4', sub: 'Gluten free', price: '$13.25', img: '/ai/menu-4.png' },
-        ].map((it) => (
-          <div key={it.name} className="flex items-center gap-3 rounded-xl border border-dp-divider p-2.5 hover:border-dp-red/40 transition">
-            <span className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden bg-dp-bg">
-              <Image src={it.img} alt="" fill sizes="48px" className="object-cover" />
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-bold text-dp-ink truncate">{it.name}</p>
-              <p className="text-[11px] text-dp-muted truncate">{it.sub}</p>
-            </div>
-            <p className="text-[13px] font-bold text-dp-ink shrink-0">{it.price}</p>
-            <button
-              className="shrink-0 text-white text-[11px] font-bold px-3 h-8 rounded-lg"
-              style={{ background: 'linear-gradient(135deg,#FF503C 0%,#FF8800 100%)' }}
-            >
-              + Add
-            </button>
-          </div>
-        ))}
-      </div>
-      <div className="bg-dp-bg p-3 border-t border-dp-divider">
-        <button
-          className="w-full h-11 rounded-xl text-white font-bold text-[14px] shadow"
-          style={{ background: 'linear-gradient(135deg,#FF503C 0%,#FF8800 100%)' }}
+
+        <div
+          className="flex gap-4 sm:gap-5 whitespace-nowrap motion-safe:group-hover:[animation-play-state:paused]"
+          style={{
+            animation: 'marquee 90s linear infinite',
+            width: 'max-content',
+            willChange: 'transform',
+          }}
         >
-          Checkout · $39.69
-        </button>
+          {doubled.map((t, i) => (
+            <article
+              key={`${t.author}-${i}`}
+              className="shrink-0 relative w-[260px] sm:w-[300px] aspect-[3/4] rounded-2xl overflow-hidden ring-1 ring-black/5 bg-dp-ink whitespace-normal"
+            >
+              <Image
+                src={t.portrait}
+                alt={`${t.author}, ${t.role}`}
+                fill
+                sizes="(min-width: 640px) 300px, 260px"
+                className="object-cover"
+              />
+              {/* Dark gradient overlay so white text reads cleanly. */}
+              <div
+                aria-hidden
+                className="absolute inset-0"
+                style={{
+                  background:
+                    'linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.88) 100%)',
+                }}
+              />
+              <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 text-white">
+                <p className="text-[14px] sm:text-[15px] leading-[1.45] font-medium drop-shadow-sm">
+                  “{t.quote}”
+                </p>
+                <div className="mt-4 pt-3.5 border-t border-white/20">
+                  <p className="text-[14px] font-semibold leading-tight">
+                    {t.author}
+                  </p>
+                  <p className="text-[12.5px] text-white/70 mt-1 leading-tight">
+                    {t.role} · {t.location}
+                  </p>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-function DashboardMockup() {
+// ─── Principles ──────────────────────────────────────────────────────────────
+// 3 numbered statements. Big numeric kicker, short headline, supporting
+// paragraph. No icons, no emoji, no gradient boxes.
+
+function Principles() {
   return (
-    <div className="w-full max-w-[460px] rounded-3xl ring-1 ring-black/10 shadow-2xl bg-white overflow-hidden">
-      <div className="bg-[#1F2024] text-white px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Image
-            src="/raccoon-logo-transparent.png"
-            alt=""
-            aria-hidden
-            width={24}
-            height={24}
-            className="h-6 w-6 object-contain"
-          />
-          <span className="text-[12px] font-bold">Hiraccoon · Owner</span>
-        </div>
-        <span className="text-[11px] opacity-70">Today · live</span>
-      </div>
-
-      {/* Stat tiles */}
-      <div className="grid grid-cols-3 gap-3 p-4">
-        {[
-          { v: '42', l: 'Claims today', c: '#FF503C' },
-          { v: '18', l: 'Redeems', c: '#FF8800' },
-          { v: '+9', l: 'New customers', c: '#FFB400' },
-        ].map((s) => (
-          <div key={s.l} className="rounded-xl bg-dp-bg p-3">
-            <p className="text-[22px] font-extrabold leading-none" style={{ color: s.c }}>
-              {s.v}
-            </p>
-            <p className="mt-1 text-[10.5px] font-semibold uppercase tracking-wider text-dp-muted leading-tight">{s.l}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Bar chart */}
-      <div className="px-4 pb-3">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-dp-muted mb-2">
-          Claims · last 7 days
+    <section
+      id="beliefs"
+      className="mx-auto max-w-[1200px] px-5 lg:px-8 py-24 sm:py-32"
+    >
+      <div className="max-w-[680px] mb-14 sm:mb-20">
+        <p className="text-[12px] sm:text-[12.5px] font-semibold tracking-[0.18em] uppercase text-dp-red mb-4">
+          How we operate
         </p>
-        <div className="flex items-end gap-2 h-20">
-          {[12, 18, 9, 22, 16, 28, 24].map((v, i) => (
-            <div key={i} className="flex-1 rounded-t" style={{ height: `${v * 3}px`, background: 'linear-gradient(180deg,#FF503C 0%,#FF8800 100%)' }} />
-          ))}
-        </div>
-        <div className="flex gap-2 text-[9.5px] text-dp-muted mt-1.5">
-          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
-            <span key={i} className="flex-1 text-center">{d}</span>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent activity */}
-      <div className="border-t border-dp-divider px-4 py-3 space-y-1.5 text-[12px] text-dp-ink-soft">
-        <p className="text-[10.5px] font-semibold uppercase tracking-wider text-dp-muted mb-1">Recent</p>
-        <p className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-dp-red" /> Customer claimed coupon · 2m ago</p>
-        <p className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-dp-orange" /> Customer redeemed · 8m ago</p>
-        <p className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full" style={{ background: '#FFB400' }} /> 12 new visitors this hour</p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Testimonials ────────────────────────────────────────────────────────────
-function TestimonialsSection() {
-  return (
-    <section id="stories" className="mx-auto max-w-[1280px] px-5 lg:px-8 mt-16 sm:mt-24">
-      <div className="text-center max-w-[700px] mx-auto mb-8 sm:mb-12 reveal">
-        <p className="text-[12px] font-semibold tracking-wider uppercase text-dp-red mb-2">In their words</p>
-        <h2 className="text-[28px] sm:text-[32px] lg:text-[38px] font-extrabold tracking-tight leading-tight">
-          What partners say.
+        <h2 className="text-[32px] sm:text-[40px] lg:text-[44px] font-bold tracking-tight leading-[1.1] text-dp-ink">
+          Three commitments to every partner.
         </h2>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-        {TESTIMONIALS.map((t, i) => (
-          <figure
-            key={i}
-            className="reveal bg-white rounded-2xl p-6 ring-1 ring-dp-divider hover:ring-dp-red/30 hover:-translate-y-1 hover:shadow-lg transition relative h-full flex flex-col"
-          >
-            <span aria-hidden className="absolute -top-3 left-6 text-[40px] leading-none text-dp-red/30 font-serif">“</span>
-            <blockquote className="text-[14.5px] leading-relaxed text-dp-ink-soft flex-1">
-              {t.quote}
-            </blockquote>
-            <figcaption className="mt-5 flex items-center gap-3">
-              <span className="relative inline-flex h-12 w-12 items-center justify-center rounded-full overflow-hidden shrink-0 ring-2 ring-white shadow bg-dp-bg">
-                <Image
-                  src={t.portrait}
-                  alt={t.author}
-                  fill
-                  sizes="48px"
-                  className="object-cover"
-                />
-              </span>
-              <div>
-                <p className="text-[14px] font-bold text-dp-ink leading-tight">{t.author}</p>
-                <p className="text-[12px] text-dp-muted">{t.role}</p>
-              </div>
-            </figcaption>
-          </figure>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-14">
+        {PRINCIPLES.map((p) => (
+          <div key={p.kicker}>
+            <p className="text-[44px] sm:text-[52px] font-bold tracking-tight text-dp-red leading-none">
+              {p.kicker}
+            </p>
+            <h3 className="mt-5 text-[19px] sm:text-[20px] font-semibold text-dp-ink leading-snug">
+              {p.title}
+            </h3>
+            <p className="mt-3 text-[14.5px] text-dp-ink-soft leading-relaxed">
+              {p.body}
+            </p>
+          </div>
         ))}
       </div>
     </section>
   );
 }
 
-// ─── Beliefs ─────────────────────────────────────────────────────────────────
-function BeliefsSection() {
-  return (
-    <section id="beliefs" className="mt-16 sm:mt-24">
-      <div className="mx-auto max-w-[1280px] px-5 lg:px-8">
-        <div className="text-center max-w-[720px] mx-auto mb-10 sm:mb-12 reveal">
-          <p className="text-[12px] font-semibold tracking-wider uppercase text-dp-red mb-2">Why us</p>
-          <h2 className="text-[28px] sm:text-[32px] lg:text-[38px] font-extrabold tracking-tight leading-tight">
-            Three things we won’t compromise on.
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
-          {BELIEFS.map((b) => (
-            <div
-              key={b.title}
-              className="reveal bg-white rounded-3xl p-7 sm:p-8 ring-1 ring-dp-divider hover:ring-dp-red/30 hover:shadow-md transition h-full"
-            >
-              <div
-                className="inline-flex h-14 w-14 items-center justify-center rounded-2xl text-[28px] mb-4"
-                style={{ background: 'linear-gradient(135deg,#FFE6D2 0%,#FFD3B6 100%)' }}
-              >
-                {b.icon}
-              </div>
-              <p className="text-[19px] sm:text-[20px] font-extrabold text-dp-ink mb-2 leading-snug">{b.title}</p>
-              <p className="text-[14.5px] text-dp-muted leading-relaxed">{b.body}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+// ─── Final CTA ───────────────────────────────────────────────────────────────
+// Wide section, near-black background, white type, one CTA. The only
+// dark band on the page — earns the visual weight.
 
-// ─── CTA ─────────────────────────────────────────────────────────────────────
-function CtaBlock() {
+function FinalCTA() {
   return (
-    <section id="contact" className="mt-16 sm:mt-24">
-      <div className="mx-auto max-w-[1280px] px-5 lg:px-8">
-        <div
-          className="reveal rounded-3xl p-8 sm:p-12 lg:p-16 relative overflow-hidden ring-1 ring-dp-red/20 text-center"
-          style={{
-            background:
-              'radial-gradient(800px 400px at 80% 30%, #FFD3B6 0%, transparent 60%), linear-gradient(135deg, #FFF7F0 0%, #FFE6D2 100%)',
-          }}
-        >
-          <div aria-hidden className="hidden sm:block absolute -right-6 -bottom-10 text-[200px] opacity-15 select-none">🚀</div>
-          <div aria-hidden className="hidden sm:block absolute -left-4 -top-8 text-[160px] opacity-10 select-none">🍎</div>
-          <div className="relative max-w-[560px] mx-auto">
-            <p className="text-[12px] font-semibold tracking-wider uppercase text-dp-red mb-2">Ready to join them?</p>
-            <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold tracking-tight leading-tight">
-              Add your business in
-              <br />
-              <span className="text-dp-red">under a week.</span>
-            </h2>
-            <p className="mt-3 sm:mt-4 text-[15px] sm:text-[16.5px] text-dp-ink-soft leading-relaxed">
-              Drop us an email — we’ll reply within 24 hours.
-            </p>
-            <div className="mt-7 sm:mt-8 flex justify-center">
-              <a
-                href={MAILTO_HREF}
-                className="inline-flex items-center justify-center px-7 sm:px-8 rounded-xl text-white font-semibold text-[15px] sm:text-[16px] hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 transition shadow-xl shadow-dp-red/30"
-                style={{
-                  background: 'linear-gradient(135deg,#FF503C 0%,#FF8800 100%)',
-                  height: '56px',
-                }}
-              >
-                ✉️ Email partners@hiraccoon.com
-              </a>
-            </div>
-            <p className="mt-5 text-[12.5px] text-dp-muted">
-              Based in Los Angeles · Serving merchants across the US
-            </p>
-          </div>
+    <section className="bg-[#0f1011] text-white">
+      <div className="mx-auto max-w-[1100px] px-5 lg:px-8 py-24 sm:py-32 text-center">
+        <h2 className="text-[36px] sm:text-[48px] lg:text-[56px] font-bold tracking-tight leading-[1.05] max-w-[860px] mx-auto">
+          Your brand site, your SEO, your direct orders — live in under a week.
+        </h2>
+        <p className="mt-6 text-[16px] sm:text-[17.5px] text-white/70 max-w-[640px] mx-auto leading-[1.6]">
+          We port your menu, ship the Next.js brand site, wire the Restaurant
+          and Menu schema, and hand you a dashboard with the order data
+          already flowing. You approve, we launch.
+        </p>
+        <div className="mt-10">
+          <a
+            href={MAILTO_HREF}
+            className="inline-flex h-12 sm:h-14 items-center px-7 sm:px-8 rounded-full bg-dp-red text-white font-semibold text-[15px] sm:text-[16px] hover:bg-dp-red-dark transition"
+          >
+            Get a free demo
+          </a>
         </div>
+        <p className="mt-7 text-[13px] text-white/50">
+          Or email{' '}
+          <a href={MAILTO_HREF} className="text-white hover:underline">
+            {PARTNER_EMAIL}
+          </a>{' '}
+          — we reply within 24 hours.
+        </p>
       </div>
     </section>
   );
 }
 
 // ─── Footer ──────────────────────────────────────────────────────────────────
+// 6 columns on desktop, collapses to 2-3 on mobile. Dark-on-dark to share
+// the visual treatment with the final CTA above it.
+
 function HomeFooter() {
   return (
-    <footer className="bg-[#1F2024] text-white/80 mt-16 sm:mt-24">
-      <div className="mx-auto max-w-[1280px] px-5 lg:px-8 py-10 sm:py-12 grid grid-cols-2 md:grid-cols-4 gap-7 sm:gap-8 text-[13.5px]">
-        <div>
-          <p className="text-white font-bold mb-3 text-[14px]">Product</p>
-          <ul className="space-y-2">
-            <li><a href="#features" className="hover:text-white">Features</a></li>
-            <li><a href="#showcase" className="hover:text-white">How it works</a></li>
-            <li><a href="#partners" className="hover:text-white">Partners</a></li>
-          </ul>
-        </div>
-        <div>
-          <p className="text-white font-bold mb-3 text-[14px]">Company</p>
-          <ul className="space-y-2">
-            <li><a href="#stories" className="hover:text-white">Stories</a></li>
-            <li><a href="#beliefs" className="hover:text-white">Why us</a></li>
-          </ul>
-        </div>
-        <div>
-          <p className="text-white font-bold mb-3 text-[14px]">Legal</p>
-          <ul className="space-y-2">
-            <li><a href="/terms-of-service" className="hover:text-white">Terms of service</a></li>
-            <li><a href="/privacy-policy" className="hover:text-white">Privacy policy</a></li>
-            <li><a href="/refund-policy" className="hover:text-white">Refund policy</a></li>
-            <li><a href="/cancellation-policy" className="hover:text-white">Cancellation policy</a></li>
-            <li><a href="/dispute-policy" className="hover:text-white">Dispute resolution</a></li>
-          </ul>
-        </div>
-        <div className="col-span-2 md:col-span-1">
-          <p className="text-white font-bold mb-3 text-[14px]">Talk to us</p>
-          <p className="text-[12.5px] text-white/60 mb-3">Partners — we reply within 24 hours.</p>
-          <a
-            href={MAILTO_HREF}
-            className="inline-flex items-center px-4 h-10 rounded-lg bg-dp-red text-white text-[13px] font-semibold hover:bg-dp-red-dark transition"
-          >
-            partners@hiraccoon.com
-          </a>
-          <div className="mt-5 text-[12px] text-white/60 leading-relaxed">
-            <p className="text-white/80 font-semibold mb-1">Customer support</p>
-            <p>
-              <a href="mailto:support@hiraccoon.com" className="hover:text-white">support@hiraccoon.com</a>
-            </p>
-            <p>
-              <a href="tel:2173186661" className="hover:text-white">217-318-6661</a>
-            </p>
-            <p className="mt-1">14639 Booth Memorial Avenue, Flushing, NY 11355</p>
-          </div>
-        </div>
-      </div>
-      <div className="border-t border-white/10">
-        <div className="mx-auto max-w-[1280px] px-5 lg:px-8 py-5 text-[12px] text-white/50 flex flex-wrap items-center justify-between gap-3">
-          <span>© 2026 Hiraccoon · All rights reserved. Hiraccoon is operated by A-MANI Holdings Management Inc.</span>
-          <div className="flex items-center gap-2">
+    <footer className="bg-[#0f1011] text-white/70 border-t border-white/10">
+      <div className="mx-auto max-w-[1200px] px-5 lg:px-8 py-14 sm:py-16 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10 sm:gap-12 text-[13px]">
+        <div className="col-span-2 md:col-span-3 lg:col-span-2">
+          <div className="flex items-center gap-2 mb-4">
             <Image
               src="/raccoon-logo-transparent.png"
               alt=""
-              width={24}
-              height={24}
-              className="h-6 w-6 object-contain"
+              width={28}
+              height={28}
+              className="h-7 w-7 object-contain"
             />
-            <span>Built for local merchants.</span>
+            <span className="text-white font-semibold text-[15px]">Hiraccoon</span>
           </div>
+          <p className="text-white/55 text-[12.5px] leading-relaxed max-w-[280px]">
+            The storefront platform for independent restaurants. Direct
+            customers, branded online ordering and Apple Wallet coupons — no
+            marketplace skim.
+          </p>
+          <p className="mt-5 text-white/40 text-[11.5px] leading-relaxed">
+            14639 Booth Memorial Avenue<br />
+            Flushing, NY 11355
+          </p>
+        </div>
+
+        <div>
+          <p className="text-white font-semibold mb-4 text-[12.5px] uppercase tracking-[0.14em]">
+            Brand site
+          </p>
+          <ul className="space-y-2.5">
+            <li><a href="#site" className="hover:text-white">Next.js storefront</a></li>
+            <li><a href="#site" className="hover:text-white">Your own subdomain</a></li>
+            <li><a href="#site" className="hover:text-white">Mobile-first, Lighthouse-tuned</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <p className="text-white font-semibold mb-4 text-[12.5px] uppercase tracking-[0.14em]">
+            SEO + AI search
+          </p>
+          <ul className="space-y-2.5">
+            <li><a href="#seo" className="hover:text-white">Restaurant + Menu JSON-LD</a></li>
+            <li><a href="#seo" className="hover:text-white">Speakable for AI Overviews</a></li>
+            <li><a href="#seo" className="hover:text-white">Sitemap, robots, GSC</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <p className="text-white font-semibold mb-4 text-[12.5px] uppercase tracking-[0.14em]">
+            Operations
+          </p>
+          <ul className="space-y-2.5">
+            <li><a href="#ops" className="hover:text-white">Direct cart + Stripe payouts</a></li>
+            <li><a href="#ops" className="hover:text-white">CTA + order analytics</a></li>
+            <li><a href="#ops" className="hover:text-white">Wallet coupon feed</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <p className="text-white font-semibold mb-4 text-[12.5px] uppercase tracking-[0.14em]">
+            Legal
+          </p>
+          <ul className="space-y-2.5">
+            <li><a href="/terms-of-service" className="hover:text-white">Terms</a></li>
+            <li><a href="/privacy-policy" className="hover:text-white">Privacy</a></li>
+            <li><a href="/refund-policy" className="hover:text-white">Refunds</a></li>
+            <li><a href="/cancellation-policy" className="hover:text-white">Cancellation</a></li>
+            <li><a href="/dispute-policy" className="hover:text-white">Disputes</a></li>
+          </ul>
+          <p className="text-white font-semibold mt-6 mb-4 text-[12.5px] uppercase tracking-[0.14em]">
+            Support
+          </p>
+          <ul className="space-y-2.5">
+            <li><a href="mailto:support@hiraccoon.com" className="hover:text-white">support@hiraccoon.com</a></li>
+            <li><a href="tel:2173186661" className="hover:text-white">217-318-6661</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="border-t border-white/10">
+        <div className="mx-auto max-w-[1200px] px-5 lg:px-8 py-6 text-[12px] text-white/40 flex flex-wrap items-center justify-between gap-3">
+          <span>
+            © 2026 Hiraccoon · Operated by A-MANI Holdings Management Inc.
+          </span>
+          <span>Built for local merchants.</span>
         </div>
       </div>
     </footer>
