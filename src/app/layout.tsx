@@ -36,6 +36,7 @@ import { Suspense } from 'react';
 import MetaPixel from "@/components/analytics/MetaPixel";
 import MicrosoftClarity from "@/components/analytics/MicrosoftClarity";
 import GoogleTagManager from "@/components/analytics/GoogleTagManager";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 
 export default function RootLayout({
   children,
@@ -51,6 +52,7 @@ export default function RootLayout({
           <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
           <MicrosoftClarity />
           <GoogleTagManager />
+          <GoogleAnalytics />
         </Suspense>
         {children}
       </body>
