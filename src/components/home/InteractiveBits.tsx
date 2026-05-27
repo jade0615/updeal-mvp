@@ -130,7 +130,7 @@ export function RoiSliders() {
               Estimated annual upside
             </p>
             <p
-              className="font-playfair italic font-medium leading-none mt-2 tabular-nums text-dp-red"
+              className="font-bold leading-none mt-2 tabular-nums text-dp-red tracking-tight"
               style={{ fontSize: 'clamp(48px, 7.5vw, 80px)' }}
             >
               ${annualUpsideK}k
@@ -192,7 +192,7 @@ function RoiSliderRow({
         <span className="text-[14.5px] sm:text-[15px] font-medium text-dp-ink">
           {label}
         </span>
-        <span className="font-playfair italic text-[20px] sm:text-[22px] font-medium tabular-nums text-dp-red">
+        <span className="text-[18px] sm:text-[20px] font-bold tabular-nums tracking-tight text-dp-red">
           {displayValue}
         </span>
       </div>

@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     'Hiraccoon gives your restaurant a fully-branded website with your own web address, designed to be found by Google and the new AI search, a cart your customers finish on your own page, and a live owner dashboard for orders, claims, and reviews.',
 };
 
-const PARTNER_EMAIL = 'partners@hiraccoon.com';
+const PARTNER_EMAIL = 'support@hiraccoon.com';
 const MAILTO_HREF = `mailto:${PARTNER_EMAIL}?subject=${encodeURIComponent(
   'Becoming a Hiraccoon partner',
 )}&body=${encodeURIComponent(
@@ -90,10 +90,11 @@ interface Partner {
   name: string;
 }
 
-// Single silent logo strip (no marquee). 12 partner marks pulled from
-// existing partners-grid bitmaps. Cards with no logo on disk are filtered
-// out — strip stays clean.
-const TRUSTED_PARTNERS: Partner[] = [
+// 30 partner marks pulled from existing partners-grid bitmaps, split
+// across 3 horizontal marquee rows. Middle row scrolls in reverse for
+// visual interest. Cards with no logo on disk are filtered out at
+// render time — rows stay clean.
+const PARTNER_ROW_1: Partner[] = [
   { slug: 'gyu-kaku', name: 'Gyu-Kaku' },
   { slug: 'kpot', name: 'KPOT' },
   { slug: 'hook-reel', name: 'Hook & Reel' },
@@ -104,8 +105,32 @@ const TRUSTED_PARTNERS: Partner[] = [
   { slug: 'mt-fuji', name: 'Mt. Fuji' },
   { slug: 'tsaocaa', name: 'TSAOCAA' },
   { slug: 'hq-bbq', name: 'HQ BBQ' },
-  { slug: 'honoo-ramen', name: 'Honoo' },
-  { slug: 'imix-hot-pot', name: 'IMIX' },
+];
+
+const PARTNER_ROW_2: Partner[] = [
+  { slug: 'honoo-ramen', name: 'Honoo Ramen' },
+  { slug: 'imix-hot-pot', name: 'IMIX Hot Pot' },
+  { slug: 'hotpot-palace', name: 'Hotpot Palace' },
+  { slug: 'de-zhuang', name: 'De Zhuang' },
+  { slug: 'ding-dang', name: 'Ding Dang' },
+  { slug: 'hong-xing-lou', name: 'Hong Xing Lou' },
+  { slug: 'jbc-rice-noodles', name: 'JBC Rice Noodles' },
+  { slug: 'la-queen', name: 'La Queen' },
+  { slug: 'shaxian-snacks', name: 'Shaxian Snacks' },
+  { slug: 'shinya-shokudo', name: 'Shinya Shokudo' },
+];
+
+const PARTNER_ROW_3: Partner[] = [
+  { slug: 'boom-boom-crab', name: 'Boom Boom Crab' },
+  { slug: 'cajun-crab-hut', name: 'Cajun Crab Hut' },
+  { slug: 'super-crab', name: 'Super Crab' },
+  { slug: 'takara', name: 'Takara' },
+  { slug: 'toudaotang', name: 'Toudaotang' },
+  { slug: 'uka-omakase', name: 'UKA Omakase' },
+  { slug: 'abc-nail-spa', name: 'ABC Nail Spa' },
+  { slug: 'crystal-nail', name: 'Crystal Nail' },
+  { slug: 'dv-spa', name: 'DV Spa' },
+  { slug: 'mimosa-nail', name: 'Mimosa Nail' },
 ];
 
 // Feature matrix — 4 growth-stage buckets covering features Hiraccoon
@@ -358,10 +383,6 @@ const FAQ_ITEMS: FaqItem[] = [
     q: 'What if I already have a website I like?',
     a: 'If your existing site converts and ranks, keep it — we can run the cart, the dashboard, and the search-engine layer alongside it. If it doesn’t convert (most templates don’t), we’ll show you a draft replacement on a private link before you commit to anything.',
   },
-  {
-    q: 'How much does it cost?',
-    a: 'A flat monthly platform fee, no per-order commission on direct orders, no setup fee, no per-seat charge. Email partners@hiraccoon.com with your business name and we’ll send the current pricing plus an estimate of what you’d save against your existing marketplace volume.',
-  },
 ];
 
 // ─── Page ────────────────────────────────────────────────────────────────────
@@ -483,37 +504,87 @@ function Hero() {
 }
 
 // ─── Trusted by ──────────────────────────────────────────────────────────────
-// Silent logo strip — no marquee, no big heading. One short line + up to
-// 12 partner marks rendered in a single-row grid (wraps on smaller widths).
+// 3 horizontal auto-scrolling marquee rows of partner logos. Middle row
+// runs in reverse so the wall has visual rhythm. Each row's array is
+// doubled in the DOM so the loop seam is invisible — animation translates
+// by exactly -50%, one original-list width. Hover pauses all rows.
+// Reduced-motion users get a static row (motion-safe gate).
 
 function TrustedBy() {
-  const cards = TRUSTED_PARTNERS.map((p) => ({ ...p, logo: findLogo(p.slug) })).filter(
+  const row1 = PARTNER_ROW_1.map((p) => ({ ...p, logo: findLogo(p.slug) })).filter(
     (p): p is Partner & { logo: string } => Boolean(p.logo),
   );
+  const row2 = PARTNER_ROW_2.map((p) => ({ ...p, logo: findLogo(p.slug) })).filter(
+    (p): p is Partner & { logo: string } => Boolean(p.logo),
+  );
+  const row3 = PARTNER_ROW_3.map((p) => ({ ...p, logo: findLogo(p.slug) })).filter(
+    (p): p is Partner & { logo: string } => Boolean(p.logo),
+  );
+
   return (
-    <section className="border-y border-dp-divider/60 bg-dp-bg">
-      <div className="mx-auto max-w-[1200px] px-5 lg:px-8 py-10 sm:py-12">
-        <p className="text-center text-[12px] sm:text-[13px] font-medium tracking-[0.16em] uppercase text-dp-muted mb-8">
+    <section className="border-y border-dp-divider/60 bg-dp-bg overflow-hidden">
+      <div className="mx-auto max-w-[1200px] px-5 lg:px-8 pt-10 sm:pt-12 pb-2">
+        <p className="text-center text-[12px] sm:text-[13px] font-medium tracking-[0.16em] uppercase text-dp-muted">
           Trusted by independent restaurants from NYC to the Bay Area
         </p>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-x-8 gap-y-6 items-center">
-          {cards.map((p) => (
-            <div
-              key={p.slug}
-              className="relative h-10 sm:h-12 opacity-70 hover:opacity-100 transition"
-            >
-              <Image
-                src={p.logo}
-                alt={p.name}
-                fill
-                sizes="120px"
-                className="object-contain"
-              />
-            </div>
-          ))}
-        </div>
+      </div>
+
+      <div className="relative py-8 sm:py-10 group">
+        {/* Edge fades */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-12 sm:w-24 z-10"
+          style={{ background: 'linear-gradient(90deg, #fafafa 10%, transparent)' }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-12 sm:w-24 z-10"
+          style={{ background: 'linear-gradient(-90deg, #fafafa 10%, transparent)' }}
+        />
+
+        <MarqueeRow items={row1} duration={60} reverse={false} />
+        <MarqueeRow items={row2} duration={75} reverse />
+        <MarqueeRow items={row3} duration={68} reverse={false} />
       </div>
     </section>
+  );
+}
+
+function MarqueeRow({
+  items,
+  duration,
+  reverse,
+}: {
+  items: (Partner & { logo: string })[];
+  duration: number;
+  reverse: boolean;
+}) {
+  if (items.length === 0) return null;
+  const doubled = [...items, ...items];
+  return (
+    <div
+      className="flex gap-10 sm:gap-14 items-center py-3 sm:py-4 motion-safe:group-hover:[animation-play-state:paused]"
+      style={{
+        animation: `${reverse ? 'marquee-reverse' : 'marquee'} ${duration}s linear infinite`,
+        width: 'max-content',
+        willChange: 'transform',
+      }}
+    >
+      {doubled.map((p, i) => (
+        <div
+          key={`${p.slug}-${i}`}
+          className="relative h-10 sm:h-12 w-[120px] sm:w-[140px] shrink-0 opacity-70 hover:opacity-100 transition"
+        >
+          <Image
+            src={p.logo}
+            alt={p.name}
+            fill
+            sizes="140px"
+            className="object-contain"
+          />
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -777,7 +848,7 @@ function RoiCalculator() {
         </p>
         <h2 className="text-[34px] sm:text-[42px] lg:text-[50px] font-bold tracking-tight leading-[1.05] text-dp-ink">
           See what Hiraccoon is worth{' '}
-          <span className="font-playfair italic font-medium text-dp-red">to your restaurant.</span>
+          <span className="text-dp-red">to your restaurant.</span>
         </h2>
         <p className="mt-5 text-[15.5px] sm:text-[16px] leading-[1.6] max-w-[640px] mx-auto text-dp-ink-soft">
           Drag the sliders to your numbers. The model is conservative —
@@ -803,7 +874,7 @@ function Faq() {
         </p>
         <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] font-bold tracking-tight leading-[1.05] text-dp-ink">
           Smart operators{' '}
-          <span className="font-playfair italic font-medium text-dp-red">ask smart questions.</span>
+          <span className="text-dp-red">ask smart questions.</span>
         </h2>
         <p className="mt-5 text-[15.5px] leading-[1.6] text-dp-ink-soft">
           Still curious? Email{' '}
