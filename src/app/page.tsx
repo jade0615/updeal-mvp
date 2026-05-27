@@ -41,6 +41,11 @@ import {
   LineChart as IconChart,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import {
+  RoiSliders,
+  FaqAccordion,
+  type FaqItem,
+} from '@/components/home/InteractiveBits';
 
 // Server-side: does a real logo bitmap exist for this partner slug?
 const LOGO_DIR = path.join(process.cwd(), 'public', 'partners-grid');
@@ -57,7 +62,7 @@ function findLogo(slug: string): string | null {
 export const metadata: Metadata = {
   title: 'Hiraccoon — Branded restaurant sites + AI-ready SEO',
   description:
-    'Hiraccoon ships a fully-branded Next.js site on your own subdomain — with menu, cart, checkout, and the Restaurant + Menu schema that Google and AI search engines actually read. Most partners are live in under a week, keeping 100 % of direct-order margin.',
+    'Hiraccoon gives your restaurant a fully-branded website with your own web address, designed to be found by Google and the new AI search, a cart your customers finish on your own page, and a live owner dashboard for orders, claims, and reviews.',
 };
 
 const PARTNER_EMAIL = 'partners@hiraccoon.com';
@@ -123,30 +128,30 @@ interface FeatureCategory {
 const FEATURE_MATRIX: FeatureCategory[] = [
   {
     kicker: 'Brand',
-    title: 'Your own site, on your own subdomain.',
+    title: 'A real restaurant site — not a listing page.',
     blurb:
-      'A full Next.js storefront built around your shop — hero, featured menu, story, visit info, FAQ — hosted on your own subdomain with your colours, your logo, your photos. Not a third-party listing. Yours.',
+      'Hero, featured-menu grid, story, visit info, FAQ — every section made for your shop. Your photos, your colours, your tone. Fast on every phone. Not a template anyone else shares.',
     icon: IconBrand,
   },
   {
     kicker: 'Discover',
-    title: 'Found by Google. Cited by AI.',
+    title: 'Found by Google. Cited by the new AI search.',
     blurb:
-      'Restaurant + Menu JSON-LD on every page, Schema.org speakable summary tuned for Perplexity, ChatGPT and Google AI Overviews, per-page metadata, sitemap and robots — engineered for both classic SEO and the new AI-citation surface.',
+      'Every page is set up so Google understands your menu, your hours, your address — and so the new AI search engines (Perplexity, ChatGPT, Google AI Overviews) can quote your site when a diner asks “best [cuisine] in [neighborhood]”.',
     icon: IconSearch,
   },
   {
     kicker: 'Sell',
     title: 'Direct cart, direct payouts.',
     blurb:
-      'Full menu browsing, search, cart, modifiers and checkout all live on your subdomain. Payouts land directly in your Stripe. Zero marketplace skim on every direct order — the whole 30 % stays with the kitchen.',
+      'Full menu, search, modifiers, scheduled pickup, clean POS hand-off. Payouts land in your Stripe account the next morning. No marketplace skim on direct orders — the whole 30 % stays with the kitchen.',
     icon: IconCart,
   },
   {
     kicker: 'Operate',
     title: 'Run the shop from one screen.',
     blurb:
-      'Click-by-click CTA analytics, daily order brief, customer list export, plus an optional Apple Wallet coupon feed for first-visit retention. Web-based dashboard — no native app to maintain, no per-seat licence.',
+      'Click-by-click analytics, a daily order brief by email, a customer list you can download any time, plus an optional Apple Wallet coupon for first-time guests. Web-based — no native app to install, no per-seat charge.',
     icon: IconChart,
   },
 ];
@@ -166,13 +171,14 @@ const SHOWCASE: ShowcaseItem[] = [
   {
     id: 'site',
     label: 'Brand site',
-    title: 'A full Next.js storefront on your own subdomain.',
+    title: 'A real restaurant site, not a listing page.',
     body:
-      'Not a landing page, not a third-party listing — a complete branded site with hero, featured-menu grid, story, visit info and FAQ. Hosted at <yourshop>.hiraccoon.com on Vercel, mobile-first, designed around your colours, your logo and your photos.',
+      'Hero, featured-menu grid, story, visit info, FAQ — every section made for your shop. Your photos, your colours, your tone of voice. Fast on every phone. Not a template anyone else shares.',
     bullets: [
-      'Independent Next.js app per partner, your colours and assets',
-      'Hero, featured dishes, story, visit, FAQ — every section yours',
-      'Mobile-first, Lighthouse-tuned, deployed on your subdomain',
+      'Your colours, your photos, your story',
+      'Hero, featured dishes, story, visit hours, FAQ',
+      'Your own web address: yourshop.hiraccoon.com',
+      'Fast on every phone, designed for real customers',
     ],
     image: '/ai/v2/section-storefront.jpg',
     imageAlt:
@@ -182,17 +188,18 @@ const SHOWCASE: ShowcaseItem[] = [
   {
     id: 'seo',
     label: 'SEO + AI search',
-    title: 'Found by Google. Cited by AI Overviews.',
+    title: 'Built to be found by Google. And by the new AI search.',
     body:
-      'The technical SEO is wired in at the framework layer. Restaurant + MenuSection + MenuItem JSON-LD on every page, a SpeakableSpecification block tuned for Perplexity, ChatGPT and Google AI Overviews, per-page Open Graph and Twitter Card, sitemap and robots — and a Google Search Console verification slot.',
+      'Every page is set up so Google understands your menu, your hours, your address — and so the new AI search engines (Perplexity, ChatGPT, Google AI Overviews) can quote your site when a diner asks “best [cuisine] in [neighborhood]”.',
     bullets: [
-      'Restaurant + Menu + Breadcrumb Schema.org JSON-LD',
-      'SpeakableSpecification first-sentence pattern for AI assistants',
-      'Per-page metadata, canonical, sitemap.xml and robots.txt',
+      'Google reads your menu, hours and address straight off the page',
+      'AI search can quote your site when a diner asks',
+      'A title, description and share image set per page',
+      'Search engines can crawl every page from day one',
     ],
     image: '/ai/v2/section-wallet.jpg',
     imageAlt:
-      'A close-up of a customer holding an iPhone showing a clean restaurant brand-site mobile view — a food photo banner, dish thumbnails, and an order CTA.',
+      'A close-up of a customer holding a phone showing a clean restaurant brand-site mobile homepage with a food hero, dish thumbnails and an order button.',
     flip: true,
   },
   {
@@ -200,11 +207,12 @@ const SHOWCASE: ShowcaseItem[] = [
     label: 'Direct orders + operations',
     title: 'Direct cart, direct payouts, live owner dashboard.',
     body:
-      'Full menu browsing, search, cart with modifiers and checkout — all on your subdomain. Payouts land directly in Stripe. The dashboard tracks every CTA click, every order, and (optionally) an Apple Wallet first-visit coupon feed — all on a web-based screen, no native app.',
+      'Full menu, search, modifiers, scheduled pickup, clean POS hand-off — all on your own page. Payouts land in your Stripe the next morning. The dashboard tracks every click, every order, and (optionally) an Apple Wallet coupon for first-time guests — all from one web screen, no native app.',
     bullets: [
-      'Cart + checkout + Stripe direct payouts on your domain',
-      'Click-by-click CTA analytics, daily order brief by email',
-      'Optional Apple Wallet first-visit coupon feed for retention',
+      'Cart, checkout and direct payouts via Stripe',
+      'Click-by-click analytics and a daily order brief by email',
+      'Customer list you can download any time',
+      'Optional Apple Wallet first-visit coupon for retention',
     ],
     image: '/ai/v2/section-dashboard.jpg',
     imageAlt:
@@ -240,7 +248,7 @@ interface SuccessStory {
 
 const TESTIMONIALS: SuccessStory[] = [
   {
-    quote: 'They shipped a full Next.js brand site on our own subdomain in eight days. We finally look like a real restaurant online.',
+    quote: 'They built our full brand site on our own web address in eight days. We finally look like a real restaurant online.',
     author: 'Marcus',
     role: 'Owner',
     restaurant: 'Saffron Hill Kitchen',
@@ -326,6 +334,36 @@ const PRINCIPLES = [
   },
 ];
 
+// 6 FAQ items shown in a single-open accordion. Owner-style — answer the
+// questions a restaurant owner actually asks before signing up, in plain
+// language (no tech jargon).
+const FAQ_ITEMS: FaqItem[] = [
+  {
+    q: 'How is Hiraccoon different from a marketplace like DoorDash or Uber Eats?',
+    a: 'Marketplaces own the guest relationship, take 15–30 % per order, and re-sell your customers to whichever competitor pays the most. Hiraccoon gives your restaurant a fully-branded site at your own web address, a cart your customers finish on that page, direct payouts to your bank, and a customer list you can download any time. The order, the data, and the guest stay with you.',
+  },
+  {
+    q: 'Do I have to leave the marketplaces to use Hiraccoon?',
+    a: 'No. Most partners keep DoorDash or Uber Eats for discovery while shifting their repeat customers to direct orders — the direct cart simply doesn’t carry the 25–30 % skim. Most see direct volume catch up to or pass marketplace volume in the first three months.',
+  },
+  {
+    q: 'What does the launch process actually look like?',
+    a: 'We take in your menu and photos, build a draft site you can preview on a private link inside seven days, you tell us what to change, and we go live. Day one of launch you have a working site, a working cart, a working owner dashboard, and you’re showing up on Google for your shop name.',
+  },
+  {
+    q: 'Does Hiraccoon work with my existing POS or printer?',
+    a: 'Yes — orders drop into your existing POS, or print straight to your existing ticket printer. We don’t require you to swap your POS and we won’t lock you into a specific vendor.',
+  },
+  {
+    q: 'What if I already have a website I like?',
+    a: 'If your existing site converts and ranks, keep it — we can run the cart, the dashboard, and the search-engine layer alongside it. If it doesn’t convert (most templates don’t), we’ll show you a draft replacement on a private link before you commit to anything.',
+  },
+  {
+    q: 'How much does it cost?',
+    a: 'A flat monthly platform fee, no per-order commission on direct orders, no setup fee, no per-seat charge. Email partners@hiraccoon.com with your business name and we’ll send the current pricing plus an estimate of what you’d save against your existing marketplace volume.',
+  },
+];
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
@@ -340,6 +378,8 @@ export default function HomePage() {
       ))}
       <Testimonials />
       <Principles />
+      <RoiCalculator />
+      <Faq />
       <FinalCTA />
       <HomeFooter />
     </div>
@@ -405,11 +445,10 @@ function Hero() {
             <span className="text-dp-red">built to rank, built to sell.</span>
           </h1>
           <p className="mt-6 text-[17px] sm:text-[18px] text-dp-ink-soft max-w-[540px] leading-[1.55]">
-            Hiraccoon ships a fully-branded Next.js site on your own
-            subdomain — menu, cart, checkout and the Restaurant + Menu
-            structured data Google and AI search engines actually read.
-            Most partners are live in under a week, keeping 100 % of the
-            margin on direct orders.
+            Hiraccoon gives your restaurant a fully-branded website at
+            your own web address — menu, cart, checkout — designed to be
+            found by Google and the new AI search. Most partners are live
+            in under a week, keeping 100 % of the margin on direct orders.
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
@@ -724,6 +763,61 @@ function Principles() {
   );
 }
 
+// ─── ROI calculator (interactive sliders) ────────────────────────────────────
+// Quick-math section — three sliders feed a live "annual upside" estimate.
+// Slider logic + result card live in InteractiveBits.tsx (client component).
+
+function RoiCalculator() {
+  return (
+    <section id="roi" className="mx-auto max-w-[1200px] px-5 lg:px-8 mt-16 sm:mt-24">
+      <div className="text-center max-w-[760px] mx-auto mb-12 sm:mb-16 reveal">
+        <p className="text-[12px] sm:text-[12.5px] font-semibold tracking-[0.18em] uppercase text-dp-red mb-4 flex items-center justify-center gap-2">
+          <span aria-hidden className="inline-block w-1.5 h-1.5 rounded-full bg-dp-red" />
+          Quick math
+        </p>
+        <h2 className="text-[34px] sm:text-[42px] lg:text-[50px] font-bold tracking-tight leading-[1.05] text-dp-ink">
+          See what Hiraccoon is worth{' '}
+          <span className="font-playfair italic font-medium text-dp-red">to your restaurant.</span>
+        </h2>
+        <p className="mt-5 text-[15.5px] sm:text-[16px] leading-[1.6] max-w-[640px] mx-auto text-dp-ink-soft">
+          Drag the sliders to your numbers. The model is conservative —
+          built from what real partners actually see in their first
+          quarter.
+        </p>
+      </div>
+      <RoiSliders />
+    </section>
+  );
+}
+
+// ─── FAQ accordion ───────────────────────────────────────────────────────────
+// Single-open expand/collapse. Owner-style 6 questions in plain language.
+
+function Faq() {
+  return (
+    <section id="faq" className="mx-auto max-w-[1000px] px-5 lg:px-8 mt-16 sm:mt-24">
+      <div className="max-w-[720px] mb-10 sm:mb-12 reveal">
+        <p className="text-[12px] sm:text-[12.5px] font-semibold tracking-[0.18em] uppercase text-dp-red mb-4 flex items-center gap-2">
+          <span aria-hidden className="inline-block w-1.5 h-1.5 rounded-full bg-dp-red" />
+          FAQ
+        </p>
+        <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] font-bold tracking-tight leading-[1.05] text-dp-ink">
+          Smart operators{' '}
+          <span className="font-playfair italic font-medium text-dp-red">ask smart questions.</span>
+        </h2>
+        <p className="mt-5 text-[15.5px] leading-[1.6] text-dp-ink-soft">
+          Still curious? Email{' '}
+          <a href={MAILTO_HREF} className="font-medium underline underline-offset-4 text-dp-red">
+            {PARTNER_EMAIL}
+          </a>{' '}
+          and a human will get back to you within 24 hours.
+        </p>
+      </div>
+      <FaqAccordion items={FAQ_ITEMS} />
+    </section>
+  );
+}
+
 // ─── Final CTA ───────────────────────────────────────────────────────────────
 // Wide section, near-black background, white type, one CTA. The only
 // dark band on the page — earns the visual weight.
@@ -736,9 +830,9 @@ function FinalCTA() {
           Your brand site, your SEO, your direct orders — live in under a week.
         </h2>
         <p className="mt-6 text-[16px] sm:text-[17.5px] text-white/70 max-w-[640px] mx-auto leading-[1.6]">
-          We port your menu, ship the Next.js brand site, wire the Restaurant
-          and Menu schema, and hand you a dashboard with the order data
-          already flowing. You approve, we launch.
+          We port your menu, build the brand site, set it up to be found
+          by Google and AI search, and hand you a dashboard with the
+          order data already flowing. You approve, we launch.
         </p>
         <div className="mt-10">
           <a
@@ -795,9 +889,9 @@ function HomeFooter() {
             Brand site
           </p>
           <ul className="space-y-2.5">
-            <li><a href="#site" className="hover:text-white">Next.js storefront</a></li>
-            <li><a href="#site" className="hover:text-white">Your own subdomain</a></li>
-            <li><a href="#site" className="hover:text-white">Mobile-first, Lighthouse-tuned</a></li>
+            <li><a href="#site" className="hover:text-white">Fully-branded site</a></li>
+            <li><a href="#site" className="hover:text-white">Your own web address</a></li>
+            <li><a href="#site" className="hover:text-white">Fast on every phone</a></li>
           </ul>
         </div>
 
@@ -806,9 +900,9 @@ function HomeFooter() {
             SEO + AI search
           </p>
           <ul className="space-y-2.5">
-            <li><a href="#seo" className="hover:text-white">Restaurant + Menu JSON-LD</a></li>
-            <li><a href="#seo" className="hover:text-white">Speakable for AI Overviews</a></li>
-            <li><a href="#seo" className="hover:text-white">Sitemap, robots, GSC</a></li>
+            <li><a href="#seo" className="hover:text-white">Found on Google</a></li>
+            <li><a href="#seo" className="hover:text-white">Cited by AI Overviews</a></li>
+            <li><a href="#seo" className="hover:text-white">Indexed from day one</a></li>
           </ul>
         </div>
 
