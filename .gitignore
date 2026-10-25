@@ -25,7 +25,6 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
 
 # vercel
 .vercel
@@ -48,3 +47,4 @@ branch_structure.json
 # Local design-preview screenshots + debug script (not part of the build)
 /scripts/captures/
 /scripts/shot-local.mjs
+config.bat
